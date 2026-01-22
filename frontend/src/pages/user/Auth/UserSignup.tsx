@@ -212,7 +212,8 @@ import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../public/Landing';
 import { signupSchema } from '../../../validation/signupSchema';
 import { signupApi, verifyOtpApi, resendOtpApi } from '../../../api/authApi';
-
+import { GoogleLogin } from "@react-oauth/google";
+import api from "../../../api/axios";
 interface Errors {
   name?: string;
   email?: string;
@@ -359,10 +360,24 @@ const SignupForm: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <button type="button" onClick={() => alert('Google Auth demo')}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm font-bold text-neutral-800 dark:text-neutral-200">
-              Continue with Google
-            </button>
+       <div className="w-full">
+  <GoogleLogin
+    onSuccess={async (cred) => {
+      try {
+        const res = await api.post("/auth/google", {
+          credential: cred.credential,
+        });
+
+        localStorage.setItem("accessToken", res.data.accessToken);
+        navigate("/welcome", { replace: true });
+      } catch {
+        alert("Google signup failed");
+      }
+    }}
+    onError={() => alert("Google signup failed")}
+  />
+</div>
+
 
             <div className="space-y-4">
               <input name="name" value={formData.name} onChange={handleChange} placeholder="Full Name"

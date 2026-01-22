@@ -36,7 +36,6 @@ export const login = async (req: Request, res: Response) => {
 
   res.cookie("refreshToken", result.refreshToken, {
     httpOnly: true,
-    secure: false,
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
@@ -55,4 +54,18 @@ export const logout = async (req: Request, res: Response) => {
   await authService.logout(token);
   res.clearCookie("refreshToken");
   res.sendStatus(204);
+};
+
+
+
+export const googleLogin = async (req: Request, res: Response) => {
+  const result = await authService.googleLogin(req.body.credential);
+
+  res.cookie("refreshToken", result.refreshToken, {
+    httpOnly: true,
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  res.json({ user: result.user, accessToken: result.accessToken });
 };

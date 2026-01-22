@@ -8,7 +8,9 @@ import { hashPassword, comparePassword } from "../../shared/utils/hash";
 import { IUser } from "../user/userModel";
 import { generateOTPData } from "../../shared/utils/otp";
 import { sendOtpMail } from "../../shared/utils/mailer";
+import { OAuth2Client } from "google-auth-library";
 type Role = "user" | "provider" | "admin";
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const authService = {
   // ---------- SIGNUP ----------
@@ -123,6 +125,37 @@ export const authService = {
 
     return { user, accessToken, refreshToken };
   },
+
+ googleLogin: async (credential: string) => {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload?.email) throw new Error("Invalid Google token");
+
+    let user = await userRepository.findByEmail(payload.email);
+
+    if (!user) {
+      user = await userRepository.create({
+        name: payload.name || "Google User",
+        email: payload.email,
+        authProvider: "google",
+        role: "user",
+        isVerified: true,
+      });
+    }
+
+    const accessToken = createAccessToken({ id: user._id, role: user.role });
+    const refreshToken = createRefreshToken({ id: user._id });
+
+    await userRepository.updateRefreshToken(user._id.toString(), refreshToken);
+
+    return { user, accessToken, refreshToken };
+  },
+
+
 
   // ---------- REFRESH ----------
   refresh: async (refreshToken: string): Promise<{ accessToken: string }> => {

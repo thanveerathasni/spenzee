@@ -22,6 +22,8 @@ const NotFound = () => (
 );
 
 const AppContent = () => {
+  console.log(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
   return (
     <div className="relative selection:bg-neon-pink/30 selection:text-white">
       <main className="relative z-10 transition-all duration-500">

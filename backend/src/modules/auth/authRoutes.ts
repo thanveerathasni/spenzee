@@ -2,7 +2,8 @@ import { Router } from "express";
 import {
   signup,
   login,
-  refresh,      // ✅ FIXED
+  googleLogin,
+  refresh,
   logout,
   verifyOtp,
   resendOtp,
@@ -17,7 +18,7 @@ router.post("/resend-otp", resendOtp);
 router.post("/login", login);
 router.post("/refresh", refresh);   
 router.post("/logout", logout);
-
+router.post("/google", googleLogin);
 router.get("/profile", protect, (req, res) => {
   res.json({ message: "You are logged in" });
 });
