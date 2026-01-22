@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <button id="btn">Test Signup</button>
+
+    <script>
+      document.getElementById("btn").onclick = async () => {
+        const res = await fetch("http://localhost:5000/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "Browser User",
+            email: "browser@test.com",
+            password: "Strong@123",
+            role: "user",
+          }),
+        });
+
+        const data = await res.json();
+        console.log(data);
+        alert(JSON.stringify(data));
+      };
+    </script>
+  </body>
+</html>
