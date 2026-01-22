@@ -3,8 +3,11 @@ import api from "./axios";
 export const signupApi = (data: any) =>
   api.post("/auth/signup", data);
 
-export const loginApi = (data: any) =>
-  api.post("/auth/login", data);
+export const loginApi = async (data: any) => {
+  const res = await api.post("/auth/login", data);
+  localStorage.setItem("accessToken", res.data.accessToken);
+  return res.data;
+};
 
 export const verifyOtpApi = (data: { email: string; otp: string }) =>
   api.post("/auth/verify-otp", data);
@@ -12,9 +15,10 @@ export const verifyOtpApi = (data: { email: string; otp: string }) =>
 export const resendOtpApi = (email: string) =>
   api.post("/auth/resend-otp", { email });
 
-export const logoutApi = () =>
-  api.post("/auth/logout");
+export const logoutApi = async () => {
+  await api.post("/auth/logout");
+  localStorage.clear();
+};
 
-// No manual token here — interceptor handles it
 export const profileApi = () =>
   api.get("/auth/profile");

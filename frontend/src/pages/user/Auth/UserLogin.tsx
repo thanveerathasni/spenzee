@@ -1,13 +1,10 @@
 
 
 
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../public/Landing';
 import { loginApi } from "../../../api/authApi";
-import { setTokens } from "../../../util/tokenStorage";
 
 interface Errors {
   email?: string;
@@ -30,7 +27,6 @@ const LoginForm: React.FC = () => {
 
   const [errors, setErrors] = useState<Errors>({});
 
-  // Block login page if already logged in
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
@@ -52,24 +48,6 @@ const LoginForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateForgot = () => {
-    const newErrors: Errors = {};
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateReset = () => {
-    const newErrors: Errors = {};
-    if (!formData.otp.trim()) newErrors.otp = 'OTP is required';
-    if (!formData.password) newErrors.password = 'New password is required';
-    else if (formData.password.length < 8) newErrors.password = 'Min 8 characters';
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords don't match";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -77,34 +55,29 @@ const LoginForm: React.FC = () => {
       if (!validateLogin()) return;
 
       try {
-        const res = await loginApi({
+        // ✅ loginApi already returns DATA
+        const data = await loginApi({
           email: formData.email,
           password: formData.password,
         });
 
-        setTokens(res.data.accessToken, res.data.refreshToken);
+        // ✅ use data directly
+        localStorage.setItem("accessToken", data.accessToken);
 
-        const role = res.data.user.role;
+        const role = data.user.role;
         if (role === "admin") navigate("/admin", { replace: true });
         else if (role === "provider") navigate("/provider", { replace: true });
         else navigate("/welcome", { replace: true });
 
       } catch (err: any) {
-        alert(err.response?.data?.message || "Login failed");
+        console.error("LOGIN ERROR:", err);
+        alert(err?.message || "Login failed");
       }
-
-    } else if (view === 'forgot') {
-      if (!validateForgot()) return;
-      setView('reset');
-
-    } else if (view === 'reset') {
-      if (!validateReset()) return;
-      alert('Password reset successfully! 🔒');
-      setView('login');
     }
   };
 
-  return (
+
+return (
     <>
       <Navbar />
       <div className="mt-20 max-w-md mx-auto px-6">

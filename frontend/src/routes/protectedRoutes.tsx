@@ -1,7 +1,6 @@
 import { Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import type { RootState } from "../store/store";
-import { getAccessToken } from "../util/tokenStorage";
+import { useEffect, useState } from "react";
+import api from "../api/axios";
 import { jwtDecode } from "jwt-decode";
 
 interface TokenPayload {
@@ -15,25 +14,37 @@ interface Props {
 }
 
 const ProtectedRoute = ({ children, role }: Props) => {
-  const { user, accessToken } = useSelector((state: RootState) => state.auth);
+  const [loading, setLoading] = useState(true);
+  const [allowed, setAllowed] = useState(false);
 
-  const token = accessToken || getAccessToken();
-  if (!token) return <Navigate to="/login" replace />;
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // 🔥 THIS triggers refresh if accessToken is missing
+        const res = await api.get("/auth/profile");
 
-  let finalRole = user?.role;
+        const token = localStorage.getItem("accessToken");
+        if (!token) return setAllowed(false);
 
-  if (!finalRole) {
-    try {
-      const decoded = jwtDecode<TokenPayload>(token);
-      finalRole = decoded.role;
-    } catch {
-      return <Navigate to="/login" replace />;
-    }
-  }
+        const decoded = jwtDecode<TokenPayload>(token);
 
-  if (role && finalRole !== role) {
-    return <Navigate to="/unauthorized" replace />;
-  }
+        if (role && decoded.role !== role) {
+          setAllowed(false);
+        } else {
+          setAllowed(true);
+        }
+      } catch {
+        setAllowed(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  if (loading) return null; // or loader
+  if (!allowed) return <Navigate to="/login" replace />;
 
   return <>{children}</>;
 };
