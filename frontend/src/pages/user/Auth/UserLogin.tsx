@@ -78,11 +78,11 @@ const LoginForm: React.FC = () => {
   };
 
 
-return (
+  return (
     <>
       <Navbar />
       <div className="mt-20 max-w-md mx-auto px-6">
-      <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-xl">
+        <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-xl">
           <header className="mb-8 text-center">
             <h1 className="text-2xl font-black text-black dark:text-white uppercase tracking-tighter italic leading-none">
               {view === 'login' ? 'Sign In' : view === 'forgot' ? 'Identify' : 'Renew'}
@@ -110,20 +110,20 @@ return (
           <form onSubmit={handleSubmit} className="space-y-4">
             {view === 'login' && (
               <GoogleLogin
-              onSuccess={async (cred) => {
-                try {
-                  const res = await api.post("/auth/google", {
-                    credential: cred.credential,
-                  });
+                onSuccess={async (cred) => {
+                  try {
+                    const res = await api.post("/auth/google", {
+                      credential: cred.credential,
+                    });
 
-                  localStorage.setItem("accessToken", res.data.accessToken);
-                  navigate("/welcome", { replace: true });
-                } catch {
-                  alert("Google login failed");
-                }
-              }}
-              onError={() => alert("Google login failed")}
-            />
+                    localStorage.setItem("accessToken", res.data.accessToken);
+                    navigate("/welcome", { replace: true });
+                  } catch {
+                    alert("Google login failed");
+                  }
+                }}
+                onError={() => alert("Google login failed")}
+              />
             )}
 
             <div className="space-y-4">
@@ -152,9 +152,14 @@ return (
                   />
                   {errors.password && <p className="mt-2 ml-1 text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.password}</p>}
                   <div className="flex justify-end mt-2">
-                    <button type="button" onClick={() => { setView('forgot'); setErrors({}); }} className="text-[9px] font-black uppercase text-neutral-400 hover:text-black dark:hover:text-white transition tracking-widest">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/forgot-password')}
+                      className="text-[9px] font-black uppercase text-neutral-400 hover:text-black dark:hover:text-white transition tracking-widest"
+                    >
                       Forgot Password?
                     </button>
+
                   </div>
                 </div>
               )}

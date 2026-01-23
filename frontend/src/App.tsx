@@ -8,6 +8,9 @@ import ProviderRequestForm from './pages/provider/auth/ProviderRequest';
 import TestAuth from './pages/public/TestAuth';
 import ProtectedRoute from "../src/routes/protectedRoutes";
 import WelcomePage  from './pages/user/Auth/welcome';
+import ForgotPassword from './pages/user/Auth/forgotReset';
+
+
 // 404 Page
 const NotFound = () => (
   <div className="min-h-screen bg-deep-space flex flex-center flex-col px-4 text-center">
@@ -40,6 +43,7 @@ const AppContent = () => {
     </ProtectedRoute>
   }
 />
+<Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Provider public */}
           <Route path="/provider/login" element={<ProviderLoginForm />} />

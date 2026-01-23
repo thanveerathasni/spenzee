@@ -69,3 +69,57 @@ export const googleLogin = async (req: Request, res: Response) => {
 
   res.json({ user: result.user, accessToken: result.accessToken });
 };
+
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    await authService.forgotPassword(email);
+
+    res.json({
+      message: "If this email exists, an OTP has been sent",
+    });
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+
+export const verifyForgotOtp = async (req: Request, res: Response) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    await authService.verifyForgotOtp(email, otp);
+
+    res.json({ message: "OTP verified successfully" });
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res.status(400).json({
+        message: "Email and new password are required",
+      });
+    }
+
+    await authService.resetPassword(email, newPassword);
+
+    res.json({ message: "Password reset successfully" });
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
+  }
+};

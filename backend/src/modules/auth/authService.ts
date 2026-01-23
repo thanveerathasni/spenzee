@@ -9,6 +9,9 @@ import { IUser } from "../user/userModel";
 import { generateOTPData } from "../../shared/utils/otp";
 import { sendOtpMail } from "../../shared/utils/mailer";
 import { OAuth2Client } from "google-auth-library";
+import { User } from "../user/userModel";
+import { generateOTP, otpExpiry } from "../../shared/utils/otp";
+import bcrypt from "bcryptjs";
 type Role = "user" | "provider" | "admin";
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -188,4 +191,77 @@ export const authService = {
 
     await userRepository.updateRefreshToken(user._id.toString(), "");
   },
+  async forgotPassword(email: string) {
+    const user = await User.findOne({ email });
+
+    // SECURITY: Do not reveal user existence
+    if (!user) {
+      return;
+    }
+
+    // ❌ Google users cannot reset password
+    if (user.authProvider !== "local") {
+      throw new Error("Password reset not allowed for this account");
+    }
+
+    const otp = generateOTP();
+    const expiresAt = otpExpiry();
+
+    user.otp = otp;
+    user.otpExpiresAt = expiresAt;
+    await user.save();
+
+    await sendOtpMail(user.email, otp);
+  },
+
+// src/modules/auth/authService.ts
+
+async verifyForgotOtp(email: string, otp: string) {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.authProvider !== "local") {
+    throw new Error("Invalid account type");
+  }
+
+  if (!user.otp || !user.otpExpiresAt) {
+    throw new Error("OTP not found");
+  }
+
+  if (user.otp !== otp) {
+    throw new Error("Invalid OTP");
+  }
+
+  if (user.otpExpiresAt.getTime() < Date.now()) {
+    throw new Error("OTP expired");
+  }
+
+  // OPTION A: clear OTP immediately
+  user.otp = undefined;
+  user.otpExpiresAt = undefined;
+  await user.save();
+},
+
+async resetPassword(email: string, newPassword: string) {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.authProvider !== "local") {
+    throw new Error("Invalid account type");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
+
+  await user.save();
+},
+
+
+
 };
