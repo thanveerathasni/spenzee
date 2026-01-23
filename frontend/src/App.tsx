@@ -8,7 +8,7 @@ import ProviderRequestForm from './pages/provider/auth/ProviderRequest';
 import TestAuth from './pages/public/TestAuth';
 import ProtectedRoute from "../src/routes/protectedRoutes";
 import WelcomePage  from './pages/user/Auth/welcome';
-import ForgotPassword from './pages/user/Auth/forgotReset';
+import ForgotPassword from './pages/user/Auth/forgotPassword';
 
 
 // 404 Page
