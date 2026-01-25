@@ -68,4 +68,27 @@ export class AuthController {
       message: SUCCESS_MESSAGES.AUTH.LOGOUT_SUCCESS
     });
   }
+
+  async signup(req: Request, res: Response): Promise<Response> {
+  const dto = req.body as SignupDTO;
+
+  await this.authService.signup(dto.email, dto.password);
+
+  return sendResponse({
+    res,
+    message: SUCCESS_MESSAGES.AUTH.OTP_SENT
+  });
+}
+
+async verifyOtp(req: Request, res: Response): Promise<Response> {
+  const dto = req.body as VerifyOtpDTO;
+
+  await this.authService.verifyOtp(dto.email, dto.otp);
+
+  return sendResponse({
+    res,
+    message: SUCCESS_MESSAGES.AUTH.ACCOUNT_VERIFIED
+  });
+}
+
 }

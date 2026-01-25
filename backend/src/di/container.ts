@@ -8,6 +8,8 @@ import { UserRepository } from "../repositories/UserRepository";
 
 import { IAuthService } from "../types/services/IAuthService";
 import { IUserRepository } from "../types/repositories/IUserRepository";
+import { OtpRepository } from "../repositories/OtpRepository";
+import { IOtpRepository } from "../types/repositories/IOtpRepository";
 
 const container = new Container();
 
@@ -19,5 +21,8 @@ container.bind<IAuthService>(TYPES.AuthService).to(AuthService);
 
 // Repositories
 container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepository);
+
+container.bind<IOtpRepository>(TYPES.OtpRepository)
+  .to(OtpRepository);
 
 export { container };

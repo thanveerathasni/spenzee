@@ -6,5 +6,10 @@ export const TYPES = {
   AuthService: Symbol.for("AuthService"),
 
   // Repositories
-  UserRepository: Symbol.for("UserRepository")
+  UserRepository: Symbol.for("UserRepository"),
+
+    
+  OtpRepository: Symbol.for("OtpRepository")
+
+
 } as const;

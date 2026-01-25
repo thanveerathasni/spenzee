@@ -2,12 +2,12 @@ import "dotenv/config";
 import app from "./app";
 import { connectDatabase } from "./config/database";
 
-const PORT = Number(process.env.PORT) || 4000;
+const PORT = Number(process.env.PORT) || 5000;
 
 (async () => {
-  await connectDatabase(process.env.MONGO_URI);
+  await connectDatabase(process.env.MONGO_URI as string);
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(` Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
   });
 })();

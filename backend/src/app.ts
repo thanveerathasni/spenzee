@@ -28,27 +28,28 @@
 
 
 
-
 import express from "express";
-import cookieParser from "cookie-parser"; // ✅ REQUIRED
-import { container } from "./di/container";
-import { TYPES } from "./di/types";
-import authRoutes from "./routes/auth.routes";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler";
+import authRoutes from "./routes/auth.routes";
 import testRoutes from "./routes/test.routes";
 
+const app = express(); // ✅ MUST be first
 
-const app = express();
-
-// global middlewares
+// middleware
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true
+}));
 app.use(express.json());
-app.use(cookieParser()); // ✅ now defined
-app.use("/test", testRoutes);
+app.use(cookieParser());
 
 // routes
 app.use("/auth", authRoutes);
+app.use("/test", testRoutes);
 
-// error handler (MUST be last)
+// global error handler (LAST)
 app.use(errorHandler);
 
 export default app;
