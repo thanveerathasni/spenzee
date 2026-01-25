@@ -35,12 +35,15 @@ import { container } from "./di/container";
 import { TYPES } from "./di/types";
 import authRoutes from "./routes/auth.routes";
 import { errorHandler } from "./middleware/errorHandler";
+import testRoutes from "./routes/test.routes";
+
 
 const app = express();
 
 // global middlewares
 app.use(express.json());
 app.use(cookieParser()); // ✅ now defined
+app.use("/test", testRoutes);
 
 // routes
 app.use("/auth", authRoutes);

@@ -1,14 +1,9 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { UnauthorizedError } from "../utils/errors";
 import { ERROR_MESSAGES } from "../constants/errorMessages";
-
-export interface AuthRequest extends Request {
-  user?: {
-    userId: string;
-    role: string;
-  };
-}
+import { AuthRequest } from "./authGuard";
+import { isValidRole } from "../utils/roleUtils";
 
 export const authGuard = (
   req: AuthRequest,
@@ -29,9 +24,19 @@ export const authGuard = (
     const payload = jwt.verify(
       token,
       process.env.JWT_ACCESS_SECRET as string
-    ) as { userId: string; role: string };
+    ) as { userId: string; role: unknown };
 
-    req.user = payload;
+    if (!isValidRole(payload.role)) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH.ACCESS_DENIED
+      );
+    }
+
+    req.user = {
+      id: payload.userId,
+      role: payload.role
+    };
+
     next();
   } catch {
     throw new UnauthorizedError(
