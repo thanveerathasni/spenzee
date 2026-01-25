@@ -1,11 +1,18 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: {
+    id: string;
+    role: "user" | "provider" | "admin";
+  };
 }
 
-export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const protect = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -18,8 +25,14 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction) => 
     const decoded = jwt.verify(
       token,
       process.env.JWT_ACCESS_SECRET as string
-    );
-    req.user = decoded;
+    ) as JwtPayload;
+
+ 
+    req.user = {
+      id: decoded.id as string,
+      role: decoded.role as "user" | "provider" | "admin",
+    };
+
     next();
   } catch {
     return res.status(401).json({ message: "Invalid token" });
