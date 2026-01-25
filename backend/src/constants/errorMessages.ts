@@ -6,7 +6,9 @@ export const ERROR_MESSAGES = {
     ACCESS_DENIED: "Access denied"
   },
 
-  GENERAL: {
-    INTERNAL_SERVER_ERROR: "Something went wrong"
-  }
+GENERAL: {
+  INTERNAL_SERVER_ERROR: "Something went wrong",
+  INVALID_REQUEST: "Invalid request data"
+}
+
 } as const;

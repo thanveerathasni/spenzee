@@ -4,6 +4,7 @@ import { TYPES } from "../di/types";
 import { IAuthService } from "../types/services/IAuthService";
 import { sendResponse } from "../utils/sendResponse";
 import { SUCCESS_MESSAGES } from "../constants/successMessages";
+import { LoginDTO } from "../validators/auth/login.validator";
 
 @injectable()
 export class AuthController {
@@ -12,16 +13,17 @@ export class AuthController {
     private readonly authService: IAuthService
   ) {}
 
+  async login(req: Request, res: Response): Promise<Response> {
+    const loginDto = req.body as LoginDTO;
 
-async login(req: Request, res: Response): Promise<Response> {
-  const { email, password } = req.body;
+    await this.authService.login(
+      loginDto.email,
+      loginDto.password
+    );
 
-  await this.authService.login(email, password);
-
-  return sendResponse({
-    res,
-    message: SUCCESS_MESSAGES.AUTH.LOGIN_SUCCESS
-  });
-}
-
+    return sendResponse({
+      res,
+      message: SUCCESS_MESSAGES.AUTH.LOGIN_SUCCESS
+    });
+  }
 }
