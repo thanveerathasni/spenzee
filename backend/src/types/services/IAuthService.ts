@@ -1,3 +1,10 @@
 export interface IAuthService {
-  login(email: string, password: string): Promise<void>;
+  login(
+    email: string,
+    password: string
+  ): Promise<{ accessToken: string; refreshToken: string }>;
+
+  refreshAccessToken(
+    refreshToken: string
+  ): Promise<{ accessToken: string }>;
 }
