@@ -14,9 +14,19 @@ const otpSchema = new Schema(
     expiresAt: {
       type: Date,
       required: true
+    },
+    attempts: {
+      type: Number,
+      default: 1
+    },
+    firstRequestedAt: {
+      type: Date,
+      default: Date.now
     }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
 export const OtpModel = model("Otp", otpSchema);

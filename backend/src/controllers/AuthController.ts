@@ -99,6 +99,18 @@ export class AuthController {
       message: SUCCESS_MESSAGES.AUTH.ACCOUNT_VERIFIED
     });
   }
+  async resendOtp(req: Request, res: Response): Promise<Response> {
+  const { email } = req.body;
+
+  await this.authService.resendOtp(email);
+
+  return res.status(200).json({
+    success: true,
+    message: "OTP resent successfully",
+    data: null
+  });
+}
+
 }
 
 

@@ -73,7 +73,7 @@ export class AuthService implements IAuthService {
     }
 
     const payload = {
-      userId: user.id,
+      userId: user._id.toString(),
       role: user.role
     };
 
@@ -172,8 +172,75 @@ export class AuthService implements IAuthService {
         ERROR_MESSAGES.AUTH.OTP_INVALID
       );
     }
+    
 
     await this.userRepository.verifyUser(email);
     await this.otpRepository.deleteByEmail(email);
   }
+async resendOtp(email: string): Promise<void> {
+  const user = await this.userRepository.findByEmail(email);
+
+  if (!user) {
+    throw new BadRequestError(
+      ERROR_MESSAGES.AUTH.USER_NOT_FOUND
+    );
+  }
+
+  if (user.isVerified) {
+    throw new BadRequestError(
+      ERROR_MESSAGES.AUTH.ALREADY_VERIFIED
+    );
+  }
+
+  const otpRecord = await this.otpRepository.findByEmail(email);
+
+  if (!otpRecord) {
+    throw new BadRequestError(
+      ERROR_MESSAGES.AUTH.NO_OTP_FOUND
+    );
+  }
+
+  const now = new Date();
+  const FIFTEEN_MIN = 15 * 60 * 1000;
+
+  const timeDiff =
+    now.getTime() -
+    new Date(otpRecord.firstRequestedAt).getTime();
+
+  //  RESET WINDOW IF EXPIRED
+  if (timeDiff >= FIFTEEN_MIN) {
+    await this.otpRepository.resetAttempts(email);
+    otpRecord.attempts = 0;
+  }
+
+  //  RATE LIMIT CHECK
+  if (otpRecord.attempts >= 3) {
+    throw new BadRequestError(
+      ERROR_MESSAGES.AUTH.OTP_LIMIT_EXCEEDED
+    );
+  }
+
+  const otp = generateOtp();
+  const otpHash = await hashOtp(otp);
+
+  const expiresAt = new Date(
+    Date.now() + 10 * 60 * 1000
+  );
+
+  await this.otpRepository.updateOtp(
+    email,
+    otpHash,
+    expiresAt
+  );
+
+  await this.otpRepository.incrementAttempts(email);
+
+  await this.mailService.sendOtp(email, otp);
 }
+
+
+
+}
+
+
+

@@ -5,16 +5,19 @@ import { BadRequestError } from "../utils/errors";
 export const validate =
   (schema: ZodSchema) =>
   (req: Request, _res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req.body);
+    const result = schema.safeParse({
+      body: req.body,
+      query: req.query,
+      params: req.params
+    });
 
     if (!result.success) {
-      const message = result.error.errors
-        .map(err => err.message)
+      const message = result.error.issues
+        .map(issue => issue.message)
         .join(", ");
 
-      throw new BadRequestError(message);
+      return next(new BadRequestError(message));
     }
 
-    req.body = result.data; // sanitized & typed
     next();
   };

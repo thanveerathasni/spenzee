@@ -7,6 +7,8 @@ import { loginSchema } from "../validators/auth/login.validator";
 import { validate } from "../middleware/validate";
 import { signupSchema } from "../validators/auth/signup.validator";
 import { verifyOtpSchema } from "../validators/auth/verifyOtp.validator";
+import { resendOtpSchema } from "../validators/auth/resendOtp.validator";
+
 const router = Router();
 
 const authController = container.get<AuthController>(
@@ -36,6 +38,12 @@ router.post(
   validate(verifyOtpSchema),
   authController.verifyOtp.bind(authController)
 );
+router.post(
+  "/resend-otp",
+  validate(resendOtpSchema),
+  authController.resendOtp.bind(authController)
+);
+
 
 export default router;
 
