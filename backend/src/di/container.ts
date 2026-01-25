@@ -10,6 +10,10 @@ import { IAuthService } from "../types/services/IAuthService";
 import { IUserRepository } from "../types/repositories/IUserRepository";
 import { OtpRepository } from "../repositories/OtpRepository";
 import { IOtpRepository } from "../types/repositories/IOtpRepository";
+import { IMailService } from "../types/services/IMailService";
+import { MailService } from "../services/MailService";
+
+
 
 const container = new Container();
 
@@ -24,5 +28,9 @@ container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepository);
 
 container.bind<IOtpRepository>(TYPES.OtpRepository)
   .to(OtpRepository);
+
+  container
+  .bind<IMailService>(TYPES.MailService)
+  .to(MailService);
 
 export { container };

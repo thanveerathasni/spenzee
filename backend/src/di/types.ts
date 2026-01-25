@@ -9,7 +9,10 @@ export const TYPES = {
   UserRepository: Symbol.for("UserRepository"),
 
     
-  OtpRepository: Symbol.for("OtpRepository")
+  OtpRepository: Symbol.for("OtpRepository"),
+
+  MailService: Symbol.for("MailService"),
+
 
 
 } as const;

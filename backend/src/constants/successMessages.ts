@@ -1,7 +1,9 @@
 export const SUCCESS_MESSAGES = {
   AUTH: {
-    LOGIN_SUCCESS: "Login successful",
+      LOGIN_SUCCESS: "Login successful",
+    OTP_SENT: "OTP sent to your email",
+    ACCOUNT_VERIFIED: "Account verified successfully",
     TOKEN_REFRESHED: "Access token refreshed successfully",
-    LOGOUT_SUCCESS: "Logged out successfully"
+    LOGOUT_SUCCESS: "Logged out successfully",
   }
 } as const;

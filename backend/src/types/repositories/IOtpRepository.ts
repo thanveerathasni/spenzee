@@ -1,8 +1,16 @@
 export interface IOtpRepository {
-  create(email: string, otpHash: string, expiresAt: Date): Promise<void>;
-  findByEmail(email: string): Promise<{
+  create(
+    email: string,
+    otpHash: string,
+    expiresAt: Date
+  ): Promise<void>;
+
+  findByEmail(
+    email: string
+  ): Promise<{
     otpHash: string;
     expiresAt: Date;
   } | null>;
+
   deleteByEmail(email: string): Promise<void>;
 }

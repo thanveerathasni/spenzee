@@ -12,6 +12,8 @@ import {
 import { TOKEN_CONFIG } from "../constants/token";
 import { UnauthorizedError } from "../utils/errors";
 import { ERROR_MESSAGES } from "../constants/errorMessages";
+import { SignupDTO } from "../validators/auth/signup.validator";
+import { VerifyOtpDTO } from "../validators/auth/verifyOtp.validator";
 
 @injectable()
 export class AuthController {
@@ -69,26 +71,35 @@ export class AuthController {
     });
   }
 
+
+  // ======================
+  // SIGNUP
+  // ======================
   async signup(req: Request, res: Response): Promise<Response> {
-  const dto = req.body as SignupDTO;
+    const dto = req.body as SignupDTO;
 
-  await this.authService.signup(dto.email, dto.password);
+    await this.authService.signup(dto.email, dto.password);
 
-  return sendResponse({
-    res,
-    message: SUCCESS_MESSAGES.AUTH.OTP_SENT
-  });
+    return sendResponse({
+      res,
+      message: SUCCESS_MESSAGES.AUTH.OTP_SENT
+    });
+  }
+
+  // ======================
+  // VERIFY OTP
+  // ======================
+  async verifyOtp(req: Request, res: Response): Promise<Response> {
+    const dto = req.body as VerifyOtpDTO;
+
+    await this.authService.verifyOtp(dto.email, dto.otp);
+
+    return sendResponse({
+      res,
+      message: SUCCESS_MESSAGES.AUTH.ACCOUNT_VERIFIED
+    });
+  }
 }
 
-async verifyOtp(req: Request, res: Response): Promise<Response> {
-  const dto = req.body as VerifyOtpDTO;
 
-  await this.authService.verifyOtp(dto.email, dto.otp);
 
-  return sendResponse({
-    res,
-    message: SUCCESS_MESSAGES.AUTH.ACCOUNT_VERIFIED
-  });
-}
-
-}

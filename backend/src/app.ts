@@ -47,6 +47,7 @@ app.use(cookieParser());
 
 // routes
 app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/test", testRoutes);
 
 // global error handler (LAST)
