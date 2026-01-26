@@ -272,12 +272,21 @@ const LoginForm: React.FC = () => {
 
   const [errors, setErrors] = useState<Errors>({});
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
+ useEffect(() => {
+  const token = localStorage.getItem("accessToken");
+  const user = localStorage.getItem("authUser"); // we’ll store this
+
+  if (token && user) {
+    const parsedUser = JSON.parse(user);
+
+    if (parsedUser.role === "admin") {
+      navigate("/admin/welcome", { replace: true });
+    } else {
       navigate("/welcome", { replace: true });
     }
-  }, []);
+  }
+}, []);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -305,12 +314,14 @@ const LoginForm: React.FC = () => {
           password: formData.password,
         });
 
-        localStorage.setItem("accessToken", data.accessToken);
+localStorage.setItem("accessToken", data.accessToken);
+localStorage.setItem("authUser", JSON.stringify(data.user));
 
         toast.success('Login successful');
 
         const role = data.user.role;
-        if (role === "admin") navigate("/admin", { replace: true });
+        if (role === "admin")   navigate("/admin/welcome", { replace: true });
+
         else if (role === "provider") navigate("/provider", { replace: true });
         else navigate("/welcome", { replace: true });
 
