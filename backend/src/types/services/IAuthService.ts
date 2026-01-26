@@ -4,13 +4,9 @@ export interface IAuthService {
     password: string
   ): Promise<{ accessToken: string; refreshToken: string }>;
 
-refreshAccessToken(
-  refreshToken: string
-): Promise<{
-  accessToken: string;
-  refreshToken: string;
-}>;
-
+  refreshAccessToken(
+    refreshToken: string
+  ): Promise<{ accessToken: string }>;
 
   signup(email: string, password: string): Promise<void>;
 
@@ -18,9 +14,16 @@ refreshAccessToken(
 
   resendOtp(email: string): Promise<void>;
 
+  forgotPassword(email: string): Promise<string | null>;
 
-  logout(refreshToken: string): Promise<void>;
+  sendResetPasswordEmail(
+    email: string,
+    resetToken: string
+  ): Promise<void>;
 
-logoutAll(userId: string): Promise<void>;
+  resetPassword(
+  token: string,
+  newPassword: string
+): Promise<void>;
 
 }

@@ -8,6 +8,7 @@ import { IMailService } from "../types/services/IMailService";
 import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
 import { hashRefreshToken } from "../utils/refreshTokenHash";
 import { Types } from "mongoose";
+import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRepository";
 
 import {
   UnauthorizedError,
@@ -27,6 +28,11 @@ import {
   verifyRefreshToken
 } from "../utils/jwt";
 
+import {
+  generateResetToken,
+  hashResetToken
+} from "../utils/resetPasswordToken";
+
 import { generateOtp } from "../utils/otp";
 import { hashOtp, compareOtp } from "../utils/otpHash";
 
@@ -43,9 +49,11 @@ export class AuthService implements IAuthService {
     private readonly mailService: IMailService,
 
     @inject(TYPES.RefreshTokenRepository)
-  private readonly refreshTokenRepository: IRefreshTokenRepository
+  private readonly refreshTokenRepository: IRefreshTokenRepository,
  
- 
+ @inject(TYPES.ResetPasswordRepository)
+private readonly resetPasswordRepository: IResetPasswordRepository
+
   ) {}
 
   // ======================
@@ -334,6 +342,88 @@ async logout(refreshToken: string): Promise<void> {
 async logoutAll(userId: string): Promise<void> {
   await this.refreshTokenRepository.revokeAllForUser(
     new Types.ObjectId(userId)
+  );
+}
+
+
+async forgotPassword(email: string): Promise<string | null> {
+  const user = await this.userRepository.findByEmail(email);
+
+  // SECURITY: Do not reveal user existence
+  if (!user) {
+    return null;
+  }
+
+  // Invalidate old reset tokens
+  await this.resetPasswordRepository.deleteByUserId(
+    user._id
+  );
+
+  const resetToken = generateResetToken();
+  const tokenHash = hashResetToken(resetToken);
+
+  const expiresAt = new Date(
+    Date.now() + 15 * 60 * 1000
+  );
+
+  await this.resetPasswordRepository.create(
+    user._id,
+    tokenHash,
+    expiresAt
+  );
+
+  return resetToken;
+}
+
+async sendResetPasswordEmail(
+  email: string,
+  resetToken: string
+): Promise<void> {
+  await this.mailService.sendResetPasswordEmail(
+    email,
+    resetToken
+  );
+}
+
+
+async resetPassword(
+  token: string,
+  newPassword: string
+): Promise<void> {
+  const tokenHash = hashResetToken(token);
+
+  const resetRecord =
+    await this.resetPasswordRepository.findByTokenHash(
+      tokenHash
+    );
+
+  if (!resetRecord) {
+    throw new BadRequestError(
+      ERROR_MESSAGES.AUTH.RESET_TOKEN_INVALID
+    );
+  }
+
+  if (resetRecord.expiresAt < new Date()) {
+    throw new BadRequestError(
+      ERROR_MESSAGES.AUTH.RESET_TOKEN_EXPIRED
+    );
+  }
+
+  const hashedPassword = await hashPassword(newPassword);
+
+await this.userRepository.updatePassword(
+  resetRecord.userId.toString(),
+  hashedPassword
+);
+
+  // 🔥 SECURITY: delete reset tokens
+  await this.resetPasswordRepository.deleteByUserId(
+    resetRecord.userId
+  );
+
+  // 🔥 SECURITY: revoke ALL refresh tokens
+  await this.refreshTokenRepository.revokeAllForUser(
+    resetRecord.userId
   );
 }
 

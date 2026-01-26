@@ -29,4 +29,19 @@ export class MailService implements IMailService {
       text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
     });
   }
+
+  async sendResetPasswordEmail(
+  email: string,
+  resetToken: string
+): Promise<void> {
+  const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+
+  await this.transporter.sendMail({
+    from: `"Spenzee" <${process.env.MAIL_USER}>`,
+    to: email,
+    subject: "Reset your Spenzee password",
+    text: `Click the link to reset your password: ${resetLink}. This link expires in 15 minutes.`,
+  });
+}
+
 }

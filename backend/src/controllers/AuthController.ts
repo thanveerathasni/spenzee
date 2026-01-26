@@ -15,6 +15,8 @@ import { ERROR_MESSAGES } from "../constants/errorMessages";
 import { SignupDTO } from "../validators/auth/signup.validator";
 import { VerifyOtpDTO } from "../validators/auth/verifyOtp.validator";
 import { ResendOtpDTO } from "../validators/auth/resendOtp.validator";
+import { forgotPasswordSchema } from "../validators/auth/forgotPassword.validator";
+import { resetPasswordSchema } from "../validators/auth/resetPassword.validator";
 
 @injectable()
 export class AuthController {
@@ -118,6 +120,42 @@ async resendOtp(req: Request, res: Response): Promise<Response> {
     message: SUCCESS_MESSAGES.AUTH.OTP_RESENT
   });
 }
+async forgotPassword(req: Request, res: Response): Promise<Response> {
+  const { email } = req.body;
+
+  const resetToken = await this.authService.forgotPassword(email);
+
+if (resetToken) {
+  await this.authService.sendResetPasswordEmail(
+    email,
+    resetToken
+  );
+}
+
+return sendResponse({
+  res,
+  message: SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SENT
+});
+
+}
+
+async resetPassword(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  const { token, newPassword } = req.body;
+
+  await this.authService.resetPassword(
+    token,
+    newPassword
+  );
+
+  return sendResponse({
+    res,
+    message: SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS
+  });
+}
+
 
 }
 

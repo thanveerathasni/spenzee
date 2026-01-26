@@ -8,6 +8,8 @@ import { validate } from "../middleware/validate";
 import { signupSchema } from "../validators/auth/signup.validator";
 import { verifyOtpSchema } from "../validators/auth/verifyOtp.validator";
 import { resendOtpSchema } from "../validators/auth/resendOtp.validator";
+import { forgotPasswordSchema } from "../validators/auth/forgotPassword.validator";
+import { resetPasswordSchema } from "../validators/auth/resetPassword.validator";
 
 const router = Router();
 
@@ -44,6 +46,17 @@ router.post(
   authController.resendOtp.bind(authController)
 );
 
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordSchema),
+  authController.forgotPassword.bind(authController)
+);
+
+router.post(
+  "/reset-password",
+  validate(resetPasswordSchema),
+  authController.resetPassword.bind(authController)
+);
 
 
 export default router;

@@ -15,5 +15,5 @@ export const TYPES = {
 
 RefreshTokenRepository: Symbol.for("RefreshTokenRepository"),
 
-
+ResetPasswordRepository: Symbol.for("ResetPasswordRepository")
 } as const;

@@ -14,9 +14,10 @@ import { IMailService } from "../types/services/IMailService";
 import { MailService } from "../services/MailService";
 import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
 import { RefreshTokenRepository } from "../repositories/RefreshTokenRepository";
+import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRepository";
+import { ResetPasswordRepository } from "../repositories/ResetPasswordRepository";
 
 // Repositories
-
 
 
 const container = new Container();
@@ -40,5 +41,12 @@ container.bind<IOtpRepository>(TYPES.OtpRepository)
   container
   .bind<IRefreshTokenRepository>(TYPES.RefreshTokenRepository)
   .to(RefreshTokenRepository);
+
+
+  container
+  .bind<IResetPasswordRepository>(TYPES.ResetPasswordRepository)
+  .to(ResetPasswordRepository);
+
+
 
 export { container };

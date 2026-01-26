@@ -24,4 +24,15 @@ export class UserRepository implements IUserRepository {
       { isVerified: true }
     );
   }
+
+  async updatePassword(
+  userId: string,
+  hashedPassword: string
+): Promise<void> {
+  await UserModel.updateOne(
+    { _id: userId },
+    { password: hashedPassword }
+  );
+}
+
 }

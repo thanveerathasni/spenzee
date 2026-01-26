@@ -11,4 +11,9 @@ export interface IUserRepository {
   }): Promise<void>;
 
   verifyUser(email: string): Promise<void>;
+
+  updatePassword(
+    userId: string,
+    hashedPassword: string
+  ): Promise<void>;
 }
