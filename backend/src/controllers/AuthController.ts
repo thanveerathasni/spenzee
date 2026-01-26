@@ -14,6 +14,7 @@ import { UnauthorizedError } from "../utils/errors";
 import { ERROR_MESSAGES } from "../constants/errorMessages";
 import { SignupDTO } from "../validators/auth/signup.validator";
 import { VerifyOtpDTO } from "../validators/auth/verifyOtp.validator";
+import { ResendOtpDTO } from "../validators/auth/resendOtp.validator";
 
 @injectable()
 export class AuthController {
@@ -50,10 +51,11 @@ export class AuthController {
       );
     }
 
-    const { accessToken } =
-      await this.authService.refreshAccessToken(
-        refreshToken
-      );
+  const { accessToken, refreshToken: newRefreshToken } =
+  await this.authService.refreshAccessToken(refreshToken);
+
+setRefreshTokenCookie(res, newRefreshToken);
+
 
     return sendResponse({
       res,
@@ -62,14 +64,21 @@ export class AuthController {
     });
   }
 
-  async logout(_req: Request, res: Response): Promise<Response> {
-    clearRefreshTokenCookie(res);
+async logout(req: Request, res: Response): Promise<Response> {
+  const refreshToken =
+    req.cookies?.[TOKEN_CONFIG.COOKIE_NAME];
 
-    return sendResponse({
-      res,
-      message: SUCCESS_MESSAGES.AUTH.LOGOUT_SUCCESS
-    });
+  if (refreshToken) {
+    await this.authService.logout(refreshToken);
   }
+
+  clearRefreshTokenCookie(res);
+
+  return sendResponse({
+    res,
+    message: SUCCESS_MESSAGES.AUTH.LOGOUT_SUCCESS
+  });
+}
 
 
   // ======================
@@ -99,19 +108,20 @@ export class AuthController {
       message: SUCCESS_MESSAGES.AUTH.ACCOUNT_VERIFIED
     });
   }
-  async resendOtp(req: Request, res: Response): Promise<Response> {
-  const { email } = req.body;
+async resendOtp(req: Request, res: Response): Promise<Response> {
+  const { email } = req.body as ResendOtpDTO;
 
   await this.authService.resendOtp(email);
 
-  return res.status(200).json({
-    success: true,
-    message: "OTP resent successfully",
-    data: null
+  return sendResponse({
+    res,
+    message: SUCCESS_MESSAGES.AUTH.OTP_RESENT
   });
 }
 
 }
+
+
 
 
 

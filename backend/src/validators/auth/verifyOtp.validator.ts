@@ -6,3 +6,4 @@ export const verifyOtpSchema = z.object({
     otp: z.string().length(6, "OTP must be 6 digits")
   })
 });
+export type VerifyOtpDTO = z.infer<typeof verifyOtpSchema>["body"];

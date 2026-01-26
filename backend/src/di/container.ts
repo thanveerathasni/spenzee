@@ -12,6 +12,10 @@ import { OtpRepository } from "../repositories/OtpRepository";
 import { IOtpRepository } from "../types/repositories/IOtpRepository";
 import { IMailService } from "../types/services/IMailService";
 import { MailService } from "../services/MailService";
+import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
+import { RefreshTokenRepository } from "../repositories/RefreshTokenRepository";
+
+// Repositories
 
 
 
@@ -32,5 +36,9 @@ container.bind<IOtpRepository>(TYPES.OtpRepository)
   container
   .bind<IMailService>(TYPES.MailService)
   .to(MailService);
+
+  container
+  .bind<IRefreshTokenRepository>(TYPES.RefreshTokenRepository)
+  .to(RefreshTokenRepository);
 
 export { container };

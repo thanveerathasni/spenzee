@@ -5,3 +5,5 @@ export const resendOtpSchema = z.object({
     email: z.string().email("Invalid email")
   })
 });
+
+export type ResendOtpDTO = z.infer<typeof resendOtpSchema>["body"];

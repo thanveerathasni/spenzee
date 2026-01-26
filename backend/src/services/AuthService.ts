@@ -5,6 +5,9 @@ import { IAuthService } from "../types/services/IAuthService";
 import { IUserRepository } from "../types/repositories/IUserRepository";
 import { IOtpRepository } from "../types/repositories/IOtpRepository";
 import { IMailService } from "../types/services/IMailService";
+import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
+import { hashRefreshToken } from "../utils/refreshTokenHash";
+import { Types } from "mongoose";
 
 import {
   UnauthorizedError,
@@ -37,7 +40,12 @@ export class AuthService implements IAuthService {
     private readonly otpRepository: IOtpRepository,
 
     @inject(TYPES.MailService)
-    private readonly mailService: IMailService
+    private readonly mailService: IMailService,
+
+    @inject(TYPES.RefreshTokenRepository)
+  private readonly refreshTokenRepository: IRefreshTokenRepository
+ 
+ 
   ) {}
 
   // ======================
@@ -77,33 +85,102 @@ export class AuthService implements IAuthService {
       role: user.role
     };
 
-    return {
-      accessToken: generateAccessToken(payload),
-      refreshToken: generateRefreshToken(payload)
-    };
+    const accessToken = generateAccessToken(payload);
+const refreshToken = generateRefreshToken(payload);
+
+// hash refresh token before storing
+const refreshTokenHash = hashRefreshToken(refreshToken);
+
+// refresh token expiry (7 days)
+const refreshTokenExpiresAt = new Date(
+  Date.now() + 7 * 24 * 60 * 60 * 1000
+);
+
+await this.refreshTokenRepository.create({
+  userId: user._id,
+  tokenHash: refreshTokenHash,
+  expiresAt: refreshTokenExpiresAt
+});
+
+return {
+  accessToken,
+  refreshToken
+};
+
   }
 
   // ======================
   // REFRESH TOKEN
   // ======================
-  async refreshAccessToken(
-    refreshToken: string
-  ): Promise<{ accessToken: string }> {
-    try {
-      const payload = verifyRefreshToken(refreshToken);
-
-      return {
-        accessToken: generateAccessToken({
-          userId: payload.userId,
-          role: payload.role
-        })
-      };
-    } catch {
-      throw new UnauthorizedError(
-        ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
-      );
-    }
+ async refreshAccessToken(
+  refreshToken: string
+): Promise<{ accessToken: string; refreshToken: string }> {
+  // 1. Verify JWT signature & expiry
+  let payload;
+  try {
+    payload = verifyRefreshToken(refreshToken);
+  } catch {
+    throw new UnauthorizedError(
+      ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
+    );
   }
+
+  // 2. Hash incoming token
+  const tokenHash = hashRefreshToken(refreshToken);
+
+  // 3. Find token record in DB
+  const storedToken =
+    await this.refreshTokenRepository.findByTokenHash(tokenHash);
+
+  // 4. Token not found → possible reuse attack
+  if (!storedToken) {
+    await this.refreshTokenRepository.revokeAllForUser(
+      new Types.ObjectId(payload.userId)
+    );
+
+    throw new UnauthorizedError(
+      ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
+    );
+  }
+
+  // 5. Check expiration
+  if (storedToken.expiresAt < new Date()) {
+    throw new UnauthorizedError(
+      ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
+    );
+  }
+
+  // 6. Revoke old token (ROTATION)
+  await this.refreshTokenRepository.revokeToken(
+    storedToken._id
+  );
+
+  // 7. Issue NEW tokens
+  const newAccessToken = generateAccessToken({
+    userId: payload.userId,
+    role: payload.role
+  });
+
+  const newRefreshToken = generateRefreshToken({
+    userId: payload.userId,
+    role: payload.role
+  });
+
+  // 8. Store new refresh token
+  await this.refreshTokenRepository.create({
+    userId: new Types.ObjectId(payload.userId),
+    tokenHash: hashRefreshToken(newRefreshToken),
+    expiresAt: new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000
+    )
+  });
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken
+  };
+}
+
 
   // ======================
   // SIGNUP + OTP
@@ -239,6 +316,26 @@ async resendOtp(email: string): Promise<void> {
 }
 
 
+async logout(refreshToken: string): Promise<void> {
+  const tokenHash = hashRefreshToken(refreshToken);
+
+  const storedToken =
+    await this.refreshTokenRepository.findByTokenHash(tokenHash);
+
+  if (!storedToken) {
+    // already invalid / expired → nothing to do
+    return;
+  }
+
+  await this.refreshTokenRepository.revokeToken(storedToken._id);
+}
+
+
+async logoutAll(userId: string): Promise<void> {
+  await this.refreshTokenRepository.revokeAllForUser(
+    new Types.ObjectId(userId)
+  );
+}
 
 }
 

@@ -12,6 +12,7 @@ export const ERROR_MESSAGES = {
   OTP_INVALID: "OTP invalid",
   OTP_EXPIRED: "OTP expired",
   REFRESH_TOKEN_INVALID: "Invalid refresh token",
+REFRESH_TOKEN_MISSING: "Refresh token missing",
 
 },
 

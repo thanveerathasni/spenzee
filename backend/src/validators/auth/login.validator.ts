@@ -6,3 +6,5 @@ export const loginSchema = z.object({
     password: z.string().min(1, "Password is required")
   })
 });
+
+export type LoginDTO = z.infer<typeof loginSchema>["body"];
