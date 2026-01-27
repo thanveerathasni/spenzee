@@ -1,39 +1,28 @@
 
 
-
-// import React, { useState, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import { Navbar } from '../../public/Landing';
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { Navbar } from "../../public/Landing";
 // import { loginApi } from "../../../api/authApi";
-// import { GoogleLogin } from "@react-oauth/google";
-// import api from "../../../api/axios";
+// import { useAppDispatch } from "../../../store/hooks";
+// import { setAuth } from "../../../store/auth";
+// import toast from "react-hot-toast";
+
 // interface Errors {
 //   email?: string;
 //   password?: string;
-//   otp?: string;
-//   confirmPassword?: string;
 // }
-
-// type LoginView = 'login' | 'forgot' | 'reset';
 
 // const LoginForm: React.FC = () => {
 //   const navigate = useNavigate();
-//   const [view, setView] = useState<LoginView>('login');
+//   const dispatch = useAppDispatch();
+
 //   const [formData, setFormData] = useState({
-//     email: '',
-//     password: '',
-//     otp: '',
-//     confirmPassword: '',
+//     email: "",
+//     password: "",
 //   });
 
 //   const [errors, setErrors] = useState<Errors>({});
-
-//   useEffect(() => {
-//     const token = localStorage.getItem("accessToken");
-//     if (token) {
-//       navigate("/welcome", { replace: true });
-//     }
-//   }, []);
 
 //   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 //     const { name, value } = e.target;
@@ -41,42 +30,45 @@
 //     setErrors((prev) => ({ ...prev, [name]: undefined }));
 //   };
 
-//   const validateLogin = () => {
+//   const validate = () => {
 //     const newErrors: Errors = {};
-//     if (!formData.email.trim()) newErrors.email = 'Email is required';
-//     if (!formData.password.trim()) newErrors.password = 'Password is required';
+//     if (!formData.email.trim()) newErrors.email = "Email required";
+//     if (!formData.password.trim()) newErrors.password = "Password required";
 //     setErrors(newErrors);
 //     return Object.keys(newErrors).length === 0;
 //   };
 
 //   const handleSubmit = async (e: React.FormEvent) => {
 //     e.preventDefault();
+//     if (!validate()) return;
 
-//     if (view === "login") {
-//       if (!validateLogin()) return;
+//     try {
+//       const res = await loginApi({
+//         email: formData.email,
+//         password: formData.password,
+//       });
 
-//       try {
-//         // ✅ loginApi already returns DATA
-//         const data = await loginApi({
-//           email: formData.email,
-//           password: formData.password,
-//         });
+//       // 🔑 SINGLE SOURCE OF TRUTH
+//       dispatch(
+//         setAuth({
+//           accessToken: res.accessToken,
+//           user: res.user, // backend must send user object
+//         })
+//       );
 
-//         // ✅ use data directly
-//         localStorage.setItem("accessToken", data.accessToken);
+//       toast.success("Login successful");
 
-//         const role = data.user.role;
-//         if (role === "admin") navigate("/admin", { replace: true });
-//         else if (role === "provider") navigate("/provider", { replace: true });
-//         else navigate("/welcome", { replace: true });
-
-//       } catch (err: any) {
-//         console.error("LOGIN ERROR:", err);
-//         alert(err?.message || "Login failed");
+//       if (res.user.role === "admin") {
+//         navigate("/admin/welcome", { replace: true });
+//       } else if (res.user.role === "provider") {
+//         navigate("/provider", { replace: true });
+//       } else {
+//         navigate("/welcome", { replace: true });
 //       }
+//     } catch (err) {
+//       toast.error("Login failed");
 //     }
 //   };
-
 
 //   return (
 //     <>
@@ -117,12 +109,13 @@
 //                     });
 
 //                     localStorage.setItem("accessToken", res.data.accessToken);
+//                     toast.success('Google login successful');
 //                     navigate("/welcome", { replace: true });
 //                   } catch {
-//                     alert("Google login failed");
+//                     toast.error("Google login failed");
 //                   }
 //                 }}
-//                 onError={() => alert("Google login failed")}
+//                 onError={() => toast.error("Google login failed")}
 //               />
 //             )}
 
@@ -137,7 +130,11 @@
 //                   disabled={view === 'reset'}
 //                   className="w-full px-5 py-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition disabled:opacity-50 placeholder-neutral-400 font-medium"
 //                 />
-//                 {errors.email && <p className="mt-2 ml-1 text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.email}</p>}
+//                 {errors.email && (
+//                   <p className="mt-2 ml-1 text-[9px] font-black text-red-500 uppercase tracking-widest">
+//                     {errors.email}
+//                   </p>
+//                 )}
 //               </div>
 
 //               {view === 'login' && (
@@ -150,7 +147,11 @@
 //                     placeholder="Password"
 //                     className="w-full px-5 py-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition placeholder-neutral-400 font-medium"
 //                   />
-//                   {errors.password && <p className="mt-2 ml-1 text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.password}</p>}
+//                   {errors.password && (
+//                     <p className="mt-2 ml-1 text-[9px] font-black text-red-500 uppercase tracking-widest">
+//                       {errors.password}
+//                     </p>
+//                   )}
 //                   <div className="flex justify-end mt-2">
 //                     <button
 //                       type="button"
@@ -159,48 +160,6 @@
 //                     >
 //                       Forgot Password?
 //                     </button>
-
-//                   </div>
-//                 </div>
-//               )}
-
-//               {view === 'reset' && (
-//                 <div className="space-y-4 pt-2">
-//                   <div>
-//                     <input
-//                       type="text"
-//                       name="otp"
-//                       value={formData.otp}
-//                       onChange={handleChange}
-//                       placeholder="000000"
-//                       maxLength={6}
-//                       className="w-full px-5 py-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition placeholder-neutral-300 font-mono text-center tracking-[0.5em] text-xl"
-//                     />
-//                     {errors.otp && <p className="mt-1 text-[9px] font-black text-red-500 uppercase text-center">{errors.otp}</p>}
-//                   </div>
-
-//                   <div>
-//                     <input
-//                       type="password"
-//                       name="password"
-//                       value={formData.password}
-//                       onChange={handleChange}
-//                       placeholder="New Password"
-//                       className="w-full px-5 py-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition placeholder-neutral-400 font-medium"
-//                     />
-//                     {errors.password && <p className="mt-2 ml-1 text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.password}</p>}
-//                   </div>
-
-//                   <div>
-//                     <input
-//                       type="password"
-//                       name="confirmPassword"
-//                       value={formData.confirmPassword}
-//                       onChange={handleChange}
-//                       placeholder="Confirm Password"
-//                       className="w-full px-5 py-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition placeholder-neutral-400 font-medium"
-//                     />
-//                     {errors.confirmPassword && <p className="mt-2 ml-1 text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.confirmPassword}</p>}
 //                   </div>
 //                 </div>
 //               )}
@@ -210,22 +169,236 @@
 //               type="submit"
 //               className="w-full py-4.5 mt-4 bg-neutral-200 dark:bg-neutral-800 text-black dark:text-white rounded-xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-neutral-300 dark:hover:bg-neutral-700 active:scale-[0.99] transition shadow-sm"
 //             >
-//               {view === 'login' ? 'Sign In' : view === 'forgot' ? 'Send Code' : 'Update Password'}
+//               Sign In
 //             </button>
-
-//             {view !== 'login' && (
-//               <div className="text-center mt-4">
-//                 <button type="button" onClick={() => { setView('login'); setErrors({}); }} className="text-[9px] font-black uppercase text-neutral-400 hover:text-black dark:hover:text-white transition tracking-[0.2em]">
-//                   Back to Sign In
-//                 </button>
-//               </div>
-//             )}
 //           </form>
 
 //           <footer className="mt-10 text-center pt-8 border-t border-neutral-50 dark:border-neutral-800">
 //             <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-bold uppercase tracking-widest">
 //               No account?
-//               <button onClick={() => navigate('/signup')} className="ml-3 text-black dark:text-white hover:underline underline-offset-4 decoration-2">Create One</button>
+//               <button
+//                 onClick={() => navigate('/signup')}
+//                 className="ml-3 text-black dark:text-white hover:underline underline-offset-4 decoration-2"
+//               >
+//                 Create One
+//               </button>
+//             </p>
+//           </footer>
+//         </div>
+//       </div>
+//     </>
+//   );
+// };
+
+// export default LoginForm;
+
+
+
+
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import { Navbar } from "../../public/Landing";
+// import { authApi } from "../../../api/auth.api";
+// import { useAppDispatch } from "../../../store/hooks";
+// import { setAuth } from "../../../store/auth";
+// import toast from "react-hot-toast";
+// import { GoogleLogin } from "@react-oauth/google";
+// import { api } from "../../../api/axios";
+
+// interface Errors {
+//   email?: string;
+//   password?: string;
+// }
+
+// type LoginView = "login" | "forgot" | "reset";
+
+// const LoginForm: React.FC = () => {
+//   const navigate = useNavigate();
+//   const dispatch = useAppDispatch();
+
+//   // ✅ FIX 1: define `view` (NO UI CHANGE)
+//   const [view] = useState<LoginView>("login");
+
+//   const [formData, setFormData] = useState({
+//     email: "",
+//     password: "",
+//   });
+
+//   const [errors, setErrors] = useState<Errors>({});
+
+//   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({ ...prev, [name]: value }));
+//     setErrors((prev) => ({ ...prev, [name]: undefined }));
+//   };
+
+//   const validate = () => {
+//     const newErrors: Errors = {};
+//     if (!formData.email.trim()) newErrors.email = "Email required";
+//     if (!formData.password.trim()) newErrors.password = "Password required";
+//     setErrors(newErrors);
+//     return Object.keys(newErrors).length === 0;
+//   };
+
+//   const handleSubmit = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     if (!validate()) return;
+
+//     try {
+//       const res = await authApi({
+//         email: formData.email,
+//         password: formData.password,
+//       });
+
+//       // ✅ Redux = single source of truth
+//       dispatch(
+//         setAuth({
+//           accessToken: res.accessToken,
+//           user: res.user,
+//         })
+//       );
+
+//       toast.success("Login successful");
+
+//       if (res.user.role === "admin") {
+//         navigate("/admin/welcome", { replace: true });
+//       } else if (res.user.role === "provider") {
+//         navigate("/provider", { replace: true });
+//       } else {
+//         navigate("/welcome", { replace: true });
+//       }
+//     } catch {
+//       toast.error("Login failed");
+//     }
+//   };
+
+//   return (
+//     <>
+//       <Navbar />
+//       <div></div>
+//       <div className="mt-20 max-w-md mx-auto px-6">
+//         <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-xl">
+//           <header className="mb-8 text-center">
+//             <h1 className="text-2xl font-black text-black dark:text-white uppercase tracking-tighter italic leading-none">
+//               {view === "login"
+//                 ? "Sign In"
+//                 : view === "forgot"
+//                 ? "Identify"
+//                 : "Renew"}
+//             </h1>
+//             <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.2em] mt-3">
+//               {view === "login"
+//                 ? "Access your account"
+//                 : view === "forgot"
+//                 ? "Account recovery"
+//                 : "Set new password"}
+//             </p>
+//             <div className="flex justify-center gap-4 mb-6">
+//               <button
+//                 type="button"
+//                 className="px-6 py-2 rounded-lg font-bold text-sm transition bg-black text-white dark:bg-white dark:text-black"
+//               >
+//                 User
+//               </button>
+//               <button
+//                 type="button"
+//                 onClick={() => navigate("/provider/login")}
+//                 className="px-6 py-2 rounded-lg font-bold text-sm transition bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+//               >
+//                 Provider
+//               </button>
+//             </div>
+//           </header>
+
+//           <form onSubmit={handleSubmit} className="space-y-4">
+//             {view === "login" && (
+//               <GoogleLogin
+//                 onSuccess={async (cred) => {
+//                   try {
+//                     const res = await api.post("/auth/google", {
+//                       credential: cred.credential,
+//                     });
+
+//                     dispatch(
+//                       setAuth({
+//                         accessToken: res.data.accessToken,
+//                         user: res.data.user,
+//                       })
+//                     );
+
+//                     toast.success("Google login successful");
+//                     navigate("/welcome", { replace: true });
+//                   } catch {
+//                     toast.error("Google login failed");
+//                   }
+//                 }}
+//                 onError={() => toast.error("Google login failed")}
+//               />
+//             )}
+
+//             <div className="space-y-4">
+//               <div>
+//                 <input
+//                   type="email"
+//                   name="email"
+//                   value={formData.email}
+//                   onChange={handleChange}
+//                   placeholder="Email"
+//                   disabled={view === "reset"}
+//                   className="w-full px-5 py-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition disabled:opacity-50 placeholder-neutral-400 font-medium"
+//                 />
+//                 {errors.email && (
+//                   <p className="mt-2 ml-1 text-[9px] font-black text-red-500 uppercase tracking-widest">
+//                     {errors.email}
+//                   </p>
+//                 )}
+//               </div>
+
+//               {view === "login" && (
+//                 <div>
+//                   <input
+//                     type="password"
+//                     name="password"
+//                     value={formData.password}
+//                     onChange={handleChange}
+//                     placeholder="Password"
+//                     className="w-full px-5 py-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition placeholder-neutral-400 font-medium"
+//                   />
+//                   {errors.password && (
+//                     <p className="mt-2 ml-1 text-[9px] font-black text-red-500 uppercase tracking-widest">
+//                       {errors.password}
+//                     </p>
+//                   )}
+//                   <div className="flex justify-end mt-2">
+//                     <button
+//                       type="button"
+//                       onClick={() => navigate("/forgot-password")}
+//                       className="text-[9px] font-black uppercase text-neutral-400 hover:text-black dark:hover:text-white transition tracking-widest"
+//                     >
+//                       Forgot Password?
+//                     </button>
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+
+//             <button
+//               type="submit"
+//               className="w-full py-4.5 mt-4 bg-neutral-200 dark:bg-neutral-800 text-black dark:text-white rounded-xl font-black uppercase tracking-[0.2em] text-[11px] hover:bg-neutral-300 dark:hover:bg-neutral-700 active:scale-[0.99] transition shadow-sm"
+//             >
+//               Sign In
+//             </button>
+//           </form>
+
+//           <footer className="mt-10 text-center pt-8 border-t border-neutral-50 dark:border-neutral-800">
+//             <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-bold uppercase tracking-widest">
+//               No account?
+//               <button
+//                 onClick={() => navigate("/signup")}
+//                 className="ml-3 text-black dark:text-white hover:underline underline-offset-4 decoration-2"
+//               >
+//                 Create One
+//               </button>
 //             </p>
 //           </footer>
 //         </div>
@@ -241,52 +414,37 @@
 
 
 
-
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Navbar } from '../../public/Landing';
-import { loginApi } from "../../../api/authApi";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Navbar } from "../../public/Landing";
+import { authApi } from "../../../api/auth.api";
+import { useAppDispatch } from "../../../store/hooks";
+import { setAuth } from "../../../store/auth";
+import toast from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
-import api from "../../../api/axios";
-import toast from 'react-hot-toast';
 
 interface Errors {
   email?: string;
   password?: string;
-  otp?: string;
-  confirmPassword?: string;
 }
 
-type LoginView = 'login' | 'forgot' | 'reset';
+type LoginView = "login" | "forgot" | "reset";
+
+let googleLoginInProgress = false;
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  const [view, setView] = useState<LoginView>('login');
+  const dispatch = useAppDispatch();
+
+  // UI stays same
+  const [view] = useState<LoginView>("login");
+
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    otp: '',
-    confirmPassword: '',
+    email: "",
+    password: "",
   });
 
   const [errors, setErrors] = useState<Errors>({});
-
- useEffect(() => {
-  const token = localStorage.getItem("accessToken");
-  const user = localStorage.getItem("authUser"); // we’ll store this
-
-  if (token && user) {
-    const parsedUser = JSON.parse(user);
-
-    if (parsedUser.role === "admin") {
-      navigate("/admin/welcome", { replace: true });
-    } else {
-      navigate("/welcome", { replace: true });
-    }
-  }
-}, []);
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -294,67 +452,91 @@ const LoginForm: React.FC = () => {
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
-  const validateLogin = () => {
+  const validate = () => {
     const newErrors: Errors = {};
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    if (!formData.password.trim()) newErrors.password = 'Password is required';
+    if (!formData.email.trim()) newErrors.email = "Email required";
+    if (!formData.password.trim()) newErrors.password = "Password required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // ================= NORMAL LOGIN =================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
 
-    if (view === "login") {
-      if (!validateLogin()) return;
+    try {
+      const res = await authApi.login({
+        email: formData.email,
+        password: formData.password,
+      });
 
-      try {
-        const data = await loginApi({
-          email: formData.email,
-          password: formData.password,
-        });
+      dispatch(setAuth(res));
+      toast.success("Login successful");
 
-localStorage.setItem("accessToken", data.accessToken);
-localStorage.setItem("authUser", JSON.stringify(data.user));
-
-        toast.success('Login successful');
-
-        const role = data.user.role;
-        if (role === "admin")   navigate("/admin/welcome", { replace: true });
-
-        else if (role === "provider") navigate("/provider", { replace: true });
-        else navigate("/welcome", { replace: true });
-
-      } catch (err: any) {
-        console.error("LOGIN ERROR:", err);
-        toast.error(err?.message || "Login failed");
+      if (res.user.role === "admin") {
+        navigate("/admin/welcome", { replace: true });
+      } else if (res.user.role === "provider") {
+        navigate("/provider", { replace: true });
+      } else {
+        navigate("/welcome", { replace: true });
       }
+    } catch {
+      toast.error("Login failed");
+    }
+  };
+
+  // ================= GOOGLE LOGIN =================
+  const handleGoogleSuccess = async (cred: any) => {
+    if (!cred?.credential || googleLoginInProgress) return;
+
+    googleLoginInProgress = true;
+
+    try {
+      const res = await authApi.googleLogin(cred.credential);
+
+      dispatch(setAuth(res));
+      toast.success("Google login successful");
+      navigate("/welcome", { replace: true });
+    } catch {
+      toast.error("Google login failed");
+    } finally {
+      googleLoginInProgress = false;
     }
   };
 
   return (
     <>
       <Navbar />
+
       <div className="mt-20 max-w-md mx-auto px-6">
         <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-xl">
           <header className="mb-8 text-center">
             <h1 className="text-2xl font-black text-black dark:text-white uppercase tracking-tighter italic leading-none">
-              {view === 'login' ? 'Sign In' : view === 'forgot' ? 'Identify' : 'Renew'}
+              {view === "login"
+                ? "Sign In"
+                : view === "forgot"
+                ? "Identify"
+                : "Renew"}
             </h1>
             <p className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.2em] mt-3">
-              {view === 'login' ? 'Access your account' : view === 'forgot' ? 'Account recovery' : 'Set new password'}
+              {view === "login"
+                ? "Access your account"
+                : view === "forgot"
+                ? "Account recovery"
+                : "Set new password"}
             </p>
             <div className="flex justify-center gap-4 mb-6">
               <button
                 type="button"
-                className={`px-6 py-2 rounded-lg font-bold text-sm transition bg-black text-white dark:bg-white dark:text-black`}
+                className="px-6 py-2 rounded-lg font-bold text-sm transition bg-black text-white dark:bg-white dark:text-black"
               >
                 User
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/provider/login')}
-                className={`px-6 py-2 rounded-lg font-bold text-sm transition bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400`}
+                onClick={() => navigate("/provider/login")}
+                className="px-6 py-2 rounded-lg font-bold text-sm transition bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
               >
                 Provider
               </button>
@@ -362,21 +544,9 @@ localStorage.setItem("authUser", JSON.stringify(data.user));
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {view === 'login' && (
+            {view === "login" && (
               <GoogleLogin
-                onSuccess={async (cred) => {
-                  try {
-                    const res = await api.post("/auth/google", {
-                      credential: cred.credential,
-                    });
-
-                    localStorage.setItem("accessToken", res.data.accessToken);
-                    toast.success('Google login successful');
-                    navigate("/welcome", { replace: true });
-                  } catch {
-                    toast.error("Google login failed");
-                  }
-                }}
+                onSuccess={handleGoogleSuccess}
                 onError={() => toast.error("Google login failed")}
               />
             )}
@@ -389,7 +559,7 @@ localStorage.setItem("authUser", JSON.stringify(data.user));
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Email"
-                  disabled={view === 'reset'}
+                  disabled={view === "reset"}
                   className="w-full px-5 py-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white transition disabled:opacity-50 placeholder-neutral-400 font-medium"
                 />
                 {errors.email && (
@@ -399,7 +569,7 @@ localStorage.setItem("authUser", JSON.stringify(data.user));
                 )}
               </div>
 
-              {view === 'login' && (
+              {view === "login" && (
                 <div>
                   <input
                     type="password"
@@ -417,7 +587,7 @@ localStorage.setItem("authUser", JSON.stringify(data.user));
                   <div className="flex justify-end mt-2">
                     <button
                       type="button"
-                      onClick={() => navigate('/forgot-password')}
+                      onClick={() => navigate("/forgot-password")}
                       className="text-[9px] font-black uppercase text-neutral-400 hover:text-black dark:hover:text-white transition tracking-widest"
                     >
                       Forgot Password?
@@ -439,7 +609,7 @@ localStorage.setItem("authUser", JSON.stringify(data.user));
             <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-bold uppercase tracking-widest">
               No account?
               <button
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate("/signup")}
                 className="ml-3 text-black dark:text-white hover:underline underline-offset-4 decoration-2"
               >
                 Create One

@@ -1,4 +1,5 @@
 import { api } from "./axios";
+import type { User } from "../store/auth/auth.types";
 
 /* ---------- Types ---------- */
 
@@ -14,26 +15,68 @@ export interface LoginRequest {
 
 export interface AuthResponse {
   accessToken: string;
+  user: User;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  newPassword: string;
 }
 
 /* ---------- API ---------- */
 
 export const authApi = {
-  signup: (data: SignupRequest) =>
-    api.post<void>("/auth/signup", data),
+  signup: async (data: SignupRequest): Promise<void> => {
+    await api.post("/auth/signup", data);
+  },
 
-  login: (data: LoginRequest) =>
-    api.post<AuthResponse>("/auth/login", data),
 
-  verifyOtp: (email: string, otp: string) =>
-    api.post<void>("/auth/verify-otp", { email, otp }),
+  login: async (data: LoginRequest): Promise<AuthResponse> => {
+  const res = await api.post("/auth/login", data);
 
-  resendOtp: (email: string) =>
-    api.post<void>("/auth/resend-otp", { email }),
+  return {
+    accessToken: res.data.data.accessToken,
+    user: res.data.data.user,
+  };
+},
 
-  refresh: () =>
-    api.post<AuthResponse>("/auth/refresh"),
 
-  logout: () =>
-    api.post<void>("/auth/logout"),
+  verifyOtp: async (payload: { email: string; otp: string }): Promise<void> => {
+    await api.post("/auth/verify-otp", payload);
+  },
+
+  resendOtp: async (email: string): Promise<void> => {
+    await api.post("/auth/resend-otp", { email });
+  },
+
+  forgotPassword: async (email: string): Promise<void> => {
+    await api.post("/auth/forgot-password", { email });
+  },
+
+  resetPassword: async (
+    payload: ResetPasswordPayload
+  ): Promise<void> => {
+    await api.post("/auth/reset-password", payload);
+  },
+
+  refresh: async (): Promise<AuthResponse> => {
+    const res = await api.post<AuthResponse>("/auth/refresh");
+    return res.data;
+  },
+
+  logout: async (): Promise<void> => {
+    await api.post("/auth/logout");
+  },
+
+ 
+
+  googleLogin: async (credential: string): Promise<AuthResponse> => {
+  const res = await api.post("/auth/google", { credential });
+
+  return {
+    accessToken: res.data.data.accessToken,
+    user: res.data.data.user,
+  };
+},
+
 };

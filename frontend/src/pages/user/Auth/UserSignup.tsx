@@ -449,9 +449,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../public/Landing';
 import { signupSchema } from '../../../validation/signupSchema';
-import { signupApi, verifyOtpApi, resendOtpApi } from '../../../api/authApi';
+import { authApi } from '../../../api/auth.api';
 import { GoogleLogin } from "@react-oauth/google";
-import api from "../../../api/axios";
+import {api} from "../../../api/axios";
 import toast from 'react-hot-toast';
 
 interface Errors {
@@ -523,7 +523,7 @@ const SignupForm: React.FC = () => {
     if (!canResend || loading) return;
     setLoading(true);
     try {
-      await resendOtpApi(formData.email);
+      await authApi.resendOtp(formData.email);
       toast.success(`OTP resent to ${formData.email}`);
       setOtpTimer(60);
       setCanResend(false);
@@ -545,7 +545,7 @@ const SignupForm: React.FC = () => {
         return;
       }
       try {
-        await signupApi({
+        await authApi.signup({
           name: formData.name,
           email: formData.email,
           password: formData.password,
@@ -567,7 +567,7 @@ const SignupForm: React.FC = () => {
         return;
       }
       try {
-        await verifyOtpApi({
+        await authApi.verifyOtp({
           email: formData.email,
           otp: formData.otp,
         });
@@ -584,6 +584,7 @@ const SignupForm: React.FC = () => {
   return (
     <>
       <Navbar />
+
       <div className="mt-20 max-w-md mx-auto px-4">
         <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 shadow-xl">
           <h1 className="text-3xl font-black text-center mb-8 uppercase tracking-tighter italic text-black dark:text-white">
