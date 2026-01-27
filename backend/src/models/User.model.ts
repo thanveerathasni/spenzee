@@ -2,6 +2,7 @@ import { Schema, model, Document } from "mongoose";
 import { ROLES, Role } from "../constants/roles";
 
 export interface IUser extends Document {
+  name?: string;
   email: string;
   password: string;
   role: Role;
@@ -13,6 +14,12 @@ export interface IUser extends Document {
 
 const userSchema = new Schema<IUser>(
   {
+      name: {
+    type: String,
+    required: false,
+    trim: true,
+  },
+
     email: {
       type: String,
       required: true,
@@ -20,10 +27,11 @@ const userSchema = new Schema<IUser>(
       lowercase: true,
       index: true
     },
-    password: {
-      type: String,
-      required: true
-    },
+   password: {
+  type: String,
+  required: false,
+  default: null
+},
     role: {
       type: String,
       enum: Object.values(ROLES),

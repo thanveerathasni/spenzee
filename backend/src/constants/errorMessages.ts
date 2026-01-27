@@ -15,7 +15,7 @@ export const ERROR_MESSAGES = {
     REFRESH_TOKEN_MISSING: "Refresh token missing",
     RESET_TOKEN_INVALID: "Invalid reset token",
     RESET_TOKEN_EXPIRED: "Reset token expired",
-
+ ACCESS_DENIED: "Access denied",
   },
 
   GENERAL: {

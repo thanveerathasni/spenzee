@@ -1,22 +1,26 @@
 import { Request, Response } from "express";
 import { injectable, inject } from "inversify";
 import { TYPES } from "../di/types";
+
 import { IAuthService } from "../types/services/IAuthService";
 import { sendResponse } from "../utils/sendResponse";
 import { SUCCESS_MESSAGES } from "../constants/successMessages";
-import { LoginDTO } from "../validators/auth/login.validator";
 import {
   setRefreshTokenCookie,
-  clearRefreshTokenCookie
+  clearRefreshTokenCookie,
 } from "../utils/cookies";
 import { TOKEN_CONFIG } from "../constants/token";
-import { UnauthorizedError } from "../utils/errors";
+
+import {
+  UnauthorizedError,
+  BadRequestError,
+} from "../utils/errors";
 import { ERROR_MESSAGES } from "../constants/errorMessages";
+
+import { LoginDTO } from "../validators/auth/login.validator";
 import { SignupDTO } from "../validators/auth/signup.validator";
 import { VerifyOtpDTO } from "../validators/auth/verifyOtp.validator";
 import { ResendOtpDTO } from "../validators/auth/resendOtp.validator";
-import { forgotPasswordSchema } from "../validators/auth/forgotPassword.validator";
-import { resetPasswordSchema } from "../validators/auth/resetPassword.validator";
 
 @injectable()
 export class AuthController {
@@ -25,24 +29,34 @@ export class AuthController {
     private readonly authService: IAuthService
   ) {}
 
-  async login(req: Request, res: Response): Promise<Response> {
-    const loginDto = req.body as LoginDTO;
+  // ======================
+  // LOGIN
+  // ======================
+async login(req: Request, res: Response): Promise<Response> {
+  const loginDto = req.body as LoginDTO;
 
-    const { accessToken, refreshToken } =
-      await this.authService.login(
-        loginDto.email,
-        loginDto.password
-      );
+  const { accessToken, refreshToken, user } =
+    await this.authService.login(
+      loginDto.email,
+      loginDto.password
+    );
 
-    setRefreshTokenCookie(res, refreshToken);
+  setRefreshTokenCookie(res, refreshToken);
 
-    return sendResponse({
-      res,
-      message: SUCCESS_MESSAGES.AUTH.LOGIN_SUCCESS,
-      data: { accessToken }
-    });
-  }
+  return sendResponse({
+    res,
+    message: SUCCESS_MESSAGES.AUTH.LOGIN_SUCCESS,
+    data: {
+      accessToken,
+      user, 
+    },
+  });
+}
 
+
+  // ======================
+  // REFRESH TOKEN
+  // ======================
   async refresh(req: Request, res: Response): Promise<Response> {
     const refreshToken =
       req.cookies?.[TOKEN_CONFIG.COOKIE_NAME];
@@ -53,35 +67,40 @@ export class AuthController {
       );
     }
 
-  const { accessToken, refreshToken: newRefreshToken } =
-  await this.authService.refreshAccessToken(refreshToken);
+    const {
+      accessToken,
+      refreshToken: newRefreshToken,
+    } = await this.authService.refreshAccessToken(
+      refreshToken
+    );
 
-setRefreshTokenCookie(res, newRefreshToken);
-
+    setRefreshTokenCookie(res, newRefreshToken);
 
     return sendResponse({
       res,
       message: SUCCESS_MESSAGES.AUTH.TOKEN_REFRESHED,
-      data: { accessToken }
+      data: { accessToken },
     });
   }
 
-async logout(req: Request, res: Response): Promise<Response> {
-  const refreshToken =
-    req.cookies?.[TOKEN_CONFIG.COOKIE_NAME];
+  // ======================
+  // LOGOUT
+  // ======================
+  async logout(req: Request, res: Response): Promise<Response> {
+    const refreshToken =
+      req.cookies?.[TOKEN_CONFIG.COOKIE_NAME];
 
-  if (refreshToken) {
-    await this.authService.logout(refreshToken);
+    if (refreshToken) {
+      await this.authService.logout(refreshToken);
+    }
+
+    clearRefreshTokenCookie(res);
+
+    return sendResponse({
+      res,
+      message: SUCCESS_MESSAGES.AUTH.LOGOUT_SUCCESS,
+    });
   }
-
-  clearRefreshTokenCookie(res);
-
-  return sendResponse({
-    res,
-    message: SUCCESS_MESSAGES.AUTH.LOGOUT_SUCCESS
-  });
-}
-
 
   // ======================
   // SIGNUP
@@ -93,7 +112,7 @@ async logout(req: Request, res: Response): Promise<Response> {
 
     return sendResponse({
       res,
-      message: SUCCESS_MESSAGES.AUTH.OTP_SENT
+      message: SUCCESS_MESSAGES.AUTH.OTP_SENT,
     });
   }
 
@@ -107,59 +126,96 @@ async logout(req: Request, res: Response): Promise<Response> {
 
     return sendResponse({
       res,
-      message: SUCCESS_MESSAGES.AUTH.ACCOUNT_VERIFIED
+      message: SUCCESS_MESSAGES.AUTH.ACCOUNT_VERIFIED,
     });
   }
-async resendOtp(req: Request, res: Response): Promise<Response> {
-  const { email } = req.body as ResendOtpDTO;
 
-  await this.authService.resendOtp(email);
+  // ======================
+  // RESEND OTP
+  // ======================
+  async resendOtp(req: Request, res: Response): Promise<Response> {
+    const dto = req.body as ResendOtpDTO;
 
-  return sendResponse({
-    res,
-    message: SUCCESS_MESSAGES.AUTH.OTP_RESENT
-  });
+    await this.authService.resendOtp(dto.email);
+
+    return sendResponse({
+      res,
+      message: SUCCESS_MESSAGES.AUTH.OTP_RESENT,
+    });
+  }
+
+  // ======================
+  // FORGOT PASSWORD
+  // ======================
+  async forgotPassword(
+    req: Request,
+    res: Response
+  ): Promise<Response> {
+    const { email } = req.body;
+
+    const resetToken =
+      await this.authService.forgotPassword(email);
+
+    // SECURITY: do not expose token in response
+    if (resetToken) {
+      await this.authService.sendResetPasswordEmail(
+        email,
+        resetToken
+      );
+    }
+
+    return sendResponse({
+      res,
+      message:
+        SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SENT,
+    });
+  }
+
+  // ======================
+  // RESET PASSWORD
+  // ======================
+  async resetPassword(
+    req: Request,
+    res: Response
+  ): Promise<Response> {
+    const { token, newPassword } = req.body;
+
+    await this.authService.resetPassword(
+      token,
+      newPassword
+    );
+
+    return sendResponse({
+      res,
+      message:
+        SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
+    });
+  }
+
+  // ======================
+  // GOOGLE LOGIN
+  // ======================
+  async googleLogin(
+    req: Request,
+    res: Response
+  ): Promise<Response> {
+    const { credential } = req.body;
+
+    if (!credential) {
+      throw new BadRequestError(
+        "Google credential missing"
+      );
+    }
+
+    const { accessToken, refreshToken, user } =
+      await this.authService.googleLogin(credential);
+
+    setRefreshTokenCookie(res, refreshToken);
+
+    return sendResponse({
+      res,
+      message: "Google login successful",
+      data: { accessToken, user },
+    });
+  }
 }
-async forgotPassword(req: Request, res: Response): Promise<Response> {
-  const { email } = req.body;
-
-  const resetToken = await this.authService.forgotPassword(email);
-
-if (resetToken) {
-  await this.authService.sendResetPasswordEmail(
-    email,
-    resetToken
-  );
-}
-
-return sendResponse({
-  res,
-  message: SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SENT
-});
-
-}
-
-async resetPassword(
-  req: Request,
-  res: Response
-): Promise<Response> {
-  const { token, newPassword } = req.body;
-
-  await this.authService.resetPassword(
-    token,
-    newPassword
-  );
-
-  return sendResponse({
-    res,
-    message: SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS
-  });
-}
-
-
-}
-
-
-
-
-

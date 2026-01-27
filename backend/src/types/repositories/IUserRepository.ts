@@ -5,15 +5,13 @@ export interface IUserRepository {
 
   create(data: {
     email: string;
-    password: string;
+    password: string | null;
     role: "user" | "provider" | "admin";
     isVerified: boolean;
-  }): Promise<void>;
+    provider?: "google" | "local";
+  }): Promise<IUser>; 
 
   verifyUser(email: string): Promise<void>;
 
-  updatePassword(
-    userId: string,
-    hashedPassword: string
-  ): Promise<void>;
+  updatePassword(userId: string, password: string): Promise<void>;
 }

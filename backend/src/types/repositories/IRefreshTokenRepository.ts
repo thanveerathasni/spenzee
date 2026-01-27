@@ -13,6 +13,7 @@ export interface IRefreshTokenRepository {
     isRevoked: boolean;
     expiresAt: Date;
   } | null>;
+deleteByTokenHash(tokenHash: string): Promise<void>;
 
   revokeToken(tokenId: Types.ObjectId): Promise<void>;
 

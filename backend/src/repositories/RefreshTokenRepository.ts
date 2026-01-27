@@ -37,4 +37,9 @@ export class RefreshTokenRepository
       { isRevoked: true }
     );
   }
+
+  async deleteByTokenHash(tokenHash: string): Promise<void> {
+  await RefreshTokenModel.deleteOne({ tokenHash });
+}
+
 }

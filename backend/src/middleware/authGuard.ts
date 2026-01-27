@@ -2,7 +2,7 @@ import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { UnauthorizedError } from "../utils/errors";
 import { ERROR_MESSAGES } from "../constants/errorMessages";
-import { AuthRequest } from "./authGuard";
+import { AuthRequest } from "../types/AuthRequest";
 import { isValidRole } from "../utils/roleUtils";
 
 export const authGuard = (

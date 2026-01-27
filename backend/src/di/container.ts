@@ -26,7 +26,12 @@ const container = new Container();
 container.bind<AuthController>(TYPES.AuthController).to(AuthController);
 
 // Services
-container.bind<IAuthService>(TYPES.AuthService).to(AuthService);
+container
+  .bind<IAuthService>(TYPES.AuthService)
+  .to(AuthService)
+  .inSingletonScope();
+
+// container.bind<IAuthService>(TYPES.AuthService).to(AuthService);
 
 // Repositories
 container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepository);

@@ -1,38 +1,36 @@
 import { injectable } from "inversify";
+import type { IUser } from "../models/User.model";
+import { UserModel } from "../models/User.model";
 import { IUserRepository } from "../types/repositories/IUserRepository";
-import { UserModel, IUser } from "../models/User.model";
 
 @injectable()
 export class UserRepository implements IUserRepository {
-
   async findByEmail(email: string): Promise<IUser | null> {
-    return UserModel.findOne({ email }).exec();
+    return UserModel.findOne({ email });
   }
 
   async create(data: {
     email: string;
-    password: string;
+    password: string | null;
     role: "user" | "provider" | "admin";
     isVerified: boolean;
-  }): Promise<void> {
-    await UserModel.create(data);
+    provider?: "google" | "local";
+  }): Promise<IUser> {
+    const user = new UserModel(data);
+    await user.save();
+    return user;
   }
 
   async verifyUser(email: string): Promise<void> {
     await UserModel.updateOne(
       { email },
-      { isVerified: true }
+      { $set: { isVerified: true } }
     );
   }
 
-  async updatePassword(
-  userId: string,
-  hashedPassword: string
-): Promise<void> {
-  await UserModel.updateOne(
-    { _id: userId },
-    { password: hashedPassword }
-  );
-}
-
+  async updatePassword(userId: string, password: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(userId, {
+      password,
+    });
+  }
 }
