@@ -7,9 +7,13 @@ import ProviderLoginForm from './pages/provider/auth/ProviderLogin';
 import ProviderRequestForm from './pages/provider/auth/ProviderRequest';
 import TestAuth from './pages/public/TestAuth';
 import ProtectedRoute from "../src/routes/protectedRoutes";
-import WelcomePage  from './pages/user/Auth/welcome';
+import WelcomePage from './pages/user/Auth/welcome';
 import ForgotPassword from './pages/user/Auth/forgotPassword';
-
+import ResetPassword from './pages/user/Auth/ResetPassword';
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { authApi } from "./api/auth.api";
+import { setAuth, clearAuth } from "./store/auth";
 
 // 404 Page
 const NotFound = () => (
@@ -26,7 +30,18 @@ const NotFound = () => (
 
 const AppContent = () => {
   console.log(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+ const dispatch = useDispatch();
 
+  useEffect(() => {
+    authApi
+      .refresh()
+      .then((res) => {
+        dispatch(setAuth(res));
+      })
+      .catch(() => {
+        dispatch(clearAuth());
+      });
+  }, [dispatch]);
   return (
     <div className="relative selection:bg-neon-pink/30 selection:text-white">
       <main className="relative z-10 transition-all duration-500">
@@ -35,15 +50,17 @@ const AppContent = () => {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
-<Route
-  path="/welcome"
-  element={
-    <ProtectedRoute>
-      <WelcomePage />
-    </ProtectedRoute>
-  }
-/>
-<Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route
+            path="/welcome"
+            element={
+              <ProtectedRoute>
+                <WelcomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
 
           {/* Provider public */}
           <Route path="/provider/login" element={<ProviderLoginForm />} />
@@ -51,20 +68,31 @@ const AppContent = () => {
 
           {/* User protected */}
           <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute role="user">
-                <UserHome />
-              </ProtectedRoute>
-            }
-          />
-{/* Unauthorized */}
-<Route path="/unauthorized" element={<div>No Access 🚫</div>} />
+  path="/dashboard"
+  element={
+    <ProtectedRoute allowedRoles={["user"]}>
+      <UserHome />
+    </ProtectedRoute>
+  }
+/>
 
-<Route path="/test-auth" element={<TestAuth />} />
 
-{/* 404 — ALWAYS LAST */}
-<Route path="*" element={<NotFound />} />
+          {/* <Route
+  path="/admin"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <AdminLayout />
+    </ProtectedRoute>
+  }
+/> */}
+
+          {/* Unauthorized */}
+          <Route path="/unauthorized" element={<div>No Access 🚫</div>} />
+
+          <Route path="/test-auth" element={<TestAuth />} />
+
+          {/* 404 — ALWAYS LAST */}
+          <Route path="*" element={<NotFound />} />
 
 
 
