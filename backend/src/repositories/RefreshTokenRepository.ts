@@ -41,5 +41,10 @@ export class RefreshTokenRepository
   async deleteByTokenHash(tokenHash: string): Promise<void> {
   await RefreshTokenModel.deleteOne({ tokenHash });
 }
-
+async findValidTokenByHash(tokenHash: string) {
+  return RefreshTokenModel.findOne({
+    tokenHash,
+    isRevoked: false,
+  });
+}
 }

@@ -58,11 +58,13 @@ export const authApi = {
   ): Promise<void> => {
     await api.post("/auth/reset-password", payload);
   },
+refresh: async (): Promise<AuthResponse> => {
+   const res = await api.post("/auth/refresh");
+  return res.data.data; // { accessToken, user }
+},
 
-  refresh: async (): Promise<AuthResponse> => {
-    const res = await api.post<AuthResponse>("/auth/refresh");
-    return res.data;
-  },
+
+
 
   logout: async (): Promise<void> => {
     await api.post("/auth/logout");

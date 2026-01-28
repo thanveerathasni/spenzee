@@ -14,6 +14,8 @@ import { useNavigate } from "react-router-dom";
 import { clearTokens } from "../../../util/tokenStorage";
 import { authApi } from "../../../api/auth.api";
 import Swal from "sweetalert2";
+import { clearAuth } from "../../../store/auth";
+import { useDispatch } from "react-redux";
 
 /* ---------------- NAVBAR ---------------- */
 
@@ -21,6 +23,7 @@ const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const navigate = useNavigate();
   const navItems = ["Dashboard", "Profile", "Logout"];
+const dispatch = useDispatch();
 
   const handleLogout = async () => {
     const result = await Swal.fire({
@@ -43,7 +46,7 @@ const Navbar: React.FC = () => {
     } catch (e) {
       // ignore backend failure
     } finally {
-      clearTokens();
+    dispatch(clearAuth());
       navigate("/login", { replace: true });
     }
   };

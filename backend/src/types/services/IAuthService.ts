@@ -18,6 +18,7 @@ export interface IAuthService {
   ): Promise<{
     accessToken: string;
     refreshToken: string;
+    user: IUser;
   }>;
 
   logout(refreshToken: string): Promise<void>;

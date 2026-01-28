@@ -422,7 +422,9 @@ import { useAppDispatch } from "../../../store/hooks";
 import { setAuth } from "../../../store/auth";
 import toast from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
-
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../store/store";
+import { useEffect } from "react";
 interface Errors {
   email?: string;
   password?: string;
@@ -485,6 +487,15 @@ const LoginForm: React.FC = () => {
       toast.error("Login failed");
     }
   };
+
+
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
+useEffect(() => {
+  if (isAuthenticated) {
+    navigate("/welcome", { replace: true });
+  }
+}, [isAuthenticated]);
 
   // ================= GOOGLE LOGIN =================
   const handleGoogleSuccess = async (cred: any) => {

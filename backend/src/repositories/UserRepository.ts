@@ -33,4 +33,9 @@ export class UserRepository implements IUserRepository {
       password,
     });
   }
+
+  async findById(id: string): Promise<IUser | null> {
+  return UserModel.findById(id);
+}
+
 }

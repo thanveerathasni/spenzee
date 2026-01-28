@@ -5,11 +5,11 @@ export type AuthProvider = "local" | "google";
 
 export interface User {
   _id: string;
-  name?: string;          // ✅ REQUIRED
+  name?: string;          
   email: string;
   role: UserRole;
   isVerified: boolean;
-  isActive?: boolean;     // optional for now
+  isActive?: boolean;     
   provider?: AuthProvider;
   createdAt?: string;
 }
@@ -19,4 +19,6 @@ export interface AuthState {
   accessToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
+  isAuthChecked: boolean;
+  isLoading: boolean;
 }

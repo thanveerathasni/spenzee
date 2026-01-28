@@ -12,6 +12,7 @@ export interface IUserRepository {
   }): Promise<IUser>; 
 
   verifyUser(email: string): Promise<void>;
+findById(id: string): Promise<IUser | null>;
 
   updatePassword(userId: string, password: string): Promise<void>;
 }
