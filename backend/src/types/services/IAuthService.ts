@@ -17,7 +17,7 @@ export interface IAuthService {
     refreshToken: string
   ): Promise<{
     accessToken: string;
-    refreshToken: string;
+    // refreshToken: string;
     user: IUser;
   }>;
 

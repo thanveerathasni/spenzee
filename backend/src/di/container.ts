@@ -17,8 +17,18 @@ import { RefreshTokenRepository } from "../repositories/RefreshTokenRepository";
 import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRepository";
 import { ResetPasswordRepository } from "../repositories/ResetPasswordRepository";
 
-// Repositories
 
+import { AdminRepository } from "../repositories/admin/AdminRepository";
+import { AdminAuthService } from "../services/admin/AdminAuthService";
+import { AdminAuthController } from "../controllers/admin/AdminAuthController";
+import { IAdminRepository } from "../types/repositories/IAdminRepository";
+import { IAdminAuthService } from "../types/services/admin/IAdminAuthService";
+import { IAdminService } from "../types/services/admin/IAdminService";
+import { AdminService } from "../services/admin/AdminService";
+import { AdminController } from "../controllers/admin/AdminController";
+
+
+// Repositories
 
 const container = new Container();
 
@@ -52,6 +62,32 @@ container.bind<IOtpRepository>(TYPES.OtpRepository)
   .bind<IResetPasswordRepository>(TYPES.ResetPasswordRepository)
   .to(ResetPasswordRepository);
 
+
+
+// ===== ADMIN =====
+
+// repository
+container
+  .bind<IAdminRepository>(TYPES.AdminRepository)
+  .to(AdminRepository);
+
+// services
+container
+  .bind<IAdminAuthService>(TYPES.AdminAuthService)
+  .to(AdminAuthService);
+
+container
+  .bind<IAdminService>(TYPES.AdminService)
+  .to(AdminService);
+
+// controllers
+container
+  .bind<AdminAuthController>(TYPES.AdminAuthController)
+  .to(AdminAuthController);
+
+container
+  .bind<AdminController>(TYPES.AdminController)
+  .to(AdminController);
 
 
 export { container };

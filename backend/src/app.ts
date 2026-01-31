@@ -34,7 +34,8 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler";
 import authRoutes from "./routes/auth.routes";
 import testRoutes from "./routes/test.routes";
-
+import adminRouter from "./routes/admin.routes";
+import adminAuthRouter from "./routes/admin.auth.routes";
 const app = express(); 
 
 // middleware
@@ -73,6 +74,9 @@ app.use(cookieParser());
 app.use("/auth", authRoutes);
 // app.use("/api/auth", authRoutes);
 app.use("/test", testRoutes);
+app.use("/admin/auth", adminAuthRouter);
+
+app.use("/admin", adminRouter);
 
 // global error handler (LAST)
 app.use(errorHandler);

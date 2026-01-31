@@ -281,8 +281,6 @@
 import { injectable, inject } from "inversify";
 import { TYPES } from "../di/types";
 import { OAuth2Client } from "google-auth-library";
-import { Types } from "mongoose";
-
 import { IAuthService } from "../types/services/IAuthService";
 import { IUserRepository } from "../types/repositories/IUserRepository";
 import { IOtpRepository } from "../types/repositories/IOtpRepository";
