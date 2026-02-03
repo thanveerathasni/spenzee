@@ -362,79 +362,91 @@ export class AuthService implements IAuthService {
     return { accessToken, refreshToken, user };
   }
 
- // ================= REFRESH (STABLE & SAFE) =================
+
+
 // async refreshAccessToken(refreshToken: string) {
 //   const payload = verifyRefreshToken(refreshToken);
 
-//   const stored = await this.refreshTokenRepository.findByTokenHash(
+//   // const stored = await this.refreshTokenRepository.findOne({
+//   //   tokenHash: hashRefreshToken(refreshToken),
+//   //   isRevoked: false,
+//   // });
+
+//   // if (!stored || stored.expiresAt < new Date()) {
+//   //   throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
+//   // }
+
+
+// const stored =
+//   await this.refreshTokenRepository.findValidTokenByHash(
 //     hashRefreshToken(refreshToken)
 //   );
 
-//   if (!stored || stored.expiresAt < new Date()) {
-//     throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
-//   }
+// if (!stored || stored.expiresAt < new Date()) {
+//   throw new UnauthorizedError(
+//     ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
+//   );
+// }
+
+
 
 //   const user = await this.userRepository.findById(payload.userId);
 //   if (!user) {
 //     throw new UnauthorizedError(ERROR_MESSAGES.AUTH.USER_NOT_FOUND);
 //   }
 
-//   // 🔥 revoke old token
-//   await this.refreshTokenRepository.revokeToken(stored._id);
-
-//   const newAccessToken = generateAccessToken({
+//   const accessToken = generateAccessToken({
 //     userId: user._id.toString(),
 //     role: user.role,
 //   });
 
-//   const newRefreshToken = generateRefreshToken({
-//     userId: user._id.toString(),
-//     role: user.role,
-//   });
-
-//   await this.refreshTokenRepository.create({
-//     userId: user._id,
-//     tokenHash: hashRefreshToken(newRefreshToken),
-//     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-//   });
-
-//   return {
-//     accessToken: newAccessToken,
-//     refreshToken: newRefreshToken,
-//     user,
-//   };
+//   // ❌ NO ROTATION
+//   return { accessToken, user };
 // }
 
 
-async refreshAccessToken(refreshToken: string) {
-  const payload = verifyRefreshToken(refreshToken);
+  // ================= SIGNUP =================
+  
+  async refreshAccessToken(refreshToken: string) {
+  // 🔒 HARD GUARDS (STOP jwt malformed)
+  if (!refreshToken || typeof refreshToken !== "string") {
+    throw new UnauthorizedError(
+      ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
+    );
+  }
 
-  // const stored = await this.refreshTokenRepository.findOne({
-  //   tokenHash: hashRefreshToken(refreshToken),
-  //   isRevoked: false,
-  // });
+  // JWTs have 3 parts: header.payload.signature
+  if (refreshToken.split(".").length !== 3) {
+    throw new UnauthorizedError(
+      ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
+    );
+  }
 
-  // if (!stored || stored.expiresAt < new Date()) {
-  //   throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
-  // }
+  let payload;
+  try {
+    payload = verifyRefreshToken(refreshToken);
+  } catch {
+    throw new UnauthorizedError(
+      ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
+    );
+  }
 
+  const stored =
+    await this.refreshTokenRepository.findValidTokenByHash(
+      hashRefreshToken(refreshToken)
+    );
 
-const stored =
-  await this.refreshTokenRepository.findValidTokenByHash(
-    hashRefreshToken(refreshToken)
-  );
-
-if (!stored || stored.expiresAt < new Date()) {
-  throw new UnauthorizedError(
-    ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
-  );
-}
-
-
+  if (!stored || stored.expiresAt < new Date()) {
+    throw new UnauthorizedError(
+      ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID
+    );
+  }
 
   const user = await this.userRepository.findById(payload.userId);
   if (!user) {
-    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.USER_NOT_FOUND);
+    throw new UnauthorizedError(
+      ERROR_MESSAGES.AUTH.USER_NOT_FOUND
+    );
   }
 
   const accessToken = generateAccessToken({
@@ -442,12 +454,14 @@ if (!stored || stored.expiresAt < new Date()) {
     role: user.role,
   });
 
-  // ❌ NO ROTATION
+  // 🔁 NO ROTATION (your design choice)
   return { accessToken, user };
 }
 
-
-  // ================= SIGNUP =================
+  
+  
+  
+  
   async signup(email: string, password: string): Promise<void> {
     const exists = await this.userRepository.findByEmail(email);
     if (exists) {

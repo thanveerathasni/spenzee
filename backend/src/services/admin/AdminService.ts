@@ -3,10 +3,14 @@ import { IAdminService } from "../../types/services/admin/IAdminService";
 
 @injectable()
 export class AdminService implements IAdminService {
-  async getDashboard() {
+  async getDashboard(adminId: string) {
     return {
-      status: "ok",
-      message: "Admin dashboard ready",
+      adminId,
+      stats: {
+        users: 120,
+        revenue: 54000,
+        alerts: 3,
+      },
     };
   }
 }

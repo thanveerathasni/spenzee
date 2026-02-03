@@ -1,24 +1,19 @@
 import { Router } from "express";
-
-import { ROLES } from "../constants/roles";
-import { requireRole } from "../middleware/require-role.middleware";
-import { authenticate } from "../middleware/authenticateAdmin";
-
 import { container } from "../di/container";
 import { TYPES } from "../di/types";
 import { AdminController } from "../controllers/admin/AdminController";
+import { adminAuthenticate } from "../middleware/authenticateAdmin";
 
-const adminRouter = Router();
+const router = Router();
 
 const adminController = container.get<AdminController>(
   TYPES.AdminController
 );
 
-adminRouter.get(
+router.get(
   "/dashboard",
-  authenticate,
-  requireRole([ROLES.ADMIN]),
+  adminAuthenticate,
   adminController.getDashboard.bind(adminController)
 );
 
-export default adminRouter;
+export default router;

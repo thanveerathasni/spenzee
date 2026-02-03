@@ -1,6 +1,3 @@
 export interface IAdminService {
-  getDashboard(): Promise<{
-    status: string;
-    message: string;
-  }>;
+  getDashboard(adminId: string): Promise<unknown>;
 }

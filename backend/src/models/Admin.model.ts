@@ -4,8 +4,6 @@ export interface IAdmin extends Document {
   email: string;
   password: string;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 const adminSchema = new Schema<IAdmin>(
@@ -16,22 +14,17 @@ const adminSchema = new Schema<IAdmin>(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true
     },
-
     password: {
       type: String,
-      required: true
+      required: true,
     },
-
     isActive: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 );
 
 export const AdminModel = model<IAdmin>("Admin", adminSchema);

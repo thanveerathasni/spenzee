@@ -5,23 +5,10 @@ import { AdminAuthController } from "../controllers/admin/AdminAuthController";
 
 const router = Router();
 
-const adminAuthController =
-  container.get<AdminAuthController>(
-    TYPES.AdminAuthController
-  );
-
-router.post(
-  "/login",
-  adminAuthController.login.bind(adminAuthController)
+const controller = container.get<AdminAuthController>(
+  TYPES.AdminAuthController
 );
 
-router.post(
-  "/logout",
-  adminAuthController.logout.bind(adminAuthController)
-);
-router.post(
-  "/refresh",
-  adminAuthController.refresh.bind(adminAuthController)
-);
+router.post("/login", controller.login);
 
 export default router;

@@ -10,36 +10,6 @@ interface ProtectedRouteProps {
   allowedRoles?: Role[];
 }
 
-// const ProtectedRoute = ({
-//   children,
-//   allowedRoles,
-// }: ProtectedRouteProps) => {
-//   const { isAuthenticated, user ,isAuthChecked} = useSelector(
-//     (state: RootState) => state.auth
-//   );
- 
-  
-//   if (!isAuthChecked) {
-//   return <div>Loading...</div>;
-// }
-//   // Not logged in
-//   if (!isAuthenticated || !user) {
-//     return <Navigate to="/login" replace />;
-//   }
-
-//   // Role-based restriction
-//   if (
-//     allowedRoles &&
-//     !allowedRoles.includes(user.role)
-//   ) {
-//     return <Navigate to="/unauthorized" replace />;
-//   }
-
-//   return <>{children}</>;
-// };
-
-// export default ProtectedRoute;
-
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { isAuthenticated, user, isLoading, isAuthChecked } = useSelector(
     (state: RootState) => state.auth

@@ -1,3 +1,5 @@
+
+
 export const TYPES = {
   AuthService: Symbol.for("AuthService"),
   AuthController: Symbol.for("AuthController"),
@@ -7,12 +9,14 @@ export const TYPES = {
   RefreshTokenRepository: Symbol.for("RefreshTokenRepository"),
   ResetPasswordRepository: Symbol.for("ResetPasswordRepository"),
 
-  //  ADMIN AUTH
-  AdminAuthController: Symbol.for("AdminAuthController"),
-  AdminAuthService: Symbol.for("AdminAuthService"),
+ // ===== ADMIN AUTH =====
   AdminRepository: Symbol.for("AdminRepository"),
+  AdminAuthService: Symbol.for("AdminAuthService"),
+  AdminAuthController: Symbol.for("AdminAuthController"),
 
-  AdminController: Symbol.for("AdminController"),
+  // ===== ADMIN CORE =====
   AdminService: Symbol.for("AdminService"),
+  AdminController: Symbol.for("AdminController"),
 
+  
 } as const;
