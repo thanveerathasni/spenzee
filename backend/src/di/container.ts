@@ -130,6 +130,15 @@ import { IAdminAuthService } from "../types/services/admin/IAdminAuthService";
 import { AdminController } from "../controllers/admin/AdminController";
 import {IAdminService} from "../types/services/admin/IAdminService"
 import {AdminService} from "../services/admin/AdminService"
+
+// ===== PROVIDER REQUEST =====
+
+import { ProviderRequestRepository } from '../repositories/provider/auth/ProviderRequestRepository';
+import { ProviderRequestService } from '../services/provider/auth/ProviderRequestService';
+
+import { IProviderRequestRepository } from '../types/repositories/provider/IProviderRequestRepository';
+import { IProviderRequestService } from '../types/services/provider/IProviderRequestService';
+
 const container = new Container();
 
 // ================= USER =================
@@ -192,6 +201,17 @@ container
 container
   .bind<AdminController>(TYPES.AdminController)
   .to(AdminController);
+
+
+// Provider Request
+container
+  .bind<IProviderRequestRepository>(TYPES.ProviderRequestRepository)
+  .to(ProviderRequestRepository);
+
+container
+  .bind<IProviderRequestService>(TYPES.ProviderRequestService)
+  .to(ProviderRequestService);
+
 
 
 export { container };

@@ -19,4 +19,7 @@ export const TYPES = {
   AdminController: Symbol.for("AdminController"),
 
   
+  // ===== Provider Request =====
+  ProviderRequestRepository: Symbol.for('ProviderRequestRepository'),
+  ProviderRequestService: Symbol.for('ProviderRequestService'),
 } as const;
