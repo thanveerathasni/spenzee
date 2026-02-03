@@ -12,7 +12,6 @@ export class AdminController {
   ) {}
 
   async getDashboard(req: AdminRequest, res: Response): Promise<Response> {
-    // ✅ NOW THIS EXISTS
     const adminId = req.admin.id;
 
     const data = await this.adminService.getDashboard(adminId);

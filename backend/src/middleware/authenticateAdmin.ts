@@ -8,7 +8,7 @@ interface AdminJwtPayload {
   role: string;
 }
 
-export const adminAuthenticate = (
+export const authenticateAdmin = (
   req: Request,
   _res: Response,
   next: NextFunction
