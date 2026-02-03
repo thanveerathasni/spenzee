@@ -42,7 +42,7 @@ import { IProviderRepository } from "../types/repositories/provider/IProviderRep
 import { ProviderService } from "../services/provider/ProviderService";
 import { IProviderService } from "../types/services/provider/IProviderService";
 import { ProviderAuthService } from "../services/provider/auth/ProviderAuthService";
-import { ProviderAuthController } from "../controllers/provider/ProviderAuthController";
+import { ProviderAuthController } from "../controllers/provider/auth/ProviderAuthController";
 
 const container = new Container();
 

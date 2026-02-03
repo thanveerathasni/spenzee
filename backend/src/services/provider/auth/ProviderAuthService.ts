@@ -51,7 +51,7 @@ export class ProviderAuthService {
 
     const accessToken = jwt.sign(
       {
-        providerId: provider.id,
+        providerId: provider._id,
         role: "provider",
       },
       process.env.JWT_PROVIDER_SECRET as string,
@@ -63,7 +63,7 @@ export class ProviderAuthService {
     return {
       accessToken,
       provider: {
-        id: provider.id,
+        id: provider._id.toString(),
         email: provider.email,
         brandName: provider.brandName,
       },
