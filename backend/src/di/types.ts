@@ -9,7 +9,7 @@ export const TYPES = {
   RefreshTokenRepository: Symbol.for("RefreshTokenRepository"),
   ResetPasswordRepository: Symbol.for("ResetPasswordRepository"),
 
- // ===== ADMIN AUTH =====
+  // ===== ADMIN AUTH =====
   AdminRepository: Symbol.for("AdminRepository"),
   AdminAuthService: Symbol.for("AdminAuthService"),
   AdminAuthController: Symbol.for("AdminAuthController"),
@@ -18,12 +18,13 @@ export const TYPES = {
   AdminService: Symbol.for("AdminService"),
   AdminController: Symbol.for("AdminController"),
 
-  
+
   // ===== Provider Request =====
   ProviderRequestRepository: Symbol.for('ProviderRequestRepository'),
   ProviderRequestService: Symbol.for('ProviderRequestService'),
   ProviderRequestController: Symbol.for('ProviderRequestController'),
-ProviderRepository: Symbol.for("ProviderRepository"),
-ProviderService: Symbol.for("ProviderService"),
+  ProviderRepository: Symbol.for("ProviderRepository"),
+  ProviderService: Symbol.for("ProviderService"),
+  ProviderAuthService: Symbol.for("ProviderAuthService"),
 
 } as const;

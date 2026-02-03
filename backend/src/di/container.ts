@@ -142,6 +142,7 @@ import { ProviderRepository } from "../repositories/provider/auth/ProviderReposi
 import { IProviderRepository } from "../types/repositories/provider/IProviderRepository";
 import { ProviderService } from "../services/provider/ProviderService";
 import { IProviderService } from "../types/services/provider/IProviderService";
+import { ProviderAuthService } from "../services/provider/auth/ProviderAuthService";
 
 const container = new Container();
 
@@ -228,5 +229,9 @@ container
   container
   .bind<IProviderService>(TYPES.ProviderService)
   .to(ProviderService);
+
+  container
+  .bind<ProviderAuthService>(TYPES.ProviderAuthService)
+  .to(ProviderAuthService);
 
 export { container };
