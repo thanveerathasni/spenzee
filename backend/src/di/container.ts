@@ -135,9 +135,9 @@ import {AdminService} from "../services/admin/AdminService"
 
 import { ProviderRequestRepository } from '../repositories/provider/auth/ProviderRequestRepository';
 import { ProviderRequestService } from '../services/provider/auth/ProviderRequestService';
-
 import { IProviderRequestRepository } from '../types/repositories/provider/IProviderRequestRepository';
 import { IProviderRequestService } from '../types/services/provider/IProviderRequestService';
+import { ProviderRequestController } from '../controllers/provider/auth/ProviderRequestController'; 
 
 const container = new Container();
 
@@ -212,6 +212,9 @@ container
   .bind<IProviderRequestService>(TYPES.ProviderRequestService)
   .to(ProviderRequestService);
 
+container
+  .bind<ProviderRequestController>(TYPES.ProviderRequestController)
+  .to(ProviderRequestController);
 
 
 export { container };
