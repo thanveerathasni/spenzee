@@ -23,5 +23,6 @@ export const TYPES = {
   ProviderRequestRepository: Symbol.for('ProviderRequestRepository'),
   ProviderRequestService: Symbol.for('ProviderRequestService'),
   ProviderRequestController: Symbol.for('ProviderRequestController'),
+ProviderRepository: Symbol.for("ProviderRepository"),
 
 } as const;

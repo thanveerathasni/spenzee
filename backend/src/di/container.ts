@@ -138,6 +138,8 @@ import { ProviderRequestService } from '../services/provider/auth/ProviderReques
 import { IProviderRequestRepository } from '../types/repositories/provider/IProviderRequestRepository';
 import { IProviderRequestService } from '../types/services/provider/IProviderRequestService';
 import { ProviderRequestController } from '../controllers/provider/auth/ProviderRequestController'; 
+import { ProviderRepository } from "../repositories/provider/ProviderRepository";
+import { IProviderRepository } from "../types/repositories/provider/IProviderRepository";
 
 const container = new Container();
 
@@ -215,6 +217,11 @@ container
 container
   .bind<ProviderRequestController>(TYPES.ProviderRequestController)
   .to(ProviderRequestController);
+  
+// Provider
+container
+  .bind<IProviderRepository>(TYPES.ProviderRepository)
+  .to(ProviderRepository);
 
 
 export { container };
