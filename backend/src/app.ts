@@ -12,6 +12,8 @@ import testRoutes from "./routes/test.routes";
 import adminRouter from "./routes/admin.routes";
 import adminAuthRouter from "./routes/admin.auth.routes";
 import providerRequestRoutes from './routes/provider.request.routes';
+import providerAuthRoutes from "./routes/provider.auth.routes";
+
 const app = express(); 
 
 // middleware
@@ -35,6 +37,7 @@ app.use("/admin", adminRouter);
 
 
 app.use('/api', providerRequestRoutes);
+app.use("/provider/auth", providerAuthRoutes);
 
 // global error handler 
 app.use(errorHandler);
