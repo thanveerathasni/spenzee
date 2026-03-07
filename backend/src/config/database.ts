@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { AppError } from "../utils/AppError";
-import { HTTP_STATUS } from "../constants/httpStatus";
-import { ERROR_MESSAGES } from "../constants/errorMessages";
+import { AppError } from "../shared/errors/AppError";
+import { HTTP_STATUS } from "../shared/constants/httpStatus";
+import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
 
 export const connectDatabase = async (
   mongoUri: string | undefined

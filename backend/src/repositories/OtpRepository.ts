@@ -4,7 +4,6 @@ import { OtpModel } from "../models/OtpModel";
 
 @injectable()
 export class OtpRepository implements IOtpRepository {
-
   async create(
     email: string,
     otpHash: string,
@@ -14,18 +13,18 @@ export class OtpRepository implements IOtpRepository {
   }
 
   async findByEmail(email: string) {
-    return OtpModel.findOne({ email }).lean();
+    return OtpModel.findOne({ email }).lean().exec();
   }
 
   async deleteByEmail(email: string): Promise<void> {
-    await OtpModel.deleteOne({ email });
+    await OtpModel.deleteOne({ email }).exec();
   }
 
   async incrementAttempts(email: string): Promise<void> {
     await OtpModel.updateOne(
       { email },
       { $inc: { attempts: 1 } }
-    );
+    ).exec();
   }
 
   async updateOtp(
@@ -36,16 +35,16 @@ export class OtpRepository implements IOtpRepository {
     await OtpModel.updateOne(
       { email },
       { otpHash, expiresAt }
-    );
+    ).exec();
   }
-  async resetAttempts(email: string): Promise<void> {
-  await OtpModel.updateOne(
-    { email },
-    {
-      attempts: 0,
-      firstRequestedAt: new Date()
-    }
-  );
-}
 
+  async resetAttempts(email: string): Promise<void> {
+    await OtpModel.updateOne(
+      { email },
+      {
+        attempts: 0,
+        firstRequestedAt: new Date(),
+      }
+    ).exec();
+  }
 }

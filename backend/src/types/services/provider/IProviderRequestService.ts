@@ -1,16 +1,15 @@
-import { IProviderRequest } from '../../../models/ProviderRequest.model';
-import { ProviderRequestStatus } from '../../../models/ProviderRequest.model';
+import { IProviderRequest, ProviderRequestStatus } from "../../../models/ProviderRequest.model";
+
+export interface CreateProviderRequestDTO {
+  brandName: string;
+  websiteUrl: string;
+  primaryCategory: string;
+  contactEmail: string;
+  description: string;
+}
 
 export interface IProviderRequestService {
-  createRequest(
-    data: {
-      brandName: string;
-      websiteUrl: string;
-      primaryCategory: string;
-      contactEmail: string;
-      description: string;
-    }
-  ): Promise<IProviderRequest>;
+  createRequest(data: CreateProviderRequestDTO): Promise<IProviderRequest>;
 
   getAllRequests(): Promise<IProviderRequest[]>;
 

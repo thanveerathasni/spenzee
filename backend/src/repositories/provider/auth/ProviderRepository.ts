@@ -1,11 +1,25 @@
 import { injectable } from "inversify";
-import { Types } from "mongoose";
+import {
+  IProviderRepository
+} from "../../../types/repositories/provider/IProviderRepository";
 
-import { ProviderModel, IProvider } from "../../../models/Provider.model";
-import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
+import {
+  IProvider,
+  ProviderModel,
+  ProviderStatus
+} from "../../../models/Provider.model";
 
 @injectable()
 export class ProviderRepository implements IProviderRepository {
+
+  async findByEmail(email: string): Promise<IProvider | null> {
+    return ProviderModel.findOne({ email });
+  }
+
+  async findById(id: string): Promise<IProvider | null> {
+    return ProviderModel.findById(id);
+  }
+
   async create(data: {
     brandName: string;
     email: string;
@@ -13,18 +27,48 @@ export class ProviderRepository implements IProviderRepository {
     websiteUrl?: string;
     description?: string;
   }): Promise<IProvider> {
-    return await ProviderModel.create(data);
+
+    const provider = new ProviderModel(data);
+    return provider.save();
+
   }
 
-  async findByEmail(email: string): Promise<IProvider | null> {
-    return await ProviderModel.findOne({ email });
+  async updatePassword(
+    providerId: string,
+    hashedPassword: string
+  ): Promise<void> {
+
+    await ProviderModel.findByIdAndUpdate(providerId, {
+      password: hashedPassword
+    });
+
   }
 
-  async findById(id: string): Promise<IProvider | null> {
-    if (!Types.ObjectId.isValid(id)) {
-      return null;
-    }
+  async updateStatus(
+    providerId: string,
+    status: ProviderStatus
+  ): Promise<void> {
 
-    return await ProviderModel.findById(id);
+    await ProviderModel.findByIdAndUpdate(providerId, {
+      status
+    });
+
   }
+
+  async getDashboardStats(_providerId: string): Promise<{
+    totalProducts: number;
+    totalSales: number;
+    revenue: number;
+  }> {
+
+    // Temporary placeholder until product/order modules exist
+
+    return {
+      totalProducts: 0,
+      totalSales: 0,
+      revenue: 0
+    };
+
+  }
+
 }

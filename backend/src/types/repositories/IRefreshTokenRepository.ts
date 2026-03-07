@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import type { IRefreshToken } from "../../models/RefreshToken.model";
+import { IRefreshToken } from "../../models/RefreshToken.model";
 
 export interface IRefreshTokenRepository {
   create(data: {
@@ -8,17 +8,13 @@ export interface IRefreshTokenRepository {
     expiresAt: Date;
   }): Promise<void>;
 
-  findByTokenHash(tokenHash: string): Promise<{
-    _id: Types.ObjectId;
-    userId: Types.ObjectId;
-    isRevoked: boolean;
-    expiresAt: Date;
-  } | null>;
+  findByTokenHash(tokenHash: string): Promise<IRefreshToken | null>;
 
-    findValidTokenByHash(
+  findValidTokenByHash(
     tokenHash: string
   ): Promise<IRefreshToken | null>;
-deleteByTokenHash(tokenHash: string): Promise<void>;
+
+  deleteByTokenHash(tokenHash: string): Promise<void>;
 
   revokeToken(tokenId: Types.ObjectId): Promise<void>;
 

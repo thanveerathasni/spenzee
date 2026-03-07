@@ -1,49 +1,58 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { UnauthorizedError } from "../errors/errors";
+import { verifyAccessToken } from"../utils/token.util";
+import { Role } from "../constants/roles";
 
 export interface AuthRequest extends Request {
   user?: {
     id: string;
-    role: "user" | "provider" | "admin";
+    role: Role;
   };
 }
 
 export const protect = (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
-) => {
+): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
+    next(new UnauthorizedError("Not authenticated"));
+    return;
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_ACCESS_SECRET as string
-    ) as JwtPayload;
+    const payload = verifyAccessToken(token);
 
- 
     req.user = {
-      id: decoded.id as string,
-      role: decoded.role as "user" | "provider" | "admin",
+      id: payload.userId,
+      role: payload.role,
     };
 
     next();
-  } catch {
-    return res.status(401).json({ message: "Invalid token" });
+    return;
+  } catch (error) {
+    next(new UnauthorizedError("Invalid token"));
+    return;
   }
 };
 
-export const allowRoles = (...roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Access denied" });
+export const authorize =
+  (allowedRoles: Role[]) =>
+  (req: AuthRequest, _res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      next(new UnauthorizedError("Not authenticated"));
+      return;
     }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      next(new UnauthorizedError("Access denied"));
+      return;
+    }
+
     next();
+    return;
   };
-};

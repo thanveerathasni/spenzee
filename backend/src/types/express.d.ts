@@ -1,11 +1,38 @@
-import { IUser } from "../modules/user/userModel";
+// import { IUser } from "../modules/user/userModel";
+
+// declare global {
+//   namespace Express {
+//     interface Request {
+//       user?: {
+//         id: string;
+//         role: "user" | "provider" | "admin";
+//       };
+//     }
+//   }
+// }
+
+// export {};
+
+
+
+import { Role } from "../shared/constants/roles";
 
 declare global {
   namespace Express {
+    interface UserPayload {
+      id: string;
+      role: Role;
+    }
+
     interface Request {
-      user?: {
+      user?: UserPayload;
+      admin?: {
         id: string;
-        role: "user" | "provider" | "admin";
+        role: Role;
+      };
+      provider?: {
+        id: string;
+        role: Role;
       };
     }
   }

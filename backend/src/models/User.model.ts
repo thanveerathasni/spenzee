@@ -1,10 +1,10 @@
 import { Schema, model, Document } from "mongoose";
-import { ROLES, Role } from "../constants/roles";
+import { ROLES, Role } from "../shared/constants/roles";
 
 export interface IUser extends Document {
   name?: string;
   email: string;
-  password: string;
+  password: string | null;
   role: Role;
   isVerified: boolean;
   isActive: boolean;
@@ -14,40 +14,44 @@ export interface IUser extends Document {
 
 const userSchema = new Schema<IUser>(
   {
-      name: {
-    type: String,
-    required: false,
-    trim: true,
-  },
+    name: {
+      type: String,
+      required: false,
+      trim: true,
+    },
 
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
-      index: true
+      index: true,
     },
-   password: {
-  type: String,
-  required: false,
-  default: null
-},
+
+    password: {
+      type: String,
+      required: false,
+      default: null,
+    },
+
     role: {
       type: String,
       enum: Object.values(ROLES),
-      default: ROLES.USER
+      default: ROLES.USER,
     },
+
     isVerified: {
       type: Boolean,
-      default: false
+      default: false,
     },
+
     isActive: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

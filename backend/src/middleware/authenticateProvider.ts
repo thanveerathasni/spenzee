@@ -1,8 +1,9 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { UnauthorizedError } from "../utils/errors";
-import { ROLES } from "../constants/roles";
-import { ProviderRequest } from "../types/ProviderRequest";
+import { UnauthorizedError } from "../shared/errors/errors";
+import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
+import { AuthRequest } from "../types/AuthRequest";
+import { ROLES } from "../shared/constants/roles";
 
 interface ProviderJwtPayload {
   providerId: string;
@@ -10,14 +11,15 @@ interface ProviderJwtPayload {
 }
 
 export const authenticateProvider = (
-  req: ProviderRequest,
+  req: AuthRequest,
   _res: Response,
   next: NextFunction
 ): void => {
+
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new UnauthorizedError("Provider access denied");
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
   }
 
   const token = authHeader.split(" ")[1];
@@ -29,16 +31,17 @@ export const authenticateProvider = (
     ) as ProviderJwtPayload;
 
     if (payload.role !== ROLES.PROVIDER) {
-      throw new UnauthorizedError("Provider access denied");
+      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
     }
 
     req.provider = {
       id: payload.providerId,
-      role: payload.role,
+      role: payload.role
     };
 
     next();
+
   } catch {
-    throw new UnauthorizedError("Invalid or expired provider token");
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
   }
 };

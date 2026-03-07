@@ -1,10 +1,12 @@
 import { ZodSchema } from "zod";
 import { Request, Response, NextFunction } from "express";
-import { BadRequestError } from "../utils/errors";
+import { BadRequestError } from "../shared/errors/errors";
+import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
 
 export const validate =
   (schema: ZodSchema) =>
   (req: Request, _res: Response, next: NextFunction) => {
+
     const result = schema.safeParse({
       body: req.body,
       query: req.query,
@@ -12,11 +14,9 @@ export const validate =
     });
 
     if (!result.success) {
-      const message = result.error.issues
-        .map(issue => issue.message)
-        .join(", ");
-
-      return next(new BadRequestError(message));
+      throw new BadRequestError(
+        ERROR_MESSAGES.GENERAL.VALIDATION_ERROR
+      );
     }
 
     next();

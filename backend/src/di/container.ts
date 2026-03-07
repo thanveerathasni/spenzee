@@ -1,20 +1,27 @@
 
 
+
+
+
+
+
+
+
 import "reflect-metadata";
 import { Container } from "inversify";
 import { TYPES } from "./types";
 
-// ===== USER AUTH =====
-import { AuthController } from "../controllers/AuthController";
-import { AuthService } from "../services/AuthService";
-import { UserRepository } from "../repositories/UserRepository";
+// ===== USER =====
+import { AuthController } from "../controllers/user/AuthController";
+import { AuthService } from "../services/user/AuthService";
+import { UserRepository } from "../repositories/user/UserRepository";
 import { OtpRepository } from "../repositories/OtpRepository";
 import { MailService } from "../services/MailService";
 import { RefreshTokenRepository } from "../repositories/RefreshTokenRepository";
 import { ResetPasswordRepository } from "../repositories/ResetPasswordRepository";
 
-import { IAuthService } from "../types/services/IAuthService";
-import { IUserRepository } from "../types/repositories/IUserRepository";
+import { IAuthService } from "../types/services/user/IAuthService";
+import { IUserRepository } from "../types/repositories/user/IUserRepository";
 import { IOtpRepository } from "../types/repositories/IOtpRepository";
 import { IMailService } from "../types/services/IMailService";
 import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
@@ -24,118 +31,61 @@ import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRe
 import { AdminRepository } from "../repositories/admin/AdminRepository";
 import { AdminAuthService } from "../services/admin/AdminAuthService";
 import { AdminAuthController } from "../controllers/admin/AdminAuthController";
-import {IAdminRepository} from "../types/repositories/IAdminRepository"
-import { IAdminAuthService } from "../types/services/admin/IAdminAuthService";
 import { AdminController } from "../controllers/admin/AdminController";
-import {IAdminService} from "../types/services/admin/IAdminService"
-import {AdminService} from "../services/admin/AdminService"
+import { AdminService } from "../services/admin/AdminService";
 
-// ===== PROVIDER REQUEST =====
+import { IAdminRepository } from "../types/repositories/admin/IAdminRepository";
+import { IAdminAuthService } from "../types/services/admin/IAdminAuthService";
+import { IAdminService } from "../types/services/admin/IAdminService";
 
-import { ProviderRequestRepository } from '../repositories/provider/auth/ProviderRequestRepository';
-import { ProviderRequestService } from '../services/provider/auth/ProviderRequestService';
-import { IProviderRequestRepository } from '../types/repositories/provider/IProviderRequestRepository';
-import { IProviderRequestService } from '../types/services/provider/IProviderRequestService';
-import { ProviderRequestController } from '../controllers/provider/auth/ProviderRequestController'; 
+// ===== PROVIDER =====
+import { ProviderRequestRepository } from "../repositories/provider/auth/ProviderRequestRepository";
+import { ProviderRequestService } from "../services/provider/auth/ProviderRequestService";
+import { ProviderRequestController } from "../controllers/provider/auth/ProviderRequestController";
 import { ProviderRepository } from "../repositories/provider/auth/ProviderRepository";
-import { IProviderRepository } from "../types/repositories/provider/IProviderRepository";
 import { ProviderService } from "../services/provider/ProviderService";
-import { IProviderService } from "../types/services/provider/IProviderService";
 import { ProviderAuthService } from "../services/provider/auth/ProviderAuthService";
 import { ProviderAuthController } from "../controllers/provider/auth/ProviderAuthController";
+import { ProviderPasswordSetupTokenRepository } from "../repositories/provider/auth/ProviderPasswordSetupTokenRepository";
+import { ProviderController } from "../controllers/provider/ProviderController";
+import { ProviderCredentialService } from "../services/provider/auth/ProviderCredentialService";
+
+import { IProviderRequestRepository } from "../types/repositories/provider/IProviderRequestRepository";
+import { IProviderRequestService } from "../types/services/provider/IProviderRequestService";
+import { IProviderRepository } from "../types/repositories/provider/IProviderRepository";
+import { IProviderService } from "../types/services/provider/IProviderService";
+import { IProviderPasswordSetupTokenRepository } from "../types/repositories/provider/IProviderPasswordSetupTokenRepository";
 
 const container = new Container();
 
-// ================= USER =================
-
-// Controllers
+// USER
 container.bind<AuthController>(TYPES.AuthController).to(AuthController);
+container.bind<IAuthService>(TYPES.AuthService).to(AuthService).inSingletonScope();
+container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepository);
+container.bind<IOtpRepository>(TYPES.OtpRepository).to(OtpRepository);
+container.bind<IMailService>(TYPES.MailService).to(MailService);
+container.bind<IRefreshTokenRepository>(TYPES.RefreshTokenRepository).to(RefreshTokenRepository);
+container.bind<IResetPasswordRepository>(TYPES.ResetPasswordRepository).to(ResetPasswordRepository);
 
-// Services
-container
-  .bind<IAuthService>(TYPES.AuthService)
-  .to(AuthService)
-  .inSingletonScope();
+// ADMIN
+container.bind<IAdminRepository>(TYPES.AdminRepository).to(AdminRepository).inSingletonScope();
+container.bind<IAdminAuthService>(TYPES.AdminAuthService).to(AdminAuthService).inSingletonScope();
+container.bind<IAdminService>(TYPES.AdminService).to(AdminService).inSingletonScope();
+container.bind<AdminAuthController>(TYPES.AdminAuthController).to(AdminAuthController);
+container.bind<AdminController>(TYPES.AdminController).to(AdminController);
 
-// Repositories
-container
-  .bind<IUserRepository>(TYPES.UserRepository)
-  .to(UserRepository);
-
-container
-  .bind<IOtpRepository>(TYPES.OtpRepository)
-  .to(OtpRepository);
-
-container
-  .bind<IMailService>(TYPES.MailService)
-  .to(MailService);
-
-container
-  .bind<IRefreshTokenRepository>(TYPES.RefreshTokenRepository)
-  .to(RefreshTokenRepository);
-
-container
-  .bind<IResetPasswordRepository>(TYPES.ResetPasswordRepository)
-  .to(ResetPasswordRepository);
-
-// ===== ADMIN =====
-
-// REPOSITORY
-container
-  .bind<IAdminRepository>(TYPES.AdminRepository)
-  .to(AdminRepository)
-  .inSingletonScope();
-
-// AUTH SERVICE
-container
-  .bind<IAdminAuthService>(TYPES.AdminAuthService)
-  .to(AdminAuthService)
-  .inSingletonScope();
-
-// ADMIN CORE SERVICE
-container
-  .bind<IAdminService>(TYPES.AdminService)
-  .to(AdminService)
-  .inSingletonScope();
-
-// CONTROLLERS
-container
-  .bind<AdminAuthController>(TYPES.AdminAuthController)
-  .to(AdminAuthController);
-
-container
-  .bind<AdminController>(TYPES.AdminController)
-  .to(AdminController);
-
-
-// Provider Request
-container
-  .bind<IProviderRequestRepository>(TYPES.ProviderRequestRepository)
-  .to(ProviderRequestRepository);
-
-container
-  .bind<IProviderRequestService>(TYPES.ProviderRequestService)
-  .to(ProviderRequestService);
-
-container
-  .bind<ProviderRequestController>(TYPES.ProviderRequestController)
-  .to(ProviderRequestController);
-
-// Provider
-container
-  .bind<IProviderRepository>(TYPES.ProviderRepository)
-  .to(ProviderRepository);
-
-  container
-  .bind<IProviderService>(TYPES.ProviderService)
-  .to(ProviderService);
-
-  container
-  .bind<ProviderAuthService>(TYPES.ProviderAuthService)
-  .to(ProviderAuthService);
-
-  container
-  .bind<ProviderAuthController>(TYPES.ProviderAuthController)
-  .to(ProviderAuthController);
+// PROVIDER
+container.bind<IProviderRequestRepository>(TYPES.ProviderRequestRepository).to(ProviderRequestRepository);
+container.bind<IProviderRequestService>(TYPES.ProviderRequestService).to(ProviderRequestService);
+container.bind<ProviderRequestController>(TYPES.ProviderRequestController).to(ProviderRequestController);
+container.bind<IProviderRepository>(TYPES.ProviderRepository).to(ProviderRepository);
+container.bind<IProviderService>(TYPES.ProviderService).to(ProviderService);
+container.bind<ProviderAuthService>(TYPES.ProviderAuthService).to(ProviderAuthService);
+container.bind<ProviderAuthController>(TYPES.ProviderAuthController).to(ProviderAuthController);
+container.bind<IProviderPasswordSetupTokenRepository>(
+  TYPES.ProviderPasswordSetupTokenRepository
+).to(ProviderPasswordSetupTokenRepository);
+container.bind<ProviderController>(TYPES.ProviderController).to(ProviderController);
+container.bind<ProviderCredentialService>(TYPES.ProviderCredentialService).to(ProviderCredentialService);
 
 export { container };

@@ -1,18 +1,20 @@
-import { IProviderRequest } from '../../../models/ProviderRequest.model';
-import { ProviderRequestStatus } from '../../../models/ProviderRequest.model';
+import {
+  IProviderRequest,
+  ProviderRequestStatus
+} from "../../../models/ProviderRequest.model";
+
+
+export interface CreateProviderRequestDTO {
+  brandName: string;
+  websiteUrl: string;
+  primaryCategory: string;
+  contactEmail: string;
+  description: string;
+}
 
 export interface IProviderRequestRepository {
   create(
-    data: Omit<
-      IProviderRequest,
-      | '_id'
-      | 'status'
-      | 'reviewedBy'
-      | 'reviewedAt'
-      | 'rejectionReason'
-      | 'createdAt'
-      | 'updatedAt'
-    >
+    data: CreateProviderRequestDTO
   ): Promise<IProviderRequest>;
 
   findById(id: string): Promise<IProviderRequest | null>;
@@ -30,3 +32,4 @@ export interface IProviderRequestRepository {
     rejectionReason?: string
   ): Promise<IProviderRequest | null>;
 }
+

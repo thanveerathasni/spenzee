@@ -25,12 +25,19 @@ export class ProviderPasswordSetupTokenRepository
   ): Promise<IProviderPasswordSetupToken | null> {
     return ProviderPasswordSetupTokenModel.findOne({
       hashedToken,
-    });
+    }).exec();
   }
 
   async markAsUsed(id: string): Promise<void> {
-    await ProviderPasswordSetupTokenModel.findByIdAndUpdate(id, {
-      isUsed: true,
-    });
+    await ProviderPasswordSetupTokenModel.findByIdAndUpdate(
+      id,
+      { isUsed: true }
+    ).exec();
+  }
+
+  async deleteByProviderId(providerId: string): Promise<void> {
+    await ProviderPasswordSetupTokenModel.deleteMany({
+      providerId,
+    }).exec();
   }
 }

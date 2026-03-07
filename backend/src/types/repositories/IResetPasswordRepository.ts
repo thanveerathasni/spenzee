@@ -13,4 +13,6 @@ export interface IResetPasswordRepository {
   ): Promise<IResetPasswordToken | null>;
 
   deleteByUserId(userId: Types.ObjectId): Promise<void>;
+
+  deleteByTokenHash(tokenHash: string): Promise<void>;
 }

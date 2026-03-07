@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authGuard } from "../middleware/authGuard";
 import { roleGuard } from "../middleware/roleGuard";
-import { ROLES } from "../constants/roles";
+import { ROLES } from "../shared/constants/roles";
 
 const router = Router();
 

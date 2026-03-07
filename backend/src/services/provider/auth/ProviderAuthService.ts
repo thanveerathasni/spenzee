@@ -1,10 +1,16 @@
 import { inject, injectable } from "inversify";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
 import { TYPES } from "../../../di/types";
 import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 import { ProviderStatus } from "../../../models/Provider.model";
+
+import { AppError } from "../../../shared/errors/AppError";
+import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
+import { ERROR_MESSAGES } from "../../../shared/constants/errorMessages";
+import { PROVIDER_ERROR_MESSAGES } from "../../../shared/constants/provider";
+import { ROLES } from "../../../shared/constants/roles";
+import { createAccessToken } from "../../../shared/utils/token.util";
 
 interface ProviderLoginResult {
   accessToken: string;
@@ -29,15 +35,24 @@ export class ProviderAuthService {
     const provider = await this.providerRepository.findByEmail(email);
 
     if (!provider) {
-      throw new Error("Invalid email or password");
+      throw new AppError(
+        ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS,
+        HTTP_STATUS.UNAUTHORIZED
+      );
     }
 
     if (provider.status !== ProviderStatus.ACTIVE) {
-      throw new Error("Provider account is not active");
+      throw new AppError(
+        PROVIDER_ERROR_MESSAGES.NOT_ACTIVE,
+        HTTP_STATUS.FORBIDDEN
+      );
     }
 
     if (!provider.password) {
-      throw new Error("Provider password not set");
+      throw new AppError(
+        PROVIDER_ERROR_MESSAGES.PASSWORD_NOT_SET,
+        HTTP_STATUS.BAD_REQUEST
+      );
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -46,19 +61,16 @@ export class ProviderAuthService {
     );
 
     if (!isPasswordValid) {
-      throw new Error("Invalid email or password");
+      throw new AppError(
+        ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS,
+        HTTP_STATUS.UNAUTHORIZED
+      );
     }
 
-    const accessToken = jwt.sign(
-      {
-        providerId: provider._id,
-        role: "provider",
-      },
-      process.env.JWT_PROVIDER_SECRET as string,
-      {
-        expiresIn: "15m",
-      }
-    );
+    const accessToken = createAccessToken({
+      userId: provider._id.toString(),
+      role: ROLES.PROVIDER,
+    });
 
     return {
       accessToken,

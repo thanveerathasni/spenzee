@@ -13,4 +13,6 @@ export interface IProviderPasswordSetupTokenRepository {
   ): Promise<IProviderPasswordSetupToken | null>;
 
   markAsUsed(id: string): Promise<void>;
+
+  deleteByProviderId(providerId: string): Promise<void>;
 }

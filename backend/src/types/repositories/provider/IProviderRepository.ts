@@ -1,6 +1,14 @@
-import { IProvider } from "../../../models/Provider.model";
+import { IProvider, ProviderStatus } from "../../../models/Provider.model";
 
 export interface IProviderRepository {
+  findByEmail(email: string): Promise<IProvider | null>;
+
+  findById(id: string): Promise<IProvider | null>;
+getDashboardStats(providerId: string): Promise<{
+    totalProducts: number;
+    totalSales: number;
+    revenue: number;
+  }>;
   create(data: {
     brandName: string;
     email: string;
@@ -9,7 +17,13 @@ export interface IProviderRepository {
     description?: string;
   }): Promise<IProvider>;
 
-  findByEmail(email: string): Promise<IProvider | null>;
+  updatePassword(
+    providerId: string,
+    hashedPassword: string
+  ): Promise<void>;
 
-  findById(id: string): Promise<IProvider | null>;
+  updateStatus(
+    providerId: string,
+    status: ProviderStatus
+  ): Promise<void>;
 }

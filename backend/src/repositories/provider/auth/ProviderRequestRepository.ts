@@ -1,31 +1,25 @@
-import { injectable } from 'inversify';
-import { Types } from 'mongoose';
+import { injectable } from "inversify";
+import { Types } from "mongoose";
 
 import {
   ProviderRequestModel,
   IProviderRequest,
   ProviderRequestStatus,
-} from '../../../models/ProviderRequest.model';
+} from "../../../models/ProviderRequest.model";
 
-import { IProviderRequestRepository } from '../../../types/repositories/provider/IProviderRequestRepository';
+import {
+  IProviderRequestRepository,
+  CreateProviderRequestDTO,
+} from "../../../types/repositories/provider/IProviderRequestRepository";
 
 @injectable()
 export class ProviderRequestRepository
   implements IProviderRequestRepository
 {
   async create(
-    data: Omit<
-      IProviderRequest,
-      | '_id'
-      | 'status'
-      | 'reviewedBy'
-      | 'reviewedAt'
-      | 'rejectionReason'
-      | 'createdAt'
-      | 'updatedAt'
-    >
+    data: CreateProviderRequestDTO
   ): Promise<IProviderRequest> {
-    return await ProviderRequestModel.create(data);
+    return ProviderRequestModel.create(data);
   }
 
   async findById(id: string): Promise<IProviderRequest | null> {
@@ -33,19 +27,21 @@ export class ProviderRequestRepository
       return null;
     }
 
-    return await ProviderRequestModel.findById(id);
+    return ProviderRequestModel.findById(id).exec();
   }
 
   async findAll(): Promise<IProviderRequest[]> {
-    return await ProviderRequestModel.find().sort({ createdAt: -1 });
+    return ProviderRequestModel.find()
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async findByStatus(
     status: ProviderRequestStatus
   ): Promise<IProviderRequest[]> {
-    return await ProviderRequestModel
-      .find({ status })
-      .sort({ createdAt: -1 });
+    return ProviderRequestModel.find({ status })
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async updateStatus(
@@ -58,7 +54,7 @@ export class ProviderRequestRepository
       return null;
     }
 
-    return await ProviderRequestModel.findByIdAndUpdate(
+    return ProviderRequestModel.findByIdAndUpdate(
       id,
       {
         status,
@@ -70,6 +66,6 @@ export class ProviderRequestRepository
             : undefined,
       },
       { new: true }
-    );
+    ).exec();
   }
 }

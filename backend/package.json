@@ -9,9 +9,6 @@
     "start": "node dist/index.js",
     "seed:admin": "ts-node src/scripts/seed-admin.ts"
   },
-  
-  
-
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -33,6 +30,7 @@
     "nodemailer": "^7.0.12",
     "nodemon": "^3.1.11",
     "reflect-metadata": "^0.2.2",
+    "winston": "^3.19.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -45,6 +43,9 @@
     "@types/mongoose": "^5.11.96",
     "@types/node": "^25.0.10",
     "@types/nodemailer": "^7.0.5",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "eslint": "^10.0.3",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"

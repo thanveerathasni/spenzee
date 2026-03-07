@@ -1,7 +1,9 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { UnauthorizedError } from "../utils/errors";
-import { ROLES } from "../constants/roles";
+import { UnauthorizedError } from "../shared/errors/errors";
+import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
+import { AuthRequest } from "../types/AuthRequest";
+import { ROLES } from "../shared/constants/roles";
 
 interface AdminJwtPayload {
   adminId: string;
@@ -9,36 +11,38 @@ interface AdminJwtPayload {
 }
 
 export const authenticateAdmin = (
-  req: Request,
+  req: AuthRequest,
   _res: Response,
   next: NextFunction
 ): void => {
+
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new UnauthorizedError("Admin access denied");
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
+
     const payload = jwt.verify(
       token,
       process.env.JWT_ADMIN_SECRET as string
     ) as AdminJwtPayload;
 
     if (payload.role !== ROLES.ADMIN) {
-      throw new UnauthorizedError("Admin access denied");
+      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
     }
 
-    // attach admin safely
-    (req as any).admin = {
+    req.admin = {
       id: payload.adminId,
-      role: payload.role,
+      role: payload.role
     };
 
     next();
+
   } catch {
-    throw new UnauthorizedError("Invalid or expired admin token");
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
   }
 };

@@ -1,8 +1,8 @@
-import { Request } from "express";
+// import { Request } from "express";
 
-export interface ProviderRequest extends Request {
-  provider: {
-    id: string;
-    role: string;
-  };
-}
+// export interface ProviderRequest extends Request {
+//   provider: {
+//     id: string;
+//     role: string;
+//   };
+// }

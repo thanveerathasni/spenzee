@@ -27,5 +27,11 @@ export const TYPES = {
   ProviderService: Symbol.for("ProviderService"),
   ProviderAuthService: Symbol.for("ProviderAuthService"),
 ProviderAuthController: Symbol.for("ProviderAuthController"),
+ProviderPasswordSetupTokenRepository: Symbol.for(
+  "ProviderPasswordSetupTokenRepository"
+),
+ProviderDashboardService: Symbol.for("ProviderDashboardService"),
+ProviderController: Symbol.for("ProviderController"),
+ProviderCredentialService: Symbol.for("ProviderCredentialService"),
 
 } as const;

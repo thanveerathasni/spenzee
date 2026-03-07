@@ -1,14 +1,17 @@
 import { injectable } from "inversify";
 import { Types } from "mongoose";
+
 import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRepository";
+
 import {
-  ResetPasswordTokenModel
+  ResetPasswordTokenModel,
+  IResetPasswordToken,
 } from "../models/ResetPasswordToken.model";
 
 @injectable()
 export class ResetPasswordRepository
-  implements IResetPasswordRepository {
-
+  implements IResetPasswordRepository
+{
   async create(
     userId: Types.ObjectId,
     tokenHash: string,
@@ -17,15 +20,15 @@ export class ResetPasswordRepository
     await ResetPasswordTokenModel.create({
       userId,
       tokenHash,
-      expiresAt
+      expiresAt,
     });
   }
 
   async findByTokenHash(
     tokenHash: string
-  ) {
+  ): Promise<IResetPasswordToken | null> {
     return ResetPasswordTokenModel.findOne({
-      tokenHash
+      tokenHash,
     }).exec();
   }
 
@@ -33,7 +36,13 @@ export class ResetPasswordRepository
     userId: Types.ObjectId
   ): Promise<void> {
     await ResetPasswordTokenModel.deleteMany({
-      userId
-    });
+      userId,
+    }).exec();
+  }
+
+  async deleteByTokenHash(tokenHash: string): Promise<void> {
+    await ResetPasswordTokenModel.deleteOne({
+      tokenHash,
+    }).exec();
   }
 }

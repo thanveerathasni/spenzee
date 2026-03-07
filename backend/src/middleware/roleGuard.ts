@@ -37,10 +37,10 @@
 
 
 import { Response, NextFunction } from "express";
-import { Role } from "../constants/roles";
+import { Role } from "../shared/constants/roles";
 import { AuthRequest } from "../types/AuthRequest";
-import { UnauthorizedError } from "../utils/errors";
-import { ERROR_MESSAGES } from "../constants/errorMessages";
+import { UnauthorizedError } from "../shared/errors/errors";
+import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
 
 export const roleGuard =
   (allowedRoles: Role[]) =>

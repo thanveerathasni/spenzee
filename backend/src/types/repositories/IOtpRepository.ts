@@ -1,3 +1,10 @@
+export interface IOtpRecord {
+  otpHash: string;
+  expiresAt: Date;
+  attempts: number;
+  firstRequestedAt: Date;
+}
+
 export interface IOtpRepository {
   create(
     email: string,
@@ -5,14 +12,7 @@ export interface IOtpRepository {
     expiresAt: Date
   ): Promise<void>;
 
-  findByEmail(
-    email: string
-  ): Promise<{
-    otpHash: string;
-    expiresAt: Date;
-    attempts: number;
-    firstRequestedAt: Date;
-  } | null>;
+  findByEmail(email: string): Promise<IOtpRecord | null>;
 
   deleteByEmail(email: string): Promise<void>;
 
@@ -25,5 +25,4 @@ export interface IOtpRepository {
   ): Promise<void>;
 
   resetAttempts(email: string): Promise<void>;
-
 }

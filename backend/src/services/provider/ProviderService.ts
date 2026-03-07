@@ -1,8 +1,12 @@
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../di/types";
+
 import { IProviderService } from "../../types/services/provider/IProviderService";
 import { IProviderRepository } from "../../types/repositories/provider/IProviderRepository";
+
 import { IProvider } from "../../models/Provider.model";
+import { ProviderDashboardDTO } from "../../shared/dto/providerDashboard";
+import { PROVIDER_ERROR_MESSAGES } from "../../shared/constants/provider";
 
 @injectable()
 export class ProviderService implements IProviderService {
@@ -18,13 +22,24 @@ export class ProviderService implements IProviderService {
     websiteUrl?: string;
     description?: string;
   }): Promise<IProvider> {
+
     const existingProvider =
       await this.providerRepository.findByEmail(data.email);
 
     if (existingProvider) {
-      throw new Error("Provider already exists with this email");
-    }
+throw new Error(PROVIDER_ERROR_MESSAGES.NOT_FOUND);    }
 
-    return await this.providerRepository.create(data);
+    return this.providerRepository.create(data);
+  }
+
+  async getDashboard(providerId: string): Promise<ProviderDashboardDTO> {
+
+    const stats = await this.providerRepository.getDashboardStats(providerId);
+
+    return {
+      totalProducts: stats.totalProducts,
+      totalSales: stats.totalSales,
+      revenue: stats.revenue
+    };
   }
 }
