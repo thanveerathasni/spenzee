@@ -1,29 +1,35 @@
 import { Model, Document } from "mongoose";
-import type { FilterQuery, UpdateQuery } from "mongoose";
 
 export abstract class BaseRepository<T extends Document> {
-  constructor(protected readonly model: Model<T>) {}
+  protected readonly model: Model<T>;
 
-  async findById(id: string): Promise<T | null> {
-    return this.model.findById(id);
+  constructor(model: Model<T>) {
+    this.model = model;
   }
 
-  async findOne(filter: FilterQuery<T>): Promise<T | null> {
-    return this.model.findOne(filter);
+  async findById(id: string): Promise<T | null> {
+    return this.model.findById(id).exec();
+  }
+
+  async findOne(filter: Record<string, unknown>): Promise<T | null> {
+    return this.model.findOne(filter).exec();
   }
 
   async create(data: Partial<T>): Promise<T> {
-    return this.model.create(data);
+    const doc = new this.model(data);
+    return doc.save();
   }
 
   async update(
-    filter: FilterQuery<T>,
-    update: UpdateQuery<T>
+    filter: Record<string, unknown>,
+    update: Record<string, unknown>
   ): Promise<T | null> {
-    return this.model.findOneAndUpdate(filter, update, { new: true });
+    return this.model
+      .findOneAndUpdate(filter, update, { new: true })
+      .exec();
   }
 
-  async delete(filter: FilterQuery<T>): Promise<void> {
-    await this.model.deleteOne(filter);
+  async delete(filter: Record<string, unknown>): Promise<void> {
+    await this.model.deleteOne(filter).exec();
   }
 }
