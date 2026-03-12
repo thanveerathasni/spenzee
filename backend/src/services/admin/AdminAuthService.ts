@@ -1,16 +1,16 @@
-import { injectable, inject } from "inversify";
 import bcrypt from "bcryptjs";
+import { injectable, inject } from "inversify";
 
 import { TYPES } from "../../di/types";
-import { IAdminAuthService } from "../../types/services/admin/IAdminAuthService";
-import { IAdminRepository } from "../../types/repositories/admin/IAdminRepository";
 
-import { ROLES } from "../../shared/constants/roles";
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
 import { HTTP_STATUS } from "../../shared/constants/httpStatus";
+import { ROLES } from "../../shared/constants/roles";
 
 import { AppError } from "../../shared/errors/AppError";
 import { createAccessToken } from "../../shared/utils/token.util";
+import { IAdminRepository } from "../../types/repositories/admin/IAdminRepository";
+import { IAdminAuthService } from "../../types/services/admin/IAdminAuthService";
 
 @injectable()
 export class AdminAuthService implements IAdminAuthService {

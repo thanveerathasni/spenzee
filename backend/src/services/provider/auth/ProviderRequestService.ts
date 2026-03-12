@@ -1,22 +1,22 @@
-import { inject, injectable } from "inversify";
 import crypto from "crypto";
+import { inject, injectable } from "inversify";
 import { Types } from "mongoose";
 
+import { TYPES } from "../../../di/types";
 import { IProviderRequest, ProviderRequestStatus } from "../../../models/ProviderRequest.model";
 
-import { IProviderRequestRepository } from "../../../types/repositories/provider/IProviderRequestRepository";
-import { IProviderRequestService } from "../../../types/services/provider/IProviderRequestService";
-import { IProviderService } from "../../../types/services/provider/IProviderService";
-import { IProviderPasswordSetupTokenRepository } from "../../../types/repositories/provider/IProviderPasswordSetupTokenRepository";
-
-import { TYPES } from "../../../di/types";
+import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
 import {
   PROVIDER_PASSWORD_SETUP,
   PROVIDER_ERROR_MESSAGES,
 } from "../../../shared/constants/provider";
-
 import { AppError } from "../../../shared/errors/AppError";
-import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
+import { IProviderPasswordSetupTokenRepository } from "../../../types/repositories/provider/IProviderPasswordSetupTokenRepository";
+import { IProviderRequestRepository } from "../../../types/repositories/provider/IProviderRequestRepository";
+import { IProviderRequestService } from "../../../types/services/provider/IProviderRequestService";
+import { IProviderService } from "../../../types/services/provider/IProviderService";
+
+
 
 @injectable()
 export class ProviderRequestService implements IProviderRequestService {

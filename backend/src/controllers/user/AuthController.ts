@@ -2,21 +2,21 @@ import { Request, Response } from "express";
 import { injectable, inject } from "inversify";
 import { TYPES } from "../../di/types";
 
-import { IAuthService } from "../../types/services/user/IAuthService";
 
-import { sendResponse } from "../../shared/utils/sendResponse";
-import { SUCCESS_MESSAGES } from "../../shared/constants/successMessages";
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
+import { SUCCESS_MESSAGES } from "../../shared/constants/successMessages";
 import { TOKEN_CONFIG } from "../../shared/constants/token";
 
+import { UnauthorizedError, BadRequestError } from "../../shared/errors/errors";
 import { setRefreshTokenCookie, clearRefreshTokenCookie } from "../../shared/utils/cookies";
 
-import { UnauthorizedError, BadRequestError } from "../../shared/errors/errors";
+import { sendResponse } from "../../shared/utils/sendResponse";
+import { IAuthService } from "../../types/services/user/IAuthService";
 
 import { LoginDTO } from "../../validators/auth/login.validator";
+import { ResendOtpDTO } from "../../validators/auth/resendOtp.validator";
 import { SignupDTO } from "../../validators/auth/signup.validator";
 import { VerifyOtpDTO } from "../../validators/auth/verifyOtp.validator";
-import { ResendOtpDTO } from "../../validators/auth/resendOtp.validator";
 
 @injectable()
 export class AuthController {

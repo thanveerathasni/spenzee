@@ -1,18 +1,18 @@
 import { Router } from "express";
+import { AuthController } from "../../controllers/user/AuthController";
 import { container } from "../../di/container";
 import { TYPES } from "../../di/types";
-import { AuthController } from "../../controllers/user/AuthController";
-
-import { validate } from "../../middleware/validate";
-
-import { loginSchema } from "../../validators/auth/login.validator";
-import { signupSchema } from "../../validators/auth/signup.validator";
-import { verifyOtpSchema } from "../../validators/auth/verifyOtp.validator";
-import { resendOtpSchema } from "../../validators/auth/resendOtp.validator";
-import { forgotPasswordSchema } from "../../validators/auth/forgotPassword.validator";
-import { resetPasswordSchema } from "../../validators/auth/resetPassword.validator";
 
 import { loginLimiter, otpLimiter, passwordResetLimiter } from "../../middleware/rateLimit";
+import { validate } from "../../middleware/validate";
+
+import { forgotPasswordSchema } from "../../validators/auth/forgotPassword.validator";
+import { loginSchema } from "../../validators/auth/login.validator";
+import { resendOtpSchema } from "../../validators/auth/resendOtp.validator";
+import { resetPasswordSchema } from "../../validators/auth/resetPassword.validator";
+import { signupSchema } from "../../validators/auth/signup.validator";
+import { verifyOtpSchema } from "../../validators/auth/verifyOtp.validator";
+
 
 const router = Router();
 const authController = container.get<AuthController>(TYPES.AuthController);

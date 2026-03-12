@@ -1,14 +1,14 @@
-import { inject, injectable } from "inversify";
 import crypto from "crypto";
+import { inject, injectable } from "inversify";
 
 import { TYPES } from "../../../di/types";
-import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
-import { IProviderPasswordSetupTokenRepository } from "../../../types/repositories/provider/IProviderPasswordSetupTokenRepository";
 
-import { AppError } from "../../../shared/errors/AppError";
 import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
 import { PROVIDER_ERROR_MESSAGES } from "../../../shared/constants/provider";
+import { AppError } from "../../../shared/errors/AppError";
 import { hashPassword } from "../../../shared/utils/password";
+import { IProviderPasswordSetupTokenRepository } from "../../../types/repositories/provider/IProviderPasswordSetupTokenRepository";
+import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 
 @injectable()
 export class ProviderCredentialService {

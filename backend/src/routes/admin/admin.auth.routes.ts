@@ -1,7 +1,7 @@
 import { Router } from "express";
+import { AdminAuthController } from "../../controllers/admin/AdminAuthController";
 import { container } from "../../di/container";
 import { TYPES } from "../../di/types";
-import { AdminAuthController } from "../../controllers/admin/AdminAuthController";
 
 const router = Router();
 

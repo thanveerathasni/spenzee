@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../di/types";
-import { IProviderService } from "../../types/services/provider/IProviderService";
 import { UnauthorizedError } from "../../shared/errors/errors";
+import { IProviderService } from "../../types/services/provider/IProviderService";
 
 @injectable()
 export class ProviderController {

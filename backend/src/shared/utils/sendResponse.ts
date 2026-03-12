@@ -1,6 +1,6 @@
 import { Response } from "express";
-import { HTTP_STATUS } from "../constants/httpStatus";
 import { ApiResponse } from "../../types/apiResponse";
+import { HTTP_STATUS } from "../constants/httpStatus";
 
 interface SendResponseParams<T> {
   res: Response;

@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
+import { IProvider, ProviderModel, ProviderStatus } from "../../../models/Provider.model";
 import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 
-import { IProvider, ProviderModel, ProviderStatus } from "../../../models/Provider.model";
 
 @injectable()
 export class ProviderRepository implements IProviderRepository {

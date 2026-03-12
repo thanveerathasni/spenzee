@@ -1,5 +1,5 @@
-import { ProviderDashboardDTO } from "../../../shared/dto/provider/providerDashboard";
 import { ProviderDTO } from "../../../shared/dto/provider/provider.dto";
+import { ProviderDashboardDTO } from "../../../shared/dto/provider/providerDashboard";
 
 export interface CreateProviderDTO {
   brandName: string;

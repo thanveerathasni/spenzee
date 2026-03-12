@@ -1,9 +1,9 @@
 import { injectable } from "inversify";
 import { Types } from "mongoose";
 
+import { ResetPasswordTokenModel, IResetPasswordToken } from "../models/ResetPasswordToken.model";
 import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRepository";
 
-import { ResetPasswordTokenModel, IResetPasswordToken } from "../models/ResetPasswordToken.model";
 
 @injectable()
 export class ResetPasswordRepository implements IResetPasswordRepository {

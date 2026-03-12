@@ -1,9 +1,9 @@
 import { Router } from "express";
 
+import { ProviderRequestController } from "../../controllers/provider/auth/ProviderRequestController";
 import { container } from "../../di/container";
 import { TYPES } from "../../di/types";
 import { authenticateAdmin } from "../../middleware/authenticateAdmin";
-import { ProviderRequestController } from "../../controllers/provider/auth/ProviderRequestController";
 
 const router = Router();
 

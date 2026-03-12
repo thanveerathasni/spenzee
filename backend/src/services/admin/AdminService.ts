@@ -1,8 +1,8 @@
 import { injectable } from "inversify";
-import { IAdminService } from "../../types/services/admin/IAdminService";
-import { AppError } from "../../shared/errors/AppError";
-import { HTTP_STATUS } from "../../shared/constants/httpStatus";
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
+import { HTTP_STATUS } from "../../shared/constants/httpStatus";
+import { AppError } from "../../shared/errors/AppError";
+import { IAdminService } from "../../types/services/admin/IAdminService";
 
 @injectable()
 export class AdminService implements IAdminService {

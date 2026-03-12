@@ -1,31 +1,31 @@
+import { OAuth2Client } from "google-auth-library";
 import { injectable, inject } from "inversify";
 import { TYPES } from "../../di/types";
-import { OAuth2Client } from "google-auth-library";
-
-import { IAuthService } from "../../types/services/user/IAuthService";
-import { IUserRepository } from "../../types/repositories/user/IUserRepository";
-import { IOtpRepository } from "../../types/repositories/IOtpRepository";
-import { IMailService } from "../../types/services/IMailService";
-import { IRefreshTokenRepository } from "../../types/repositories/IRefreshTokenRepository";
-import { IResetPasswordRepository } from "../../types/repositories/IResetPasswordRepository";
-
-import { UnauthorizedError, BadRequestError } from "../../shared/errors/errors";
-import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
 
 import { IUser } from "../../models/User.model";
-
+import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
+import { UnauthorizedError, BadRequestError } from "../../shared/errors/errors";
+import { generateOtp, hashOtp, compareOtp } from "../../shared/utils/otp.util";
 import { comparePasswords, hashPassword } from "../../shared/utils/password";
+import { hashRefreshToken } from "../../shared/utils/refreshTokenHash";
+import { generateResetToken, hashResetToken } from "../../shared/utils/resetPasswordToken";
 import {
   createAccessToken,
   createRefreshToken,
   verifyRefreshToken,
 } from "../../shared/utils/token.util";
+import { IOtpRepository } from "../../types/repositories/IOtpRepository";
+import { IUserRepository } from "../../types/repositories/user/IUserRepository";
+import { IAuthService } from "../../types/services/user/IAuthService";
+import { IMailService } from "../../types/services/IMailService";
+import { IRefreshTokenRepository } from "../../types/repositories/IRefreshTokenRepository";
+import { IResetPasswordRepository } from "../../types/repositories/IResetPasswordRepository";
 
-import { hashRefreshToken } from "../../shared/utils/refreshTokenHash";
 
-import { generateResetToken, hashResetToken } from "../../shared/utils/resetPasswordToken";
 
-import { generateOtp, hashOtp, compareOtp } from "../../shared/utils/otp.util";
+
+
+
 
 @injectable()
 export class AuthService implements IAuthService {

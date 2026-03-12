@@ -1,12 +1,12 @@
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../di/types";
 
-import { IProviderService } from "../../types/services/provider/IProviderService";
-import { IProviderRepository } from "../../types/repositories/provider/IProviderRepository";
 
 import { IProvider } from "../../models/Provider.model";
-import { ProviderDashboardDTO } from "../../shared/dto/provider/providerDashboard";
 import { PROVIDER_ERROR_MESSAGES } from "../../shared/constants/provider";
+import { ProviderDashboardDTO } from "../../shared/dto/provider/providerDashboard";
+import { IProviderRepository } from "../../types/repositories/provider/IProviderRepository";
+import { IProviderService } from "../../types/services/provider/IProviderService";
 
 @injectable()
 export class ProviderService implements IProviderService {

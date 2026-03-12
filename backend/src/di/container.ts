@@ -3,17 +3,7 @@ import { Container } from "inversify";
 import { TYPES } from "./types";
 
 // ===== USER =====
-import { AuthController } from "../controllers/user/AuthController";
-import { AuthService } from "../services/user/AuthService";
-import { UserRepository } from "../repositories/user/UserRepository";
-import { OtpRepository } from "../repositories/OtpRepository";
-import { MailService } from "../services/MailService";
-import { RefreshTokenRepository } from "../repositories/RefreshTokenRepository";
-import { ResetPasswordRepository } from "../repositories/ResetPasswordRepository";
 
-import { IAuthService } from "../types/services/user/IAuthService";
-import { IUserRepository } from "../types/repositories/user/IUserRepository";
-import { IOtpRepository } from "../types/repositories/IOtpRepository";
 import { IMailService } from "../types/services/IMailService";
 import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
 import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRepository";
@@ -39,13 +29,23 @@ import { ProviderAuthService } from "../services/provider/auth/ProviderAuthServi
 import { ProviderAuthController } from "../controllers/provider/auth/ProviderAuthController";
 import { ProviderPasswordSetupTokenRepository } from "../repositories/provider/auth/ProviderPasswordSetupTokenRepository";
 import { ProviderController } from "../controllers/provider/ProviderController";
+import { AuthController } from "../controllers/user/AuthController";
+import { OtpRepository } from "../repositories/OtpRepository";
+import { RefreshTokenRepository } from "../repositories/RefreshTokenRepository";
+import { ResetPasswordRepository } from "../repositories/ResetPasswordRepository";
+import { UserRepository } from "../repositories/user/UserRepository";
+import { MailService } from "../services/MailService";
 import { ProviderCredentialService } from "../services/provider/auth/ProviderCredentialService";
+import { AuthService } from "../services/user/AuthService";
+import { IOtpRepository } from "../types/repositories/IOtpRepository";
 
-import { IProviderRequestRepository } from "../types/repositories/provider/IProviderRequestRepository";
-import { IProviderRequestService } from "../types/services/provider/IProviderRequestService";
-import { IProviderRepository } from "../types/repositories/provider/IProviderRepository";
-import { IProviderService } from "../types/services/provider/IProviderService";
 import { IProviderPasswordSetupTokenRepository } from "../types/repositories/provider/IProviderPasswordSetupTokenRepository";
+import { IProviderRepository } from "../types/repositories/provider/IProviderRepository";
+import { IProviderRequestRepository } from "../types/repositories/provider/IProviderRequestRepository";
+import { IUserRepository } from "../types/repositories/user/IUserRepository";
+import { IProviderRequestService } from "../types/services/provider/IProviderRequestService";
+import { IProviderService } from "../types/services/provider/IProviderService";
+import { IAuthService } from "../types/services/user/IAuthService";
 
 const container = new Container();
 

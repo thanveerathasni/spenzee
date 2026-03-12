@@ -1,10 +1,10 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { UnauthorizedError } from "../shared/errors/errors";
 import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
-import { AuthRequest } from "../types/services/user/AuthRequest";
-import { isValidRole } from "../shared/utils/roleUtils";
 import { Role } from "../shared/constants/roles";
+import { UnauthorizedError } from "../shared/errors/errors";
+import { isValidRole } from "../shared/utils/roleUtils";
+import { AuthRequest } from "../types/services/user/AuthRequest";
 
 export const authGuard = (req: AuthRequest, _res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;

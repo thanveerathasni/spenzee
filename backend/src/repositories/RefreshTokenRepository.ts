@@ -1,8 +1,8 @@
 import { injectable } from "inversify";
 import { Types } from "mongoose";
-import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
 import { RefreshTokenModel } from "../models/RefreshToken.model";
 import { IRefreshToken } from "../models/RefreshToken.model";
+import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
 
 @injectable()
 export class RefreshTokenRepository implements IRefreshTokenRepository {

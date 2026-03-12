@@ -1,16 +1,16 @@
-import { inject, injectable } from "inversify";
 import bcrypt from "bcryptjs";
+import { inject, injectable } from "inversify";
 
 import { TYPES } from "../../../di/types";
-import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 import { ProviderStatus } from "../../../models/Provider.model";
 
-import { AppError } from "../../../shared/errors/AppError";
-import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
 import { ERROR_MESSAGES } from "../../../shared/constants/errorMessages";
+import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
 import { PROVIDER_ERROR_MESSAGES } from "../../../shared/constants/provider";
 import { ROLES } from "../../../shared/constants/roles";
+import { AppError } from "../../../shared/errors/AppError";
 import { createAccessToken } from "../../../shared/utils/token.util";
+import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 
 interface ProviderLoginResult {
   accessToken: string;

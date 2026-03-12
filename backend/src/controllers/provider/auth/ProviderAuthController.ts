@@ -3,9 +3,9 @@ import { inject, injectable } from "inversify";
 import { TYPES } from "../../../di/types";
 import { ProviderAuthService } from "../../../services/provider/auth/ProviderAuthService";
 import { ProviderCredentialService } from "../../../services/provider/auth/ProviderCredentialService";
+import { ERROR_MESSAGES } from "../../../shared/constants/errorMessages";
 import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
 import { SUCCESS_MESSAGES } from "../../../shared/constants/successMessages";
-import { ERROR_MESSAGES } from "../../../shared/constants/errorMessages";
 import { AppError } from "../../../shared/errors/AppError";
 
 @injectable()

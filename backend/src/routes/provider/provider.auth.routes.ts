@@ -1,7 +1,7 @@
 import { Router } from "express";
+import { ProviderAuthController } from "../../controllers/provider/auth/ProviderAuthController";
 import { container } from "../../di/container";
 import { TYPES } from "../../di/types";
-import { ProviderAuthController } from "../../controllers/provider/auth/ProviderAuthController";
 const router = Router();
 
 const providerAuthController = container.get<ProviderAuthController>(TYPES.ProviderAuthController);

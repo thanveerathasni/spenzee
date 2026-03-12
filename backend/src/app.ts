@@ -5,12 +5,12 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler";
-import authRoutes from "./routes/user/auth.routes";
-import testRoutes from "./routes/test.routes";
-import adminRouter from "./routes/admin/admin.routes";
 import adminAuthRouter from "./routes/admin/admin.auth.routes";
-import providerRequestRoutes from "./routes/provider/provider.request.routes";
+import adminRouter from "./routes/admin/admin.routes";
 import providerAuthRoutes from "./routes/provider/provider.auth.routes";
+import providerRequestRoutes from "./routes/provider/provider.request.routes";
+import testRoutes from "./routes/test.routes";
+import authRoutes from "./routes/user/auth.routes";
 
 const app = express();
 

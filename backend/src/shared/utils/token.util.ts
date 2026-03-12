@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
+import { ERROR_MESSAGES } from "../constants/errorMessages";
 import { Role } from "../constants/roles";
 import { TOKEN_CONFIG } from "../constants/token";
-import { ERROR_MESSAGES } from "../constants/errorMessages";
 
 export interface JwtPayload {
   userId: string;

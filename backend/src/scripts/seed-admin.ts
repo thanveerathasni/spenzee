@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 
 import { AdminModel } from "../models/Admin.model";
 

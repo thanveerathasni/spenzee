@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { AppError } from "../shared/errors/AppError";
 import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
 import { HTTP_STATUS } from "../shared/constants/httpStatus";
+import { AppError } from "../shared/errors/AppError";
 
 export const errorHandler = (
   err: Error,

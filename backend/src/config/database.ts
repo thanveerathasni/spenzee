@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { AppError } from "../shared/errors/AppError";
-import { HTTP_STATUS } from "../shared/constants/httpStatus";
 import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
+import { HTTP_STATUS } from "../shared/constants/httpStatus";
+import { AppError } from "../shared/errors/AppError";
 
 export const connectDatabase = async (mongoUri: string | undefined): Promise<void> => {
   if (!mongoUri) {

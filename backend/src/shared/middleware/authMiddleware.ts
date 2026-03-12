@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
+import { Role } from "../constants/roles";
 import { UnauthorizedError } from "../errors/errors";
 import { verifyAccessToken } from "../utils/token.util";
-import { Role } from "../constants/roles";
 
 export interface AuthRequest extends Request {
   user?: {

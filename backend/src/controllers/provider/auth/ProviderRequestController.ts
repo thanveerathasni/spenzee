@@ -2,12 +2,12 @@ import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 
 import { TYPES } from "../../../di/types";
-import { IProviderRequestService } from "../../../types/services/provider/IProviderRequestService";
 import { ProviderRequestStatus } from "../../../models/ProviderRequest.model";
 import {
   PROVIDER_SUCCESS_MESSAGES,
   PROVIDER_ERROR_MESSAGES,
 } from "../../../shared/constants/provider";
+import { IProviderRequestService } from "../../../types/services/provider/IProviderRequestService";
 
 @injectable()
 export class ProviderRequestController {

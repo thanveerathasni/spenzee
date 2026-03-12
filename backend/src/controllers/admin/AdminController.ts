@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../di/types";
-import { IAdminService } from "../../types/services/admin/IAdminService";
 import { UnauthorizedError } from "../../shared/errors/errors";
+import { IAdminService } from "../../types/services/admin/IAdminService";
 
 @injectable()
 export class AdminController {
