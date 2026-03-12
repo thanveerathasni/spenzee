@@ -1,17 +1,19 @@
 import { IUser } from "../../../models/User.model";
 import { Role } from "../../../shared/constants/roles";
 
+export interface CreateUserData {
+  name?: string;
+  email: string;
+  password: string | null;
+  role: Role;
+  isVerified: boolean;
+  provider?: "google" | "local";
+}
+
 export interface IUserRepository {
   findByEmail(email: string): Promise<IUser | null>;
 
-  create(data: {
-    name?: string;
-    email: string;
-    password: string | null;
-    role: Role;
-    isVerified: boolean;
-    provider?: "google" | "local";
-  }): Promise<IUser>;
+  create(data: CreateUserData): Promise<IUser>;
 
   verifyUser(email: string): Promise<void>;
 

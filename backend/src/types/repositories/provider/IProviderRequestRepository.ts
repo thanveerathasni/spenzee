@@ -3,8 +3,7 @@ import {
   ProviderRequestStatus
 } from "../../../models/ProviderRequest.model";
 
-
-export interface CreateProviderRequestDTO {
+export interface CreateProviderRequestData {
   brandName: string;
   websiteUrl: string;
   primaryCategory: string;
@@ -13,9 +12,8 @@ export interface CreateProviderRequestDTO {
 }
 
 export interface IProviderRequestRepository {
-  create(
-    data: CreateProviderRequestDTO
-  ): Promise<IProviderRequest>;
+
+  create(data: CreateProviderRequestData): Promise<IProviderRequest>;
 
   findById(id: string): Promise<IProviderRequest | null>;
 
@@ -32,4 +30,3 @@ export interface IProviderRequestRepository {
     rejectionReason?: string
   ): Promise<IProviderRequest | null>;
 }
-
