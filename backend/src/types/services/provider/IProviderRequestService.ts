@@ -1,4 +1,4 @@
-import { IProviderRequest, ProviderRequestStatus } from "../../../models/ProviderRequest.model";
+import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
 
 export interface CreateProviderRequestDTO {
   brandName: string;
@@ -8,19 +8,33 @@ export interface CreateProviderRequestDTO {
   description: string;
 }
 
-export interface IProviderRequestService {
-  createRequest(data: CreateProviderRequestDTO): Promise<IProviderRequest>;
+export interface ProviderRequestDTO {
+  id: string;
+  brandName: string;
+  websiteUrl: string;
+  primaryCategory: string;
+  contactEmail: string;
+  description: string;
+  status: ProviderRequestStatus;
+  rejectionReason?: string;
+}
 
-  getAllRequests(): Promise<IProviderRequest[]>;
+export interface IProviderRequestService {
+
+  createRequest(
+    data: CreateProviderRequestDTO
+  ): Promise<ProviderRequestDTO>;
+
+  getAllRequests(): Promise<ProviderRequestDTO[]>;
 
   getRequestsByStatus(
     status: ProviderRequestStatus
-  ): Promise<IProviderRequest[]>;
+  ): Promise<ProviderRequestDTO[]>;
 
   reviewRequest(
     requestId: string,
     adminId: string,
     status: ProviderRequestStatus,
     rejectionReason?: string
-  ): Promise<IProviderRequest>;
+  ): Promise<ProviderRequestDTO>;
 }

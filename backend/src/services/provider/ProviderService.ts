@@ -5,7 +5,7 @@ import { IProviderService } from "../../types/services/provider/IProviderService
 import { IProviderRepository } from "../../types/repositories/provider/IProviderRepository";
 
 import { IProvider } from "../../models/Provider.model";
-import { ProviderDashboardDTO } from "../../shared/dto/providerDashboard";
+import { ProviderDashboardDTO } from "../../shared/dto/provider/providerDashboard";
 import { PROVIDER_ERROR_MESSAGES } from "../../shared/constants/provider";
 
 @injectable()

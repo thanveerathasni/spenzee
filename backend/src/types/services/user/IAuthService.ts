@@ -1,12 +1,13 @@
-import { IUser } from "../../../models/User.model";
+import { UserDTO } from "../../../shared/dto/user/user.dto";
 
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  user: IUser;
+  user: UserDTO;
 }
 
 export interface IAuthService {
+
   login(email: string, password: string): Promise<AuthResponse>;
 
   refreshAccessToken(refreshToken: string): Promise<AuthResponse>;
@@ -14,7 +15,9 @@ export interface IAuthService {
   logout(refreshToken: string): Promise<void>;
 
   signup(email: string, password: string): Promise<void>;
+
   verifyOtp(email: string, otp: string): Promise<void>;
+
   resendOtp(email: string): Promise<void>;
 
   forgotPassword(email: string): Promise<string | null>;

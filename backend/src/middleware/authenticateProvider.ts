@@ -2,7 +2,7 @@ import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { UnauthorizedError } from "../shared/errors/errors";
 import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
-import { AuthRequest } from "../types/AuthRequest";
+import { AuthRequest } from "../types/services/user/AuthRequest";
 import { ROLES } from "../shared/constants/roles";
 
 interface ProviderJwtPayload {
