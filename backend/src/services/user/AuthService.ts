@@ -18,21 +18,14 @@ import { comparePasswords, hashPassword } from "../../shared/utils/password";
 import {
   createAccessToken,
   createRefreshToken,
-  verifyRefreshToken
+  verifyRefreshToken,
 } from "../../shared/utils/token.util";
 
 import { hashRefreshToken } from "../../shared/utils/refreshTokenHash";
 
-import {
-  generateResetToken,
-  hashResetToken
-} from "../../shared/utils/resetPasswordToken";
+import { generateResetToken, hashResetToken } from "../../shared/utils/resetPasswordToken";
 
-import {
-  generateOtp,
-  hashOtp,
-  compareOtp
-} from "../../shared/utils/otp.util";
+import { generateOtp, hashOtp, compareOtp } from "../../shared/utils/otp.util";
 
 @injectable()
 export class AuthService implements IAuthService {
@@ -52,7 +45,7 @@ export class AuthService implements IAuthService {
     private readonly refreshTokenRepository: IRefreshTokenRepository,
 
     @inject(TYPES.ResetPasswordRepository)
-    private readonly resetPasswordRepository: IResetPasswordRepository
+    private readonly resetPasswordRepository: IResetPasswordRepository,
   ) {
     this.oauthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
@@ -60,9 +53,8 @@ export class AuthService implements IAuthService {
   // ================= LOGIN =================
   async login(
     email: string,
-    password: string
+    password: string,
   ): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
-
     const user = await this.userRepository.findByEmail(email);
 
     if (!user || !user.password) {
@@ -77,7 +69,7 @@ export class AuthService implements IAuthService {
 
     const jwtPayload = {
       userId: user._id.toString(),
-      role: user.role
+      role: user.role,
     };
 
     const accessToken = createAccessToken(jwtPayload);
@@ -86,21 +78,18 @@ export class AuthService implements IAuthService {
     await this.refreshTokenRepository.create({
       userId: user._id,
       tokenHash: hashRefreshToken(refreshToken),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     return { accessToken, refreshToken, user };
   }
 
   // ================= REFRESH TOKEN =================
-  async refreshAccessToken(
-    refreshToken: string
-  ): Promise<{
+  async refreshAccessToken(refreshToken: string): Promise<{
     accessToken: string;
     refreshToken: string;
     user: IUser;
   }> {
-
     if (!refreshToken || typeof refreshToken !== "string") {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
     }
@@ -113,10 +102,9 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
     }
 
-    const stored =
-      await this.refreshTokenRepository.findValidTokenByHash(
-        hashRefreshToken(refreshToken)
-      );
+    const stored = await this.refreshTokenRepository.findValidTokenByHash(
+      hashRefreshToken(refreshToken),
+    );
 
     if (!stored || stored.expiresAt < new Date()) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
@@ -130,30 +118,29 @@ export class AuthService implements IAuthService {
 
     const newAccessToken = createAccessToken({
       userId: user._id.toString(),
-      role: user.role
+      role: user.role,
     });
 
     const newRefreshToken = createRefreshToken({
       userId: user._id.toString(),
-      role: user.role
+      role: user.role,
     });
 
     await this.refreshTokenRepository.create({
       userId: user._id,
       tokenHash: hashRefreshToken(newRefreshToken),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      user
+      user,
     };
   }
 
   // ================= SIGNUP =================
   async signup(email: string, password: string): Promise<void> {
-
     const exists = await this.userRepository.findByEmail(email);
 
     if (exists) {
@@ -167,7 +154,7 @@ export class AuthService implements IAuthService {
       name: email.split("@")[0],
       password: hashedPassword,
       role: "user",
-      isVerified: false
+      isVerified: false,
     });
 
     const otp = generateOtp();
@@ -175,7 +162,7 @@ export class AuthService implements IAuthService {
     await this.otpRepository.create(
       email,
       await hashOtp(otp),
-      new Date(Date.now() + 10 * 60 * 1000)
+      new Date(Date.now() + 10 * 60 * 1000),
     );
 
     await this.mailService.sendOtp(email, otp);
@@ -183,7 +170,6 @@ export class AuthService implements IAuthService {
 
   // ================= VERIFY OTP =================
   async verifyOtp(email: string, otp: string): Promise<void> {
-
     const record = await this.otpRepository.findByEmail(email);
 
     if (!record || record.expiresAt < new Date()) {
@@ -202,13 +188,12 @@ export class AuthService implements IAuthService {
 
   // ================= RESEND OTP =================
   async resendOtp(email: string): Promise<void> {
-
     const otp = generateOtp();
 
     await this.otpRepository.updateOtp(
       email,
       await hashOtp(otp),
-      new Date(Date.now() + 10 * 60 * 1000)
+      new Date(Date.now() + 10 * 60 * 1000),
     );
 
     await this.mailService.sendOtp(email, otp);
@@ -216,7 +201,6 @@ export class AuthService implements IAuthService {
 
   // ================= FORGOT PASSWORD =================
   async forgotPassword(email: string): Promise<string | null> {
-
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) return null;
@@ -228,24 +212,18 @@ export class AuthService implements IAuthService {
     await this.resetPasswordRepository.create(
       user._id,
       hashResetToken(resetToken),
-      new Date(Date.now() + 15 * 60 * 1000)
+      new Date(Date.now() + 15 * 60 * 1000),
     );
 
     return resetToken;
   }
 
-  async sendResetPasswordEmail(
-    email: string,
-    resetToken: string
-  ): Promise<void> {
+  async sendResetPasswordEmail(email: string, resetToken: string): Promise<void> {
     await this.mailService.sendResetPasswordEmail(email, resetToken);
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-
-    const record = await this.resetPasswordRepository.findByTokenHash(
-      hashResetToken(token)
-    );
+    const record = await this.resetPasswordRepository.findByTokenHash(hashResetToken(token));
 
     if (!record || record.expiresAt < new Date()) {
       throw new BadRequestError(ERROR_MESSAGES.AUTH.RESET_TOKEN_INVALID);
@@ -253,7 +231,7 @@ export class AuthService implements IAuthService {
 
     await this.userRepository.updatePassword(
       record.userId.toString(),
-      await hashPassword(newPassword)
+      await hashPassword(newPassword),
     );
 
     await this.resetPasswordRepository.deleteByUserId(record.userId);
@@ -262,12 +240,11 @@ export class AuthService implements IAuthService {
 
   // ================= GOOGLE LOGIN =================
   async googleLogin(
-    credential: string
+    credential: string,
   ): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
-
     const ticket = await this.oauthClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
@@ -285,13 +262,13 @@ export class AuthService implements IAuthService {
         password: null,
         role: "user",
         isVerified: true,
-        provider: "google"
+        provider: "google",
       });
     }
 
     const jwtPayload = {
       userId: user._id.toString(),
-      role: user.role
+      role: user.role,
     };
 
     const accessToken = createAccessToken(jwtPayload);
@@ -300,7 +277,7 @@ export class AuthService implements IAuthService {
     await this.refreshTokenRepository.create({
       userId: user._id,
       tokenHash: hashRefreshToken(refreshToken),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     return { accessToken, refreshToken, user };
@@ -308,7 +285,6 @@ export class AuthService implements IAuthService {
 
   // ================= LOGOUT =================
   async logout(refreshToken: string): Promise<void> {
-
     const tokenHash = hashRefreshToken(refreshToken);
 
     await this.refreshTokenRepository.deleteByTokenHash(tokenHash);

@@ -19,7 +19,7 @@ async function seedAdmin() {
     await mongoose.connect(MONGO_URI);
 
     const email = "admin@spenze.com";
-    const plainPassword = "Admin@123"; 
+    const plainPassword = "Admin@123";
 
     const existingAdmin = await AdminModel.findOne({ email });
 
@@ -33,7 +33,7 @@ async function seedAdmin() {
     await AdminModel.create({
       email,
       password: hashedPassword,
-      isActive: true
+      isActive: true,
     });
 
     console.log(" Admin created successfully");

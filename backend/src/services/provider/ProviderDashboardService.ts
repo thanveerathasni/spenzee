@@ -6,12 +6,11 @@ import { IProviderRepository } from "../../types/repositories/provider/IProvider
 export class ProviderDashboardService {
   constructor(
     @inject(TYPES.ProviderRepository)
-    private readonly providerRepository: IProviderRepository
+    private readonly providerRepository: IProviderRepository,
   ) {}
 
   async getDashboard(providerId: string) {
-    const provider =
-      await this.providerRepository.findById(providerId);
+    const provider = await this.providerRepository.findById(providerId);
 
     if (!provider) {
       throw new Error("Provider not found");

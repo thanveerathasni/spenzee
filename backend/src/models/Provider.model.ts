@@ -64,15 +64,12 @@ const ProviderSchema = new Schema<IProvider>(
 
     password: {
       type: String,
-      select: false, 
+      select: false,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export const ProviderModel = model<IProvider>(
-  "Provider",
-  ProviderSchema
-);
+export const ProviderModel = model<IProvider>("Provider", ProviderSchema);

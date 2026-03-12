@@ -6,15 +6,8 @@ import { ProviderController } from "../../controllers/provider/ProviderControlle
 
 const router = Router();
 
-const providerController =
-  container.get<ProviderController>(
-    TYPES.ProviderController
-  );
+const providerController = container.get<ProviderController>(TYPES.ProviderController);
 
-router.get(
-  "/dashboard",
-  authenticateProvider,
-  providerController.getDashboard
-);
+router.get("/dashboard", authenticateProvider, providerController.getDashboard);
 
 export default router;

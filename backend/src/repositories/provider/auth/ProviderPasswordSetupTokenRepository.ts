@@ -9,9 +9,7 @@ import {
 import { IProviderPasswordSetupTokenRepository } from "../../../types/repositories/provider/IProviderPasswordSetupTokenRepository";
 
 @injectable()
-export class ProviderPasswordSetupTokenRepository
-  implements IProviderPasswordSetupTokenRepository
-{
+export class ProviderPasswordSetupTokenRepository implements IProviderPasswordSetupTokenRepository {
   async create(data: {
     providerId: Types.ObjectId;
     hashedToken: string;
@@ -20,19 +18,14 @@ export class ProviderPasswordSetupTokenRepository
     return ProviderPasswordSetupTokenModel.create(data);
   }
 
-  async findByHashedToken(
-    hashedToken: string
-  ): Promise<IProviderPasswordSetupToken | null> {
+  async findByHashedToken(hashedToken: string): Promise<IProviderPasswordSetupToken | null> {
     return ProviderPasswordSetupTokenModel.findOne({
       hashedToken,
     }).exec();
   }
 
   async markAsUsed(id: string): Promise<void> {
-    await ProviderPasswordSetupTokenModel.findByIdAndUpdate(
-      id,
-      { isUsed: true }
-    ).exec();
+    await ProviderPasswordSetupTokenModel.findByIdAndUpdate(id, { isUsed: true }).exec();
   }
 
   async deleteByProviderId(providerId: string): Promise<void> {

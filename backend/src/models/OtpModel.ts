@@ -5,28 +5,28 @@ const otpSchema = new Schema(
     email: {
       type: String,
       required: true,
-      index: true
+      index: true,
     },
     otpHash: {
       type: String,
-      required: true
+      required: true,
     },
     expiresAt: {
       type: Date,
-      required: true
+      required: true,
     },
     attempts: {
       type: Number,
-      default: 1
+      default: 1,
     },
     firstRequestedAt: {
       type: Date,
-      default: Date.now
-    }
+      default: Date.now,
+    },
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
 export const OtpModel = model("Otp", otpSchema);

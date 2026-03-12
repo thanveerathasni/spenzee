@@ -13,26 +13,19 @@ import {
 export class ProviderRequestController {
   constructor(
     @inject(TYPES.ProviderRequestService)
-    private readonly providerRequestService: IProviderRequestService
+    private readonly providerRequestService: IProviderRequestService,
   ) {}
 
   async createProviderRequest(req: Request, res: Response): Promise<void> {
-    const {
+    const { brandName, websiteUrl, primaryCategory, contactEmail, description } = req.body;
+
+    const request = await this.providerRequestService.createRequest({
       brandName,
       websiteUrl,
       primaryCategory,
       contactEmail,
       description,
-    } = req.body;
-
-    const request =
-      await this.providerRequestService.createRequest({
-        brandName,
-        websiteUrl,
-        primaryCategory,
-        contactEmail,
-        description,
-      });
+    });
 
     res.status(201).json({
       message: PROVIDER_SUCCESS_MESSAGES.REQUEST_SUBMITTED,
@@ -40,72 +33,52 @@ export class ProviderRequestController {
     });
   }
 
-  async getAllProviderRequests(
-    _req: Request,
-    res: Response
-  ): Promise<void> {
-    const requests =
-      await this.providerRequestService.getAllRequests();
+  async getAllProviderRequests(_req: Request, res: Response): Promise<void> {
+    const requests = await this.providerRequestService.getAllRequests();
 
     res.status(200).json({
       data: requests,
     });
   }
 
-  async getProviderRequestsByStatus(
-    req: Request,
-    res: Response
-  ): Promise<void> {
+  async getProviderRequestsByStatus(req: Request, res: Response): Promise<void> {
     const { status } = req.params;
 
-    if (
-      !Object.values(ProviderRequestStatus).includes(
-        status as ProviderRequestStatus
-      )
-    ) {
+    if (!Object.values(ProviderRequestStatus).includes(status as ProviderRequestStatus)) {
       res.status(400).json({
         message: PROVIDER_ERROR_MESSAGES.INVALID_STATUS,
       });
       return;
     }
 
-    const requests =
-      await this.providerRequestService.getRequestsByStatus(
-        status as ProviderRequestStatus
-      );
+    const requests = await this.providerRequestService.getRequestsByStatus(
+      status as ProviderRequestStatus,
+    );
 
     res.status(200).json({
       data: requests,
     });
   }
 
-  async reviewProviderRequest(
-    req: Request,
-    res: Response
-  ): Promise<void> {
+  async reviewProviderRequest(req: Request, res: Response): Promise<void> {
     const { requestId } = req.params;
     const { status, rejectionReason } = req.body;
 
     const adminId = req.admin!.id;
 
-    if (
-      !Object.values(ProviderRequestStatus).includes(
-        status as ProviderRequestStatus
-      )
-    ) {
+    if (!Object.values(ProviderRequestStatus).includes(status as ProviderRequestStatus)) {
       res.status(400).json({
         message: PROVIDER_ERROR_MESSAGES.INVALID_STATUS,
       });
       return;
     }
 
-    const updatedRequest =
-      await this.providerRequestService.reviewRequest(
-        requestId,
-        adminId,
-        status,
-        rejectionReason
-      );
+    const updatedRequest = await this.providerRequestService.reviewRequest(
+      requestId,
+      adminId,
+      status,
+      rejectionReason,
+    );
 
     res.status(200).json({
       message: PROVIDER_SUCCESS_MESSAGES.REQUEST_UPDATED,

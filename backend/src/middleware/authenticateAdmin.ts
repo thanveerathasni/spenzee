@@ -10,12 +10,7 @@ interface AdminJwtPayload {
   role: string;
 }
 
-export const authenticateAdmin = (
-  req: AuthRequest,
-  _res: Response,
-  next: NextFunction
-): void => {
-
+export const authenticateAdmin = (req: AuthRequest, _res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
@@ -25,11 +20,7 @@ export const authenticateAdmin = (
   const token = authHeader.split(" ")[1];
 
   try {
-
-    const payload = jwt.verify(
-      token,
-      process.env.JWT_ADMIN_SECRET as string
-    ) as AdminJwtPayload;
+    const payload = jwt.verify(token, process.env.JWT_ADMIN_SECRET as string) as AdminJwtPayload;
 
     if (payload.role !== ROLES.ADMIN) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
@@ -37,11 +28,10 @@ export const authenticateAdmin = (
 
     req.admin = {
       id: payload.adminId,
-      role: payload.role
+      role: payload.role,
     };
 
     next();
-
   } catch {
     throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
   }

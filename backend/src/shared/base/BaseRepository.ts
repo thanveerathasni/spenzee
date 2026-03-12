@@ -22,11 +22,9 @@ export abstract class BaseRepository<T extends Document> {
 
   async update(
     filter: Record<string, unknown>,
-    update: Record<string, unknown>
+    update: Record<string, unknown>,
   ): Promise<T | null> {
-    return this.model
-      .findOneAndUpdate(filter, update, { new: true })
-      .exec();
+    return this.model.findOneAndUpdate(filter, update, { new: true }).exec();
   }
 
   async delete(filter: Record<string, unknown>): Promise<void> {

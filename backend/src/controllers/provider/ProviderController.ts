@@ -8,7 +8,7 @@ import { UnauthorizedError } from "../../shared/errors/errors";
 export class ProviderController {
   constructor(
     @inject(TYPES.ProviderService)
-    private readonly providerService: IProviderService
+    private readonly providerService: IProviderService,
   ) {}
 
   async getDashboard(req: Request, res: Response): Promise<Response> {

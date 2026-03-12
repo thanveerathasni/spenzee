@@ -5,7 +5,7 @@ import { ApiResponse } from "../../types/apiResponse";
 interface SendResponseParams<T> {
   res: Response;
   statusCode?: number;
-  message: string; 
+  message: string;
   data?: T;
 }
 
@@ -13,13 +13,12 @@ export const sendResponse = <T>({
   res,
   statusCode = HTTP_STATUS.OK,
   message,
-  data
+  data,
 }: SendResponseParams<T>): Response<ApiResponse<T | null>> => {
-
   const response: ApiResponse<T | null> = {
     success: true,
     message,
-    data: data ?? null
+    data: data ?? null,
   };
 
   return res.status(statusCode).json(response);

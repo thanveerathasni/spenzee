@@ -4,17 +4,8 @@ import { TYPES } from "../../di/types";
 import { ProviderAuthController } from "../../controllers/provider/auth/ProviderAuthController";
 const router = Router();
 
-const providerAuthController =
-  container.get<ProviderAuthController>(
-    TYPES.ProviderAuthController
-  );
+const providerAuthController = container.get<ProviderAuthController>(TYPES.ProviderAuthController);
 
-router.post(
-  "/login",
-  providerAuthController.login
-);
-router.post(
-  "/setup-password",
-  providerAuthController.setupPassword
-);
+router.post("/login", providerAuthController.login);
+router.post("/setup-password", providerAuthController.setupPassword);
 export default router;

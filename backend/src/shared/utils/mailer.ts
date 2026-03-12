@@ -5,15 +5,11 @@ export const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS
-  }
+    pass: process.env.MAIL_PASS,
+  },
 });
 
-export const sendOtpMail = async (
-  to: string,
-  otp: string
-): Promise<void> => {
-
+export const sendOtpMail = async (to: string, otp: string): Promise<void> => {
   await transporter.sendMail({
     from: `"Spenzee" <${process.env.MAIL_USER}>`,
     to,
@@ -24,6 +20,6 @@ export const sendOtpMail = async (
       <p>${MAIL_MESSAGES.OTP.DESCRIPTION}</p>
       <h1>${otp}</h1>
       <p>${MAIL_MESSAGES.OTP.EXPIRY_NOTICE}</p>
-    `
+    `,
   });
 };

@@ -15,21 +15,20 @@ export class MailService implements IMailService {
       service: "gmail",
       auth: {
         user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
-      }
+        pass: process.env.MAIL_PASS,
+      },
     });
   }
 
+  async sendOtp(email: string, otp: string): Promise<void> {
+    await this.transporter.sendMail({
+      from: `"Spenzee" <${process.env.MAIL_USER}>`,
+      to: email,
+      subject: "Verify your Spenzee account",
 
-async sendOtp(email: string, otp: string): Promise<void> {
-  await this.transporter.sendMail({
-    from: `"Spenzee" <${process.env.MAIL_USER}>`,
-    to: email,
-    subject: "Verify your Spenzee account",
+      text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
 
-    text: `Your OTP is ${otp}. It is valid for 10 minutes.`,
-
-    html: `
+      html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
         <h2 style="color: #111;">🔐 Spenzee Account Verification</h2>
 
@@ -52,23 +51,20 @@ async sendOtp(email: string, otp: string): Promise<void> {
         </p>
       </div>
     `,
-  });
-}
+    });
+  }
 
-async sendResetPasswordEmail(
-  email: string,
-  resetToken: string
-): Promise<void> {
-  const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+  async sendResetPasswordEmail(email: string, resetToken: string): Promise<void> {
+    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
-  await this.transporter.sendMail({
-    from: `"Spenzee" <${process.env.MAIL_USER}>`,
-    to: email,
-    subject: "Reset your Spenzee password",
+    await this.transporter.sendMail({
+      from: `"Spenzee" <${process.env.MAIL_USER}>`,
+      to: email,
+      subject: "Reset your Spenzee password",
 
-    text: `Reset your password using this link: ${resetLink}. This link expires in 15 minutes.`,
+      text: `Reset your password using this link: ${resetLink}. This link expires in 15 minutes.`,
 
-    html: `
+      html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
         <h2 style="color: #111;">🔁 Reset Your Password</h2>
 
@@ -95,6 +91,6 @@ async sendResetPasswordEmail(
         </p>
       </div>
     `,
-  });
-}
+    });
+  }
 }

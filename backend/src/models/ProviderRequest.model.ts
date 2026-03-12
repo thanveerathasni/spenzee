@@ -1,9 +1,9 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document } from "mongoose";
 
 export enum ProviderRequestStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected",
 }
 
 export interface IProviderRequest extends Document {
@@ -60,7 +60,7 @@ const ProviderRequestSchema = new Schema<IProviderRequest>(
 
     reviewedBy: {
       type: Schema.Types.ObjectId,
-      ref: 'Admin',
+      ref: "Admin",
     },
     reviewedAt: {
       type: Date,
@@ -72,10 +72,10 @@ const ProviderRequestSchema = new Schema<IProviderRequest>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export const ProviderRequestModel = model<IProviderRequest>(
-  'ProviderRequest',
-  ProviderRequestSchema
+  "ProviderRequest",
+  ProviderRequestSchema,
 );

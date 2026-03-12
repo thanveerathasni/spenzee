@@ -9,18 +9,11 @@ export interface AuthResponseDTO {
 }
 
 export class AuthMapper {
-
-  static toAuthResponse(
-    user: IUser,
-    accessToken: string,
-    refreshToken: string
-  ): AuthResponseDTO {
-
+  static toAuthResponse(user: IUser, accessToken: string, refreshToken: string): AuthResponseDTO {
     return {
       accessToken,
       refreshToken,
-      user: UserMapper.toDTO(user)
+      user: UserMapper.toDTO(user),
     };
   }
-
 }

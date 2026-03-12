@@ -6,14 +6,8 @@ import { authenticateAdmin } from "../../middleware/authenticateAdmin";
 
 const router = Router();
 
-const adminController = container.get<AdminController>(
-  TYPES.AdminController
-);
+const adminController = container.get<AdminController>(TYPES.AdminController);
 
-router.get(
-  "/dashboard",
-  authenticateAdmin,
-  adminController.getDashboard.bind(adminController)
-);
+router.get("/dashboard", authenticateAdmin, adminController.getDashboard.bind(adminController));
 
 export default router;

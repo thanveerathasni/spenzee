@@ -13,25 +13,25 @@ const resetPasswordTokenSchema = new Schema<IResetPasswordToken>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true
+      index: true,
     },
     tokenHash: {
       type: String,
       required: true,
-      index: true
+      index: true,
     },
     expiresAt: {
       type: Date,
       required: true,
-      index: true
-    }
+      index: true,
+    },
   },
   {
-    timestamps: { createdAt: true, updatedAt: false }
-  }
+    timestamps: { createdAt: true, updatedAt: false },
+  },
 );
 
 export const ResetPasswordTokenModel = model<IResetPasswordToken>(
   "ResetPasswordToken",
-  resetPasswordTokenSchema
+  resetPasswordTokenSchema,
 );

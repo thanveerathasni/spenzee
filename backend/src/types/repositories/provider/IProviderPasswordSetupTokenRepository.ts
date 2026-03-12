@@ -8,9 +8,7 @@ export interface IProviderPasswordSetupTokenRepository {
     expiresAt: Date;
   }): Promise<IProviderPasswordSetupToken>;
 
-  findByHashedToken(
-    hashedToken: string
-  ): Promise<IProviderPasswordSetupToken | null>;
+  findByHashedToken(hashedToken: string): Promise<IProviderPasswordSetupToken | null>;
 
   markAsUsed(id: string): Promise<void>;
 

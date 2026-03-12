@@ -8,7 +8,7 @@ import { UnauthorizedError } from "../../shared/errors/errors";
 export class AdminController {
   constructor(
     @inject(TYPES.AdminService)
-    private readonly adminService: IAdminService
+    private readonly adminService: IAdminService,
   ) {}
 
   async getDashboard(req: Request, res: Response): Promise<Response> {

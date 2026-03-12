@@ -7,7 +7,6 @@ export interface AuthResponse {
 }
 
 export interface IAuthService {
-
   login(email: string, password: string): Promise<AuthResponse>;
 
   refreshAccessToken(refreshToken: string): Promise<AuthResponse>;
@@ -22,10 +21,7 @@ export interface IAuthService {
 
   forgotPassword(email: string): Promise<string | null>;
 
-  sendResetPasswordEmail(
-    email: string,
-    resetToken: string
-  ): Promise<void>;
+  sendResetPasswordEmail(email: string, resetToken: string): Promise<void>;
 
   resetPassword(token: string, newPassword: string): Promise<void>;
 

@@ -2,10 +2,7 @@ import { inject, injectable } from "inversify";
 import crypto from "crypto";
 import { Types } from "mongoose";
 
-import {
-  IProviderRequest,
-  ProviderRequestStatus,
-} from "../../../models/ProviderRequest.model";
+import { IProviderRequest, ProviderRequestStatus } from "../../../models/ProviderRequest.model";
 
 import { IProviderRequestRepository } from "../../../types/repositories/provider/IProviderRequestRepository";
 import { IProviderRequestService } from "../../../types/services/provider/IProviderRequestService";
@@ -22,9 +19,7 @@ import { AppError } from "../../../shared/errors/AppError";
 import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
 
 @injectable()
-export class ProviderRequestService
-  implements IProviderRequestService
-{
+export class ProviderRequestService implements IProviderRequestService {
   constructor(
     @inject(TYPES.ProviderRequestRepository)
     private readonly providerRequestRepository: IProviderRequestRepository,
@@ -33,18 +28,16 @@ export class ProviderRequestService
     private readonly providerService: IProviderService,
 
     @inject(TYPES.ProviderPasswordSetupTokenRepository)
-    private readonly passwordSetupTokenRepository: IProviderPasswordSetupTokenRepository
+    private readonly passwordSetupTokenRepository: IProviderPasswordSetupTokenRepository,
   ) {}
 
-  async createRequest(
-    data: {
-      brandName: string;
-      websiteUrl: string;
-      primaryCategory: string;
-      contactEmail: string;
-      description: string;
-    }
-  ): Promise<IProviderRequest> {
+  async createRequest(data: {
+    brandName: string;
+    websiteUrl: string;
+    primaryCategory: string;
+    contactEmail: string;
+    description: string;
+  }): Promise<IProviderRequest> {
     return this.providerRequestRepository.create(data);
   }
 
@@ -52,9 +45,7 @@ export class ProviderRequestService
     return this.providerRequestRepository.findAll();
   }
 
-  async getRequestsByStatus(
-    status: ProviderRequestStatus
-  ): Promise<IProviderRequest[]> {
+  async getRequestsByStatus(status: ProviderRequestStatus): Promise<IProviderRequest[]> {
     return this.providerRequestRepository.findByStatus(status);
   }
 
@@ -62,38 +53,30 @@ export class ProviderRequestService
     requestId: string,
     adminId: string,
     status: ProviderRequestStatus,
-    rejectionReason?: string
+    rejectionReason?: string,
   ): Promise<IProviderRequest> {
-    const request =
-      await this.providerRequestRepository.findById(requestId);
+    const request = await this.providerRequestRepository.findById(requestId);
 
     if (!request) {
-      throw new AppError(
-        PROVIDER_ERROR_MESSAGES.REQUEST_NOT_FOUND,
-        HTTP_STATUS.NOT_FOUND
-      );
+      throw new AppError(PROVIDER_ERROR_MESSAGES.REQUEST_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     }
 
     if (request.status !== ProviderRequestStatus.PENDING) {
-      throw new AppError(
-        PROVIDER_ERROR_MESSAGES.ALREADY_REVIEWED,
-        HTTP_STATUS.BAD_REQUEST
-      );
+      throw new AppError(PROVIDER_ERROR_MESSAGES.ALREADY_REVIEWED, HTTP_STATUS.BAD_REQUEST);
     }
 
     if (status === ProviderRequestStatus.REJECTED) {
-      const rejectedRequest =
-        await this.providerRequestRepository.updateStatus(
-          requestId,
-          status,
-          adminId,
-          rejectionReason
-        );
+      const rejectedRequest = await this.providerRequestRepository.updateStatus(
+        requestId,
+        status,
+        adminId,
+        rejectionReason,
+      );
 
       if (!rejectedRequest) {
         throw new AppError(
           PROVIDER_ERROR_MESSAGES.REJECTION_FAILED,
-          HTTP_STATUS.INTERNAL_SERVER_ERROR
+          HTTP_STATUS.INTERNAL_SERVER_ERROR,
         );
       }
 
@@ -101,25 +84,19 @@ export class ProviderRequestService
     }
 
     if (status === ProviderRequestStatus.APPROVED) {
-      const provider =
-        await this.providerService.createProvider({
-          brandName: request.brandName,
-          email: request.contactEmail,
-          primaryCategory: request.primaryCategory,
-          websiteUrl: request.websiteUrl,
-          description: request.description,
-        });
+      const provider = await this.providerService.createProvider({
+        brandName: request.brandName,
+        email: request.contactEmail,
+        primaryCategory: request.primaryCategory,
+        websiteUrl: request.websiteUrl,
+        description: request.description,
+      });
 
       const rawToken = crypto.randomBytes(32).toString("hex");
 
-      const hashedToken = crypto
-        .createHash("sha256")
-        .update(rawToken)
-        .digest("hex");
+      const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
 
-      const expiresAt = new Date(
-        Date.now() + PROVIDER_PASSWORD_SETUP.TOKEN_EXPIRATION_MS
-      );
+      const expiresAt = new Date(Date.now() + PROVIDER_PASSWORD_SETUP.TOKEN_EXPIRATION_MS);
 
       await this.passwordSetupTokenRepository.create({
         providerId: provider._id as Types.ObjectId,
@@ -127,32 +104,27 @@ export class ProviderRequestService
         expiresAt,
       });
 
-      const setupUrl =
-        `${process.env.CLIENT_URL}/provider/setup-password?token=${rawToken}`;
+      const setupUrl = `${process.env.CLIENT_URL}/provider/setup-password?token=${rawToken}`;
 
       // temporary log until email service added
       console.info("Provider password setup link:", setupUrl);
 
-      const approvedRequest =
-        await this.providerRequestRepository.updateStatus(
-          requestId,
-          status,
-          adminId
-        );
+      const approvedRequest = await this.providerRequestRepository.updateStatus(
+        requestId,
+        status,
+        adminId,
+      );
 
       if (!approvedRequest) {
         throw new AppError(
           PROVIDER_ERROR_MESSAGES.APPROVAL_FAILED,
-          HTTP_STATUS.INTERNAL_SERVER_ERROR
+          HTTP_STATUS.INTERNAL_SERVER_ERROR,
         );
       }
 
       return approvedRequest;
     }
 
-    throw new AppError(
-      PROVIDER_ERROR_MESSAGES.INVALID_STATUS,
-      HTTP_STATUS.BAD_REQUEST
-    );
+    throw new AppError(PROVIDER_ERROR_MESSAGES.INVALID_STATUS, HTTP_STATUS.BAD_REQUEST);
   }
 }

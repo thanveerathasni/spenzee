@@ -1,12 +1,3 @@
-
-
-
-
-
-
-
-
-
 import "reflect-metadata";
 import { Container } from "inversify";
 import { TYPES } from "./types";
@@ -75,17 +66,23 @@ container.bind<AdminAuthController>(TYPES.AdminAuthController).to(AdminAuthContr
 container.bind<AdminController>(TYPES.AdminController).to(AdminController);
 
 // PROVIDER
-container.bind<IProviderRequestRepository>(TYPES.ProviderRequestRepository).to(ProviderRequestRepository);
+container
+  .bind<IProviderRequestRepository>(TYPES.ProviderRequestRepository)
+  .to(ProviderRequestRepository);
 container.bind<IProviderRequestService>(TYPES.ProviderRequestService).to(ProviderRequestService);
-container.bind<ProviderRequestController>(TYPES.ProviderRequestController).to(ProviderRequestController);
+container
+  .bind<ProviderRequestController>(TYPES.ProviderRequestController)
+  .to(ProviderRequestController);
 container.bind<IProviderRepository>(TYPES.ProviderRepository).to(ProviderRepository);
 container.bind<IProviderService>(TYPES.ProviderService).to(ProviderService);
 container.bind<ProviderAuthService>(TYPES.ProviderAuthService).to(ProviderAuthService);
 container.bind<ProviderAuthController>(TYPES.ProviderAuthController).to(ProviderAuthController);
-container.bind<IProviderPasswordSetupTokenRepository>(
-  TYPES.ProviderPasswordSetupTokenRepository
-).to(ProviderPasswordSetupTokenRepository);
+container
+  .bind<IProviderPasswordSetupTokenRepository>(TYPES.ProviderPasswordSetupTokenRepository)
+  .to(ProviderPasswordSetupTokenRepository);
 container.bind<ProviderController>(TYPES.ProviderController).to(ProviderController);
-container.bind<ProviderCredentialService>(TYPES.ProviderCredentialService).to(ProviderCredentialService);
+container
+  .bind<ProviderCredentialService>(TYPES.ProviderCredentialService)
+  .to(ProviderCredentialService);
 
 export { container };

@@ -13,12 +13,8 @@ import {
 } from "../../../types/repositories/provider/IProviderRequestRepository";
 
 @injectable()
-export class ProviderRequestRepository
-  implements IProviderRequestRepository
-{
-  async create(
-    data: CreateProviderRequestDTO
-  ): Promise<IProviderRequest> {
+export class ProviderRequestRepository implements IProviderRequestRepository {
+  async create(data: CreateProviderRequestDTO): Promise<IProviderRequest> {
     return ProviderRequestModel.create(data);
   }
 
@@ -31,24 +27,18 @@ export class ProviderRequestRepository
   }
 
   async findAll(): Promise<IProviderRequest[]> {
-    return ProviderRequestModel.find()
-      .sort({ createdAt: -1 })
-      .exec();
+    return ProviderRequestModel.find().sort({ createdAt: -1 }).exec();
   }
 
-  async findByStatus(
-    status: ProviderRequestStatus
-  ): Promise<IProviderRequest[]> {
-    return ProviderRequestModel.find({ status })
-      .sort({ createdAt: -1 })
-      .exec();
+  async findByStatus(status: ProviderRequestStatus): Promise<IProviderRequest[]> {
+    return ProviderRequestModel.find({ status }).sort({ createdAt: -1 }).exec();
   }
 
   async updateStatus(
     id: string,
     status: ProviderRequestStatus,
     reviewedBy: string,
-    rejectionReason?: string
+    rejectionReason?: string,
   ): Promise<IProviderRequest | null> {
     if (!Types.ObjectId.isValid(id)) {
       return null;
@@ -60,12 +50,9 @@ export class ProviderRequestRepository
         status,
         reviewedBy,
         reviewedAt: new Date(),
-        rejectionReason:
-          status === ProviderRequestStatus.REJECTED
-            ? rejectionReason
-            : undefined,
+        rejectionReason: status === ProviderRequestStatus.REJECTED ? rejectionReason : undefined,
       },
-      { new: true }
+      { new: true },
     ).exec();
   }
 }

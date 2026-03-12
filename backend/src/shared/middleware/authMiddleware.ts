@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UnauthorizedError } from "../errors/errors";
-import { verifyAccessToken } from"../utils/token.util";
+import { verifyAccessToken } from "../utils/token.util";
 import { Role } from "../constants/roles";
 
 export interface AuthRequest extends Request {
@@ -10,11 +10,7 @@ export interface AuthRequest extends Request {
   };
 }
 
-export const protect = (
-  req: AuthRequest,
-  _res: Response,
-  next: NextFunction
-): void => {
+export const protect = (req: AuthRequest, _res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {

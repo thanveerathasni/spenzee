@@ -12,7 +12,7 @@ import { PROVIDER_ERROR_MESSAGES } from "../../shared/constants/provider";
 export class ProviderService implements IProviderService {
   constructor(
     @inject(TYPES.ProviderRepository)
-    private readonly providerRepository: IProviderRepository
+    private readonly providerRepository: IProviderRepository,
   ) {}
 
   async createProvider(data: {
@@ -22,24 +22,22 @@ export class ProviderService implements IProviderService {
     websiteUrl?: string;
     description?: string;
   }): Promise<IProvider> {
-
-    const existingProvider =
-      await this.providerRepository.findByEmail(data.email);
+    const existingProvider = await this.providerRepository.findByEmail(data.email);
 
     if (existingProvider) {
-throw new Error(PROVIDER_ERROR_MESSAGES.NOT_FOUND);    }
+      throw new Error(PROVIDER_ERROR_MESSAGES.NOT_FOUND);
+    }
 
     return this.providerRepository.create(data);
   }
 
   async getDashboard(providerId: string): Promise<ProviderDashboardDTO> {
-
     const stats = await this.providerRepository.getDashboardStats(providerId);
 
     return {
       totalProducts: stats.totalProducts,
       totalSales: stats.totalSales,
-      revenue: stats.revenue
+      revenue: stats.revenue,
     };
   }
 }

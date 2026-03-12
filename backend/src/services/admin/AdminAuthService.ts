@@ -16,26 +16,20 @@ import { createAccessToken } from "../../shared/utils/token.util";
 export class AdminAuthService implements IAdminAuthService {
   constructor(
     @inject(TYPES.AdminRepository)
-    private readonly adminRepo: IAdminRepository
+    private readonly adminRepo: IAdminRepository,
   ) {}
 
   async login(email: string, password: string) {
     const admin = await this.adminRepo.findByEmail(email);
 
     if (!admin || !admin.isActive) {
-      throw new AppError(
-        ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS,
-        HTTP_STATUS.UNAUTHORIZED
-      );
+      throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
     }
 
     const isMatch = await bcrypt.compare(password, admin.password);
 
     if (!isMatch) {
-      throw new AppError(
-        ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS,
-        HTTP_STATUS.UNAUTHORIZED
-      );
+      throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
     }
 
     const accessToken = createAccessToken({

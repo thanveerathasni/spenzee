@@ -13,13 +13,13 @@ const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 
 export const createAccessToken = (payload: JwtPayload): string => {
   return jwt.sign(payload, ACCESS_SECRET, {
-    expiresIn: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRES_IN
+    expiresIn: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRES_IN,
   });
 };
 
 export const createRefreshToken = (payload: JwtPayload): string => {
   return jwt.sign(payload, REFRESH_SECRET, {
-    expiresIn: TOKEN_CONFIG.REFRESH_TOKEN_EXPIRES_IN
+    expiresIn: TOKEN_CONFIG.REFRESH_TOKEN_EXPIRES_IN,
   });
 };
 

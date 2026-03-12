@@ -26,15 +26,15 @@ import { Response } from "express";
 export const setRefreshTokenCookie = (res: Response, token: string) => {
   res.cookie("refreshToken", token, {
     httpOnly: true,
-    secure: false,          // localhost
+    secure: false, // localhost
     sameSite: "lax",
-    path: "/",             
+    path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
 export const clearRefreshTokenCookie = (res: Response) => {
   res.clearCookie("refreshToken", {
-    path: "/",              
+    path: "/",
   });
 };

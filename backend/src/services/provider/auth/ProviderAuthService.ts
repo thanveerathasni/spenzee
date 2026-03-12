@@ -25,46 +25,28 @@ interface ProviderLoginResult {
 export class ProviderAuthService {
   constructor(
     @inject(TYPES.ProviderRepository)
-    private readonly providerRepository: IProviderRepository
+    private readonly providerRepository: IProviderRepository,
   ) {}
 
-  async login(
-    email: string,
-    password: string
-  ): Promise<ProviderLoginResult> {
+  async login(email: string, password: string): Promise<ProviderLoginResult> {
     const provider = await this.providerRepository.findByEmail(email);
 
     if (!provider) {
-      throw new AppError(
-        ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS,
-        HTTP_STATUS.UNAUTHORIZED
-      );
+      throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
     }
 
     if (provider.status !== ProviderStatus.ACTIVE) {
-      throw new AppError(
-        PROVIDER_ERROR_MESSAGES.NOT_ACTIVE,
-        HTTP_STATUS.FORBIDDEN
-      );
+      throw new AppError(PROVIDER_ERROR_MESSAGES.NOT_ACTIVE, HTTP_STATUS.FORBIDDEN);
     }
 
     if (!provider.password) {
-      throw new AppError(
-        PROVIDER_ERROR_MESSAGES.PASSWORD_NOT_SET,
-        HTTP_STATUS.BAD_REQUEST
-      );
+      throw new AppError(PROVIDER_ERROR_MESSAGES.PASSWORD_NOT_SET, HTTP_STATUS.BAD_REQUEST);
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      provider.password
-    );
+    const isPasswordValid = await bcrypt.compare(password, provider.password);
 
     if (!isPasswordValid) {
-      throw new AppError(
-        ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS,
-        HTTP_STATUS.UNAUTHORIZED
-      );
+      throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
     }
 
     const accessToken = createAccessToken({

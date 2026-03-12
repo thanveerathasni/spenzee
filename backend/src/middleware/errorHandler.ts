@@ -7,13 +7,12 @@ export const errorHandler = (
   err: Error,
   _req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ): Response => {
-
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
 
@@ -21,6 +20,6 @@ export const errorHandler = (
 
   return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
     success: false,
-    message: ERROR_MESSAGES.GENERAL.INTERNAL_SERVER_ERROR
+    message: ERROR_MESSAGES.GENERAL.INTERNAL_SERVER_ERROR,
   });
 };

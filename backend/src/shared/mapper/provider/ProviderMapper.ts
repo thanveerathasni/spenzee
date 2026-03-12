@@ -2,7 +2,6 @@ import { IProvider } from "../../../models/Provider.model";
 import { ProviderDTO } from "../../../shared/dto/provider/provider.dto";
 
 export class ProviderMapper {
-
   static toDTO(provider: IProvider): ProviderDTO {
     return {
       id: provider._id.toString(),
@@ -11,8 +10,7 @@ export class ProviderMapper {
       primaryCategory: provider.primaryCategory,
       websiteUrl: provider.websiteUrl,
       description: provider.description,
-      createdAt: provider.createdAt
+      createdAt: provider.createdAt,
     };
   }
-
 }

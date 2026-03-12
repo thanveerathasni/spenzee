@@ -13,9 +13,8 @@ interface ProviderJwtPayload {
 export const authenticateProvider = (
   req: AuthRequest,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
-
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
@@ -27,7 +26,7 @@ export const authenticateProvider = (
   try {
     const payload = jwt.verify(
       token,
-      process.env.JWT_PROVIDER_SECRET as string
+      process.env.JWT_PROVIDER_SECRET as string,
     ) as ProviderJwtPayload;
 
     if (payload.role !== ROLES.PROVIDER) {
@@ -36,11 +35,10 @@ export const authenticateProvider = (
 
     req.provider = {
       id: payload.providerId,
-      role: payload.role
+      role: payload.role,
     };
 
     next();
-
   } catch {
     throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
   }

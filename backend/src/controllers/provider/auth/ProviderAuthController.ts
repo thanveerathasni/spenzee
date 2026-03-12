@@ -15,29 +15,19 @@ export class ProviderAuthController {
     private readonly providerAuthService: ProviderAuthService,
 
     @inject(TYPES.ProviderCredentialService)
-    private readonly credentialService: ProviderCredentialService
+    private readonly credentialService: ProviderCredentialService,
   ) {}
 
   // ================= LOGIN =================
-  login = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { email, password } = req.body;
 
       if (!email || !password) {
-        throw new AppError(
-          ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS,
-          HTTP_STATUS.BAD_REQUEST
-        );
+        throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.BAD_REQUEST);
       }
 
-      const result = await this.providerAuthService.login(
-        email,
-        password
-      );
+      const result = await this.providerAuthService.login(email, password);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
@@ -50,30 +40,19 @@ export class ProviderAuthController {
   };
 
   // ================= PASSWORD SETUP =================
-  setupPassword = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  setupPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { token, password } = req.body;
 
       if (!token || !password) {
-        throw new AppError(
-          ERROR_MESSAGES.GENERAL.INVALID_REQUEST,
-          HTTP_STATUS.BAD_REQUEST
-        );
+        throw new AppError(ERROR_MESSAGES.GENERAL.INVALID_REQUEST, HTTP_STATUS.BAD_REQUEST);
       }
 
-      await this.credentialService.setupPassword(
-        token,
-        password
-      );
+      await this.credentialService.setupPassword(token, password);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
-        message:
-          SUCCESS_MESSAGES.PROVIDER.PASSWORD_SETUP_SUCCESS,
+        message: SUCCESS_MESSAGES.PROVIDER.PASSWORD_SETUP_SUCCESS,
       });
     } catch (error) {
       next(error);

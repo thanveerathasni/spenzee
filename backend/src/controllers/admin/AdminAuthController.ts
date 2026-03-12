@@ -7,7 +7,7 @@ import { IAdminAuthService } from "../../types/services/admin/IAdminAuthService"
 export class AdminAuthController {
   constructor(
     @inject(TYPES.AdminAuthService)
-    private readonly adminAuthService: IAdminAuthService
+    private readonly adminAuthService: IAdminAuthService,
   ) {}
 
   login = async (req: Request, res: Response): Promise<void> => {

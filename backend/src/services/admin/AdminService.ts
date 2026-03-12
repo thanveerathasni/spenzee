@@ -8,10 +8,7 @@ import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
 export class AdminService implements IAdminService {
   async getDashboard(adminId: string) {
     if (!adminId) {
-      throw new AppError(
-        ERROR_MESSAGES.AUTH.ACCESS_DENIED,
-        HTTP_STATUS.UNAUTHORIZED
-      );
+      throw new AppError(ERROR_MESSAGES.AUTH.ACCESS_DENIED, HTTP_STATUS.UNAUTHORIZED);
     }
 
     // TODO: Replace with repository calls

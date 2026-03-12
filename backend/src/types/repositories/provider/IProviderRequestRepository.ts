@@ -1,7 +1,4 @@
-import {
-  IProviderRequest,
-  ProviderRequestStatus
-} from "../../../models/ProviderRequest.model";
+import { IProviderRequest, ProviderRequestStatus } from "../../../models/ProviderRequest.model";
 
 export interface CreateProviderRequestData {
   brandName: string;
@@ -12,21 +9,18 @@ export interface CreateProviderRequestData {
 }
 
 export interface IProviderRequestRepository {
-
   create(data: CreateProviderRequestData): Promise<IProviderRequest>;
 
   findById(id: string): Promise<IProviderRequest | null>;
 
   findAll(): Promise<IProviderRequest[]>;
 
-  findByStatus(
-    status: ProviderRequestStatus
-  ): Promise<IProviderRequest[]>;
+  findByStatus(status: ProviderRequestStatus): Promise<IProviderRequest[]>;
 
   updateStatus(
     id: string,
     status: ProviderRequestStatus,
     reviewedBy: string,
-    rejectionReason?: string
+    rejectionReason?: string,
   ): Promise<IProviderRequest | null>;
 }

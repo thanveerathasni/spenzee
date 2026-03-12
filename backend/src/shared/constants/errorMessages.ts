@@ -18,18 +18,16 @@ export const ERROR_MESSAGES = {
     ACCESS_DENIED: "Access denied",
     GOOGLE_CREDENTIAL_MISSING: "Google credential missing",
     INVALID_ACCESS_TOKEN_PAYLOAD: "Invalid access token payload",
-    INVALID_REFRESH_TOKEN_PAYLOAD: "Invalid refresh token payload"
-
-
+    INVALID_REFRESH_TOKEN_PAYLOAD: "Invalid refresh token payload",
   },
   OTP: {
     INVALID_OTP: "Invalid OTP",
-    OTP_EXPIRED: "OTP expired"
+    OTP_EXPIRED: "OTP expired",
   },
 
   GENERAL: {
     INTERNAL_SERVER_ERROR: "Something went wrong",
     INVALID_REQUEST: "Invalid request data",
-    VALIDATION_ERROR: "Validation error"
-  }
+    VALIDATION_ERROR: "Validation error",
+  },
 } as const;

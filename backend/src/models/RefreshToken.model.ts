@@ -14,26 +14,23 @@ const refreshTokenSchema = new Schema<IRefreshToken>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true
+      index: true,
     },
     tokenHash: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     isRevoked: {
       type: Boolean,
-      default: false
+      default: false,
     },
     expiresAt: {
       type: Date,
-      required: true
-    }
+      required: true,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const RefreshTokenModel = model<IRefreshToken>(
-  "RefreshToken",
-  refreshTokenSchema
-);
+export const RefreshTokenModel = model<IRefreshToken>("RefreshToken", refreshTokenSchema);

@@ -24,18 +24,6 @@
 //     next();
 //   };
 
-
-
-
-
-
-
-
-
-
-
-
-
 import { Response, NextFunction } from "express";
 import { Role } from "../shared/constants/roles";
 import { AuthRequest } from "../types/services/user/AuthRequest";

@@ -24,7 +24,7 @@ const adminSchema = new Schema<IAdmin>(
       default: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const AdminModel = model<IAdmin>("Admin", adminSchema);

@@ -5,9 +5,7 @@ import { AdminAuthController } from "../../controllers/admin/AdminAuthController
 
 const router = Router();
 
-const controller = container.get<AdminAuthController>(
-  TYPES.AdminAuthController
-);
+const controller = container.get<AdminAuthController>(TYPES.AdminAuthController);
 
 router.post("/login", controller.login);
 

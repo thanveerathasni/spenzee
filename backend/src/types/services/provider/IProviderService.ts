@@ -10,9 +10,7 @@ export interface CreateProviderDTO {
 }
 
 export interface IProviderService {
-
   createProvider(data: CreateProviderDTO): Promise<ProviderDTO>;
 
   getDashboard(providerId: string): Promise<ProviderDashboardDTO>;
-
 }
