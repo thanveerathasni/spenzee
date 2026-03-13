@@ -1,3 +1,7 @@
+import { ProviderRequestStatus } from "../../constants/providerRequestStatus";
+
+
+
 export interface ProviderRequestDTO {
   id: string;
   brandName: string;
