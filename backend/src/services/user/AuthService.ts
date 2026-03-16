@@ -3,106 +3,92 @@ import { injectable, inject } from "inversify";
 import { TYPES } from "../../di/types";
 
 import { IUser } from "../../models/User.model";
+
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
 import { UnauthorizedError, BadRequestError } from "../../shared/errors/errors";
+
 import { generateOtp, hashOtp, compareOtp } from "../../shared/utils/otp.util";
 import { comparePasswords, hashPassword } from "../../shared/utils/password";
 import { hashRefreshToken } from "../../shared/utils/refreshTokenHash";
 import { generateResetToken, hashResetToken } from "../../shared/utils/resetPasswordToken";
+
 import {
   createAccessToken,
   createRefreshToken,
   verifyRefreshToken,
 } from "../../shared/utils/token.util";
+
 import { IOtpRepository } from "../../types/repositories/IOtpRepository";
-import { IUserRepository } from "../../types/repositories/user/IUserRepository";
-import { IAuthService } from "../../types/services/user/IAuthService";
-import { IMailService } from "../../types/services/IMailService";
 import { IRefreshTokenRepository } from "../../types/repositories/IRefreshTokenRepository";
 import { IResetPasswordRepository } from "../../types/repositories/IResetPasswordRepository";
+import { IUserRepository } from "../../types/repositories/user/IUserRepository";
 
+import { IMailService } from "../../types/services/IMailService";
+import { IAuthService, AuthResponse } from "../../types/services/user/IAuthService";
 
-
-
-
-
+import { AuthMapper } from "../../shared/mapper/AuthMapper";
 
 @injectable()
 export class AuthService implements IAuthService {
-  private readonly oauthClient: OAuth2Client;
+  private readonly _oauthClient: OAuth2Client;
 
   constructor(
     @inject(TYPES.UserRepository)
-    private readonly userRepository: IUserRepository,
+    private readonly _userRepository: IUserRepository,
 
     @inject(TYPES.OtpRepository)
-    private readonly otpRepository: IOtpRepository,
+    private readonly _otpRepository: IOtpRepository,
 
     @inject(TYPES.MailService)
-    private readonly mailService: IMailService,
+    private readonly _mailService: IMailService,
 
     @inject(TYPES.RefreshTokenRepository)
-    private readonly refreshTokenRepository: IRefreshTokenRepository,
+    private readonly _refreshTokenRepository: IRefreshTokenRepository,
 
     @inject(TYPES.ResetPasswordRepository)
-    private readonly resetPasswordRepository: IResetPasswordRepository,
+    private readonly _resetPasswordRepository: IResetPasswordRepository,
   ) {
-    this.oauthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    this._oauthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
 
-  // ================= LOGIN =================
-  async login(
-    email: string,
-    password: string,
-  ): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
-    const user = await this.userRepository.findByEmail(email);
+  async login(email: string, password: string): Promise<AuthResponse> {
+    const user = await this._userRepository.findByEmail(email);
 
     if (!user || !user.password) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
-    const isPasswordValid = await comparePasswords(password, user.password);
+    const valid = await comparePasswords(password, user.password);
 
-    if (!isPasswordValid) {
+    if (!valid) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
-    const jwtPayload = {
+    const payload = {
       userId: user._id.toString(),
       role: user.role,
     };
 
-    const accessToken = createAccessToken(jwtPayload);
-    const refreshToken = createRefreshToken(jwtPayload);
+    const accessToken = createAccessToken(payload);
+    const refreshToken = createRefreshToken(payload);
 
-    await this.refreshTokenRepository.create({
+    await this._refreshTokenRepository.create({
       userId: user._id,
       tokenHash: hashRefreshToken(refreshToken),
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    return { accessToken, refreshToken, user };
+    return AuthMapper.toAuthResponse(user, accessToken, refreshToken);
   }
 
-  // ================= REFRESH TOKEN =================
-  async refreshAccessToken(refreshToken: string): Promise<{
-    accessToken: string;
-    refreshToken: string;
-    user: IUser;
-  }> {
-    if (!refreshToken || typeof refreshToken !== "string") {
+  async refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
+    if (!refreshToken) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
     }
 
-    let payload;
+    const payload = verifyRefreshToken(refreshToken);
 
-    try {
-      payload = verifyRefreshToken(refreshToken);
-    } catch {
-      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
-    }
-
-    const stored = await this.refreshTokenRepository.findValidTokenByHash(
+    const stored = await this._refreshTokenRepository.findValidTokenByHash(
       hashRefreshToken(refreshToken),
     );
 
@@ -110,7 +96,7 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
     }
 
-    const user = await this.userRepository.findById(payload.userId);
+    const user = await this._userRepository.findById(payload.userId);
 
     if (!user) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.USER_NOT_FOUND);
@@ -126,22 +112,16 @@ export class AuthService implements IAuthService {
       role: user.role,
     });
 
-    await this.refreshTokenRepository.create({
-      userId: user._id,
-      tokenHash: hashRefreshToken(newRefreshToken),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
-
-    return {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-      user,
-    };
+    return AuthMapper.toAuthResponse(user, newAccessToken, newRefreshToken);
   }
 
-  // ================= SIGNUP =================
+  async logout(refreshToken: string): Promise<void> {
+    const tokenHash = hashRefreshToken(refreshToken);
+    await this._refreshTokenRepository.deleteByTokenHash(tokenHash);
+  }
+
   async signup(email: string, password: string): Promise<void> {
-    const exists = await this.userRepository.findByEmail(email);
+    const exists = await this._userRepository.findByEmail(email);
 
     if (exists) {
       throw new BadRequestError(ERROR_MESSAGES.AUTH.USER_ALREADY_EXISTS);
@@ -149,7 +129,7 @@ export class AuthService implements IAuthService {
 
     const hashedPassword = await hashPassword(password);
 
-    await this.userRepository.create({
+    await this._userRepository.create({
       email,
       name: email.split("@")[0],
       password: hashedPassword,
@@ -159,18 +139,17 @@ export class AuthService implements IAuthService {
 
     const otp = generateOtp();
 
-    await this.otpRepository.create(
+    await this._otpRepository.create(
       email,
       await hashOtp(otp),
       new Date(Date.now() + 10 * 60 * 1000),
     );
 
-    await this.mailService.sendOtp(email, otp);
+    await this._mailService.sendOtp(email, otp);
   }
 
-  // ================= VERIFY OTP =================
   async verifyOtp(email: string, otp: string): Promise<void> {
-    const record = await this.otpRepository.findByEmail(email);
+    const record = await this._otpRepository.findByEmail(email);
 
     if (!record || record.expiresAt < new Date()) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.OTP_INVALID);
@@ -182,34 +161,30 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.OTP_INVALID);
     }
 
-    await this.userRepository.verifyUser(email);
-    await this.otpRepository.deleteByEmail(email);
+    await this._userRepository.verifyUser(email);
+    await this._otpRepository.deleteByEmail(email);
   }
 
-  // ================= RESEND OTP =================
   async resendOtp(email: string): Promise<void> {
     const otp = generateOtp();
 
-    await this.otpRepository.updateOtp(
+    await this._otpRepository.updateOtp(
       email,
       await hashOtp(otp),
       new Date(Date.now() + 10 * 60 * 1000),
     );
 
-    await this.mailService.sendOtp(email, otp);
+    await this._mailService.sendOtp(email, otp);
   }
 
-  // ================= FORGOT PASSWORD =================
   async forgotPassword(email: string): Promise<string | null> {
-    const user = await this.userRepository.findByEmail(email);
+    const user = await this._userRepository.findByEmail(email);
 
     if (!user) return null;
 
-    await this.resetPasswordRepository.deleteByUserId(user._id);
-
     const resetToken = generateResetToken();
 
-    await this.resetPasswordRepository.create(
+    await this._resetPasswordRepository.create(
       user._id,
       hashResetToken(resetToken),
       new Date(Date.now() + 15 * 60 * 1000),
@@ -219,30 +194,26 @@ export class AuthService implements IAuthService {
   }
 
   async sendResetPasswordEmail(email: string, resetToken: string): Promise<void> {
-    await this.mailService.sendResetPasswordEmail(email, resetToken);
+    await this._mailService.sendResetPasswordEmail(email, resetToken);
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    const record = await this.resetPasswordRepository.findByTokenHash(hashResetToken(token));
+    const record = await this._resetPasswordRepository.findByTokenHash(
+      hashResetToken(token),
+    );
 
     if (!record || record.expiresAt < new Date()) {
       throw new BadRequestError(ERROR_MESSAGES.AUTH.RESET_TOKEN_INVALID);
     }
 
-    await this.userRepository.updatePassword(
+    await this._userRepository.updatePassword(
       record.userId.toString(),
       await hashPassword(newPassword),
     );
-
-    await this.resetPasswordRepository.deleteByUserId(record.userId);
-    await this.refreshTokenRepository.revokeAllForUser(record.userId);
   }
 
-  // ================= GOOGLE LOGIN =================
-  async googleLogin(
-    credential: string,
-  ): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
-    const ticket = await this.oauthClient.verifyIdToken({
+  async googleLogin(credential: string): Promise<AuthResponse> {
+    const ticket = await this._oauthClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
@@ -253,10 +224,10 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
-    let user = await this.userRepository.findByEmail(payload.email);
+    let user = await this._userRepository.findByEmail(payload.email);
 
     if (!user) {
-      user = await this.userRepository.create({
+      user = await this._userRepository.create({
         email: payload.email,
         name: payload.name ?? payload.email.split("@")[0],
         password: null,
@@ -266,27 +237,16 @@ export class AuthService implements IAuthService {
       });
     }
 
-    const jwtPayload = {
+    const accessToken = createAccessToken({
       userId: user._id.toString(),
       role: user.role,
-    };
-
-    const accessToken = createAccessToken(jwtPayload);
-    const refreshToken = createRefreshToken(jwtPayload);
-
-    await this.refreshTokenRepository.create({
-      userId: user._id,
-      tokenHash: hashRefreshToken(refreshToken),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    return { accessToken, refreshToken, user };
-  }
+    const refreshToken = createRefreshToken({
+      userId: user._id.toString(),
+      role: user.role,
+    });
 
-  // ================= LOGOUT =================
-  async logout(refreshToken: string): Promise<void> {
-    const tokenHash = hashRefreshToken(refreshToken);
-
-    await this.refreshTokenRepository.deleteByTokenHash(tokenHash);
+    return AuthMapper.toAuthResponse(user, accessToken, refreshToken);
   }
 }
