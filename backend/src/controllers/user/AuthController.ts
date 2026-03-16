@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { injectable, inject } from "inversify";
 import { TYPES } from "../../di/types";
 
-
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
 import { SUCCESS_MESSAGES } from "../../shared/constants/successMessages";
 import { TOKEN_CONFIG } from "../../shared/constants/token";
@@ -22,16 +21,14 @@ import { VerifyOtpDTO } from "../../validators/auth/verifyOtp.validator";
 export class AuthController {
   constructor(
     @inject(TYPES.AuthService)
-    private readonly authService: IAuthService,
+    private readonly _authService: IAuthService,
   ) {}
 
   async login(req: Request, res: Response): Promise<Response> {
-    const loginDto = req.body as LoginDTO;
+    const dto = req.body as LoginDTO;
 
-    const { accessToken, refreshToken, user } = await this.authService.login(
-      loginDto.email,
-      loginDto.password,
-    );
+    const { accessToken, refreshToken, user } =
+      await this._authService.login(dto.email, dto.password);
 
     setRefreshTokenCookie(res, refreshToken);
 
@@ -49,13 +46,10 @@ export class AuthController {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_MISSING);
     }
 
-    const {
-      accessToken,
-      refreshToken: newRefreshToken,
-      user,
-    } = await this.authService.refreshAccessToken(refreshToken);
+    const { accessToken, refreshToken: newToken, user } =
+      await this._authService.refreshAccessToken(refreshToken);
 
-    setRefreshTokenCookie(res, newRefreshToken);
+    setRefreshTokenCookie(res, newToken);
 
     return sendResponse({
       res,
@@ -68,7 +62,7 @@ export class AuthController {
     const refreshToken = req.cookies?.[TOKEN_CONFIG.COOKIE_NAME];
 
     if (refreshToken) {
-      await this.authService.logout(refreshToken);
+      await this._authService.logout(refreshToken);
     }
 
     clearRefreshTokenCookie(res);
@@ -82,7 +76,7 @@ export class AuthController {
   async signup(req: Request, res: Response): Promise<Response> {
     const dto = req.body as SignupDTO;
 
-    await this.authService.signup(dto.email, dto.password);
+    await this._authService.signup(dto.email, dto.password);
 
     return sendResponse({
       res,
@@ -93,7 +87,7 @@ export class AuthController {
   async verifyOtp(req: Request, res: Response): Promise<Response> {
     const dto = req.body as VerifyOtpDTO;
 
-    await this.authService.verifyOtp(dto.email, dto.otp);
+    await this._authService.verifyOtp(dto.email, dto.otp);
 
     return sendResponse({
       res,
@@ -104,7 +98,7 @@ export class AuthController {
   async resendOtp(req: Request, res: Response): Promise<Response> {
     const dto = req.body as ResendOtpDTO;
 
-    await this.authService.resendOtp(dto.email);
+    await this._authService.resendOtp(dto.email);
 
     return sendResponse({
       res,
@@ -115,10 +109,10 @@ export class AuthController {
   async forgotPassword(req: Request, res: Response): Promise<Response> {
     const { email } = req.body;
 
-    const resetToken = await this.authService.forgotPassword(email);
+    const resetToken = await this._authService.forgotPassword(email);
 
     if (resetToken) {
-      await this.authService.sendResetPasswordEmail(email, resetToken);
+      await this._authService.sendResetPasswordEmail(email, resetToken);
     }
 
     return sendResponse({
@@ -130,7 +124,7 @@ export class AuthController {
   async resetPassword(req: Request, res: Response): Promise<Response> {
     const { token, newPassword } = req.body;
 
-    await this.authService.resetPassword(token, newPassword);
+    await this._authService.resetPassword(token, newPassword);
 
     return sendResponse({
       res,
@@ -145,7 +139,8 @@ export class AuthController {
       throw new BadRequestError(ERROR_MESSAGES.AUTH.GOOGLE_CREDENTIAL_MISSING);
     }
 
-    const { accessToken, refreshToken, user } = await this.authService.googleLogin(credential);
+    const { accessToken, refreshToken, user } =
+      await this._authService.googleLogin(credential);
 
     setRefreshTokenCookie(res, refreshToken);
 

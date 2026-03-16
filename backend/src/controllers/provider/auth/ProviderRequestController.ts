@@ -2,24 +2,28 @@ import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 
 import { TYPES } from "../../../di/types";
-import { ProviderRequestStatus } from "../../../models/ProviderRequest.model";
+
 import {
   PROVIDER_SUCCESS_MESSAGES,
   PROVIDER_ERROR_MESSAGES,
 } from "../../../shared/constants/provider";
+import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
+
+
 import { IProviderRequestService } from "../../../types/services/provider/IProviderRequestService";
+import { AuthRequest } from "../../../types/services/user/AuthRequest";
 
 @injectable()
 export class ProviderRequestController {
   constructor(
     @inject(TYPES.ProviderRequestService)
-    private readonly providerRequestService: IProviderRequestService,
+    private readonly _providerRequestService: IProviderRequestService,
   ) {}
 
   async createProviderRequest(req: Request, res: Response): Promise<void> {
     const { brandName, websiteUrl, primaryCategory, contactEmail, description } = req.body;
 
-    const request = await this.providerRequestService.createRequest({
+    const request = await this._providerRequestService.createRequest({
       brandName,
       websiteUrl,
       primaryCategory,
@@ -34,7 +38,7 @@ export class ProviderRequestController {
   }
 
   async getAllProviderRequests(_req: Request, res: Response): Promise<void> {
-    const requests = await this.providerRequestService.getAllRequests();
+    const requests = await this._providerRequestService.getAllRequests();
 
     res.status(200).json({
       data: requests,
@@ -51,7 +55,7 @@ export class ProviderRequestController {
       return;
     }
 
-    const requests = await this.providerRequestService.getRequestsByStatus(
+    const requests = await this._providerRequestService.getRequestsByStatus(
       status as ProviderRequestStatus,
     );
 
@@ -60,29 +64,25 @@ export class ProviderRequestController {
     });
   }
 
-  async reviewProviderRequest(req: Request, res: Response): Promise<void> {
+  async reviewProviderRequest(req: AuthRequest, res: Response): Promise<void> {
     const { requestId } = req.params;
     const { status, rejectionReason } = req.body;
 
-    const adminId = req.admin!.id;
-
-    if (!Object.values(ProviderRequestStatus).includes(status as ProviderRequestStatus)) {
-      res.status(400).json({
-        message: PROVIDER_ERROR_MESSAGES.INVALID_STATUS,
-      });
+    if (!req.admin) {
+      res.status(401).json({ message: "Admin not authenticated" });
       return;
     }
 
-    const updatedRequest = await this.providerRequestService.reviewRequest(
+    const updated = await this._providerRequestService.reviewRequest(
       requestId,
-      adminId,
+      req.admin.id,
       status,
       rejectionReason,
     );
 
     res.status(200).json({
       message: PROVIDER_SUCCESS_MESSAGES.REQUEST_UPDATED,
-      data: updatedRequest,
+      data: updated,
     });
   }
 }
