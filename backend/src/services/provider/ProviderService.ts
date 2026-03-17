@@ -6,7 +6,7 @@ import { ProviderDashboardDTO } from "../../shared/dto/provider/providerDashboar
 import { ProviderMapper } from "../../shared/mapper/provider/ProviderMapper";
 
 import { IProviderRepository } from "../../types/repositories/provider/IProviderRepository";
-import { IProviderService } from "../../types/services/provider/IProviderService";
+import { IProviderService, CreateProviderDTO } from "../../types/services/provider/IProviderService";
 
 import { ProviderDTO } from "../../shared/dto/provider/provider.dto";
 
@@ -17,13 +17,7 @@ export class ProviderService implements IProviderService {
     private readonly _providerRepository: IProviderRepository,
   ) {}
 
-  async createProvider(data: {
-    brandName: string;
-    email: string;
-    primaryCategory: string;
-    websiteUrl?: string;
-    description?: string;
-  }): Promise<ProviderDTO> {
+  async createProvider(data: CreateProviderDTO): Promise<ProviderDTO> {
     const existing = await this._providerRepository.findByEmail(data.email);
 
     if (existing) {
@@ -45,3 +39,7 @@ export class ProviderService implements IProviderService {
     };
   }
 }
+
+
+
+

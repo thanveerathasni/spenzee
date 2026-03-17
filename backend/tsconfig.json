@@ -18,7 +18,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },

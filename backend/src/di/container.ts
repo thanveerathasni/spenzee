@@ -4,23 +4,13 @@ import { TYPES } from "./types";
 
 // ===== USER =====
 
-import { IMailService } from "../types/services/IMailService";
-import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
-import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRepository";
 
 // ===== ADMIN =====
-import { AdminRepository } from "../repositories/admin/AdminRepository";
-import { AdminAuthService } from "../services/admin/AdminAuthService";
 import { AdminAuthController } from "../controllers/admin/AdminAuthController";
 import { AdminController } from "../controllers/admin/AdminController";
-import { AdminService } from "../services/admin/AdminService";
 
-import { IAdminRepository } from "../types/repositories/admin/IAdminRepository";
-import { IAdminAuthService } from "../types/services/admin/IAdminAuthService";
-import { IAdminService } from "../types/services/admin/IAdminService";
 
 // ===== PROVIDER =====
-import { ProviderRequestRepository } from "../repositories/provider/auth/ProviderRequestRepository";
 import { ProviderRequestService } from "../services/provider/auth/ProviderRequestService";
 import { ProviderRequestController } from "../controllers/provider/auth/ProviderRequestController";
 import { ProviderRepository } from "../repositories/provider/auth/ProviderRepository";
@@ -33,16 +23,26 @@ import { AuthController } from "../controllers/user/AuthController";
 import { OtpRepository } from "../repositories/OtpRepository";
 import { RefreshTokenRepository } from "../repositories/RefreshTokenRepository";
 import { ResetPasswordRepository } from "../repositories/ResetPasswordRepository";
+import { AdminRepository } from "../repositories/admin/AdminRepository";
+import { ProviderRequestRepository } from "../repositories/provider/auth/ProviderRequestRepository";
 import { UserRepository } from "../repositories/user/UserRepository";
 import { MailService } from "../services/MailService";
+import { AdminAuthService } from "../services/admin/AdminAuthService";
+import { AdminService } from "../services/admin/AdminService";
 import { ProviderCredentialService } from "../services/provider/auth/ProviderCredentialService";
 import { AuthService } from "../services/user/AuthService";
 import { IOtpRepository } from "../types/repositories/IOtpRepository";
+import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepository";
+import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRepository";
+import { IAdminRepository } from "../types/repositories/admin/IAdminRepository";
 
 import { IProviderPasswordSetupTokenRepository } from "../types/repositories/provider/IProviderPasswordSetupTokenRepository";
 import { IProviderRepository } from "../types/repositories/provider/IProviderRepository";
 import { IProviderRequestRepository } from "../types/repositories/provider/IProviderRequestRepository";
 import { IUserRepository } from "../types/repositories/user/IUserRepository";
+import { IMailService } from "../types/services/IMailService";
+import { IAdminAuthService } from "../types/services/admin/IAdminAuthService";
+import { IAdminService } from "../types/services/admin/IAdminService";
 import { IProviderRequestService } from "../types/services/provider/IProviderRequestService";
 import { IProviderService } from "../types/services/provider/IProviderService";
 import { IAuthService } from "../types/services/user/IAuthService";

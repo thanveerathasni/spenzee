@@ -14,6 +14,10 @@ export const SUCCESS_MESSAGES = {
     OTP_SENT: "OTP sent successfully",
     OTP_VERIFIED: "OTP verified successfully",
   },
+   ADMIN: {
+    DASHBOARD_FETCHED: "Admin dashboard fetched successfully",
+  },
+
 
   PROVIDER: {
     PASSWORD_SETUP_SUCCESS: "Provider password setup successful",
@@ -21,4 +25,6 @@ export const SUCCESS_MESSAGES = {
     REQUEST_APPROVED: "Provider request approved successfully",
     REQUEST_REJECTED: "Provider request rejected successfully",
   },
+
+
 } as const;

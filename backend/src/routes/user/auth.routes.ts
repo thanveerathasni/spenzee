@@ -2,86 +2,87 @@ import { Router } from "express";
 import { AuthController } from "../../controllers/user/AuthController";
 import { container } from "../../di/container";
 import { TYPES } from "../../di/types";
-
-import { loginLimiter, otpLimiter, passwordResetLimiter } from "../../middleware/rateLimit";
+import {loginLimiter,otpLimiter,passwordResetLimiter,} from "../../middleware/rateLimit";
 import { validate } from "../../middleware/validate";
-
 import { forgotPasswordSchema } from "../../validators/auth/forgotPassword.validator";
 import { loginSchema } from "../../validators/auth/login.validator";
 import { resendOtpSchema } from "../../validators/auth/resendOtp.validator";
 import { resetPasswordSchema } from "../../validators/auth/resetPassword.validator";
 import { signupSchema } from "../../validators/auth/signup.validator";
 import { verifyOtpSchema } from "../../validators/auth/verifyOtp.validator";
-
+import { asyncHandler } from "../../shared/middleware/asyncHandler";
 
 const router = Router();
+
 const authController = container.get<AuthController>(TYPES.AuthController);
 
 /* =====================================================
-   USER AUTH ROUTES 
+   USER AUTH ROUTES
 ===================================================== */
 
-// 🔐 LOGIN (rate-limited)
+// LOGIN
 router.post(
   "/login",
   loginLimiter,
   validate(loginSchema),
-  authController.login.bind(authController),
+  asyncHandler(authController.login.bind(authController))
 );
 
-// 🔁 REFRESH TOKEN
-router.post("/refresh", authController.refresh.bind(authController));
+// REFRESH TOKEN
+router.post(
+  "/refresh",
+  asyncHandler(authController.refresh.bind(authController))
+);
 
-// 🚪 LOGOUT
-router.post("/logout", authController.logout.bind(authController));
+// LOGOUT
+router.post(
+  "/logout",
+  asyncHandler(authController.logout.bind(authController))
+);
 
-// ✍️ SIGNUP
-router.post("/signup", validate(signupSchema), authController.signup.bind(authController));
+// SIGNUP
+router.post(
+  "/signup",
+  validate(signupSchema),
+  asyncHandler(authController.signup.bind(authController))
+);
 
-// 🔐 VERIFY OTP
+// VERIFY OTP
 router.post(
   "/verify-otp",
   validate(verifyOtpSchema),
-  authController.verifyOtp.bind(authController),
+  asyncHandler(authController.verifyOtp.bind(authController))
 );
 
-// 🔁 RESEND OTP (rate-limited)
+// RESEND OTP
 router.post(
   "/resend-otp",
   otpLimiter,
   validate(resendOtpSchema),
-  authController.resendOtp.bind(authController),
+  asyncHandler(authController.resendOtp.bind(authController))
 );
 
-// 🔑 FORGOT PASSWORD (rate-limited)
+// FORGOT PASSWORD
 router.post(
   "/forgot-password",
   passwordResetLimiter,
   validate(forgotPasswordSchema),
-  authController.forgotPassword.bind(authController),
+  asyncHandler(authController.forgotPassword.bind(authController))
 );
 
-// 🔄 RESET PASSWORD (rate-limited)
+// RESET PASSWORD
 router.post(
   "/reset-password",
   passwordResetLimiter,
   validate(resetPasswordSchema),
-  authController.resetPassword.bind(authController),
+  asyncHandler(authController.resetPassword.bind(authController))
 );
 
-// 🌐 GOOGLE LOGIN (rate-limited)
-router.post("/google", loginLimiter, authController.googleLogin.bind(authController));
-
-/* =====================================================
-   ADMIN AUTH ROUTES (ROLE-BASED)
-===================================================== */
-
-// Example admin-only route (keep commented until needed)
-// router.get(
-//   "/admin/dashboard",
-//   authGuard,
-//   roleGuard([ROLES.ADMIN]),
-//   authController.dashboard.bind(authController)
-// );
+// GOOGLE LOGIN
+router.post(
+  "/google",
+  loginLimiter,
+  asyncHandler(authController.googleLogin.bind(authController))
+);
 
 export default router;

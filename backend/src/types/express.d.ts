@@ -9,6 +9,14 @@ declare global {
 
     interface Request {
       user?: UserPayload;
+      admin?: {
+        id: string;
+        role: Role;
+      };
+      provider?: {
+        id: string;
+        role: Role;
+      };
     }
   }
 }
