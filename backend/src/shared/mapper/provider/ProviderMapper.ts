@@ -8,8 +8,8 @@ export class ProviderMapper {
       brandName: provider.brandName,
       email: provider.email,
       primaryCategory: provider.primaryCategory,
-      websiteUrl: provider.websiteUrl,
-      description: provider.description,
+      websiteUrl: provider.websiteUrl ?? undefined,
+      description: provider.description ?? undefined,
       createdAt: provider.createdAt,
     };
   }

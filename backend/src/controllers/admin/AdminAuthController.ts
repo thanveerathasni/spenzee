@@ -1,23 +1,26 @@
 import { Request, Response } from "express";
-import { inject, injectable } from "inversify";
+import { injectable, inject } from "inversify";
+
 import { TYPES } from "../../di/types";
-import { IAdminAuthService } from "../../types/services/admin/IAdminAuthService";
+import { AdminAuthService } from "../../services/admin/AdminAuthService";
+import { sendResponse } from "../../shared/utils/sendResponse";
 
 @injectable()
 export class AdminAuthController {
   constructor(
     @inject(TYPES.AdminAuthService)
-    private readonly adminAuthService: IAdminAuthService,
+    private readonly _service: AdminAuthService
   ) {}
 
-  login = async (req: Request, res: Response): Promise<void> => {
+  async login(req: Request, res: Response) {
     const { email, password } = req.body;
 
-    const result = await this.adminAuthService.login(email, password);
+    const data = await this._service.login(email, password);
 
-    res.status(200).json({
-      success: true,
-      data: result,
+    return sendResponse({
+      res,
+      message: "Admin login success",
+      data,
     });
-  };
+  }
 }

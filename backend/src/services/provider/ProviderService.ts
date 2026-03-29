@@ -1,45 +1,23 @@
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../di/types";
-
-import { PROVIDER_ERROR_MESSAGES } from "../../shared/constants/provider";
-import { ProviderDashboardDTO } from "../../shared/dto/provider/providerDashboard";
-import { ProviderMapper } from "../../shared/mapper/provider/ProviderMapper";
-
-import { IProviderRepository } from "../../types/repositories/provider/IProviderRepository";
-import { IProviderService, CreateProviderDTO } from "../../types/services/provider/IProviderService";
-
 import { ProviderDTO } from "../../shared/dto/provider/provider.dto";
 
+import { ProviderMapper } from "../../shared/mapper/provider/ProviderMapper";
+import { IProviderRepository } from "../../types/repositories/provider/IProviderRepository";
+
 @injectable()
-export class ProviderService implements IProviderService {
+export class ProviderService {
   constructor(
     @inject(TYPES.ProviderRepository)
-    private readonly _providerRepository: IProviderRepository,
+    private readonly _repo: IProviderRepository
   ) {}
 
-  async createProvider(data: CreateProviderDTO): Promise<ProviderDTO> {
-    const existing = await this._providerRepository.findByEmail(data.email);
-
-    if (existing) {
-      throw new Error(PROVIDER_ERROR_MESSAGES.ALREADY_EXISTS);
-    }
-
-    const provider = await this._providerRepository.create(data);
-
+  async createProvider(data: any): Promise<ProviderDTO> {
+    const provider = await this._repo.create(data);
     return ProviderMapper.toDTO(provider);
   }
 
-  async getDashboard(providerId: string): Promise<ProviderDashboardDTO> {
-    const stats = await this._providerRepository.getDashboardStats(providerId);
-
-    return {
-      totalProducts: stats.totalProducts,
-      totalSales: stats.totalSales,
-      revenue: stats.revenue,
-    };
+  async updatePassword(providerId: string, password: string): Promise<void> {
+    await this._repo.updatePassword(providerId, password);
   }
 }
-
-
-
-

@@ -5,8 +5,10 @@ import { TYPES } from "../../../di/types";
 
 import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
 import { PROVIDER_ERROR_MESSAGES } from "../../../shared/constants/provider";
+
 import { AppError } from "../../../shared/errors/AppError";
 import { hashPassword } from "../../../shared/utils/password";
+
 import { IProviderPasswordSetupTokenRepository } from "../../../types/repositories/provider/IProviderPasswordSetupTokenRepository";
 import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 
@@ -14,10 +16,10 @@ import { IProviderRepository } from "../../../types/repositories/provider/IProvi
 export class ProviderCredentialService {
   constructor(
     @inject(TYPES.ProviderRepository)
-    private readonly providerRepository: IProviderRepository,
+    private readonly _providerRepository: IProviderRepository,
 
     @inject(TYPES.ProviderPasswordSetupTokenRepository)
-    private readonly passwordSetupTokenRepository: IProviderPasswordSetupTokenRepository,
+    private readonly _tokenRepository: IProviderPasswordSetupTokenRepository,
   ) {}
 
   async setupPassword(rawToken: string, newPassword: string): Promise<void> {
@@ -28,10 +30,9 @@ export class ProviderCredentialService {
       );
     }
 
-    // Hash incoming token
     const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
 
-    const tokenRecord = await this.passwordSetupTokenRepository.findByHashedToken(hashedToken);
+    const tokenRecord = await this._tokenRepository.findByHashedToken(hashedToken);
 
     if (!tokenRecord) {
       throw new AppError(PROVIDER_ERROR_MESSAGES.INVALID_SETUP_TOKEN, HTTP_STATUS.BAD_REQUEST);
@@ -45,20 +46,15 @@ export class ProviderCredentialService {
       throw new AppError(PROVIDER_ERROR_MESSAGES.SETUP_TOKEN_ALREADY_USED, HTTP_STATUS.BAD_REQUEST);
     }
 
-    const provider = await this.providerRepository.findById(tokenRecord.providerId.toString());
+    const provider = await this._providerRepository.findById(tokenRecord.providerId.toString());
 
     if (!provider) {
       throw new AppError(PROVIDER_ERROR_MESSAGES.NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     }
 
-    if (provider.password) {
-      throw new AppError(PROVIDER_ERROR_MESSAGES.PASSWORD_ALREADY_SET, HTTP_STATUS.BAD_REQUEST);
-    }
-
     const hashedPassword = await hashPassword(newPassword);
 
-    await this.providerRepository.updatePassword(provider._id.toString(), hashedPassword);
+    await this._providerRepository.updatePassword(provider._id.toString(), hashedPassword);
 
-    await this.passwordSetupTokenRepository.markAsUsed(tokenRecord._id.toString());
-  }
+    await this._tokenRepository.markAsUsed(tokenRecord._id!.toString());  }
 }

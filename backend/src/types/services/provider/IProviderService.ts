@@ -1,16 +1,6 @@
 import { ProviderDTO } from "../../../shared/dto/provider/provider.dto";
-import { ProviderDashboardDTO } from "../../../shared/dto/provider/providerDashboard";
-
-export interface CreateProviderDTO {
-  brandName: string;
-  email: string;
-  primaryCategory: string;
-  websiteUrl?: string;
-  description?: string;
-}
 
 export interface IProviderService {
-  createProvider(data: CreateProviderDTO): Promise<ProviderDTO>;
-
-  getDashboard(providerId: string): Promise<ProviderDashboardDTO>;
+  createProvider(data: any): Promise<ProviderDTO>;
+  updatePassword(providerId: string, password: string): Promise<void>;
 }

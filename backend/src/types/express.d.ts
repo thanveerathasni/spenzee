@@ -2,21 +2,15 @@ import { Role } from "../shared/constants/roles";
 
 declare global {
   namespace Express {
-    interface UserPayload {
+    interface AuthPayload {
       id: string;
       role: Role;
     }
 
     interface Request {
-      user?: UserPayload;
-      admin?: {
-        id: string;
-        role: Role;
-      };
-      provider?: {
-        id: string;
-        role: Role;
-      };
+      user?: AuthPayload;
+      admin?: AuthPayload;
+      provider?: AuthPayload;
     }
   }
 }

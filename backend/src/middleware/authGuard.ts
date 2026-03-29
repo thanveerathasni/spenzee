@@ -1,30 +1,24 @@
-import { Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from "express";
 import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
 import { Role } from "../shared/constants/roles";
 import { UnauthorizedError } from "../shared/errors/errors";
-import { isValidRole } from "../shared/utils/roleUtils";
-import { AuthRequest } from "../types/services/user/AuthRequest";
+import { verifyAccessToken } from "../shared/utils/token.util";
 
-export const authGuard = (req: AuthRequest, _res: Response, next: NextFunction): void => {
+export const authGuard = (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): void => {
   const authHeader = req.headers.authorization;
-  const ACCESS_DENIED = ERROR_MESSAGES.AUTH.ACCESS_DENIED;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    throw new UnauthorizedError(ACCESS_DENIED);
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string) as {
-      userId: string;
-      role: unknown;
-    };
-
-    if (!isValidRole(payload.role)) {
-      throw new UnauthorizedError(ACCESS_DENIED);
-    }
+    const payload = verifyAccessToken(token);
 
     req.user = {
       id: payload.userId,
@@ -33,6 +27,6 @@ export const authGuard = (req: AuthRequest, _res: Response, next: NextFunction):
 
     next();
   } catch {
-    throw new UnauthorizedError(ACCESS_DENIED);
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
   }
 };

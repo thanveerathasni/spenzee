@@ -1,38 +1,27 @@
 import { injectable } from "inversify";
-import type { IUser } from "../../models/User.model";
-import { UserModel } from "../../models/User.model";
+import { IUser, UserModel } from "../../models/User.model";
+import { BaseRepository } from "../../shared/base/BaseRepository";
+
 import { IUserRepository } from "../../types/repositories/user/IUserRepository";
 
 @injectable()
-export class UserRepository implements IUserRepository {
-  async findByEmail(email: string): Promise<IUser | null> {
-    return UserModel.findOne({ email }).exec();
+export class UserRepository
+  extends BaseRepository<IUser>
+  implements IUserRepository
+{
+  constructor() {
+    super(UserModel);
   }
 
-  async create(data: {
-    name?: string;
-    email: string;
-    password: string | null;
-    role: "user" | "provider" | "admin";
-    isVerified: boolean;
-    provider?: "google" | "local";
-  }): Promise<IUser> {
-    const user = new UserModel(data);
-    await user.save();
-    return user;
+  async findByEmail(email: string): Promise<IUser | null> {
+    return this.model.findOne({ email }).exec();
   }
 
   async verifyUser(email: string): Promise<void> {
-    await UserModel.updateOne({ email }, { $set: { isVerified: true } }).exec();
+    await this.model.updateOne({ email }, { isVerified: true }).exec();
   }
 
   async updatePassword(userId: string, password: string): Promise<void> {
-    await UserModel.findByIdAndUpdate(userId, {
-      password,
-    }).exec();
-  }
-
-  async findById(id: string): Promise<IUser | null> {
-    return UserModel.findById(id).exec();
+    await this.model.findByIdAndUpdate(userId, { password }).exec();
   }
 }

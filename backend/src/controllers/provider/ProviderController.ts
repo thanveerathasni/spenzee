@@ -1,26 +1,28 @@
-import { Response } from "express";
-import { inject, injectable } from "inversify";
+import { Request, Response } from "express";
+import { injectable, inject } from "inversify";
+
 import { TYPES } from "../../di/types";
-import { UnauthorizedError } from "../../shared/errors/errors";
+import { logger } from "../../shared/logger/logger";
+import { sendResponse } from "../../shared/utils/sendResponse";
 import { IProviderService } from "../../types/services/provider/IProviderService";
-import { AuthRequest } from "../../types/services/user/AuthRequest";
 
 @injectable()
 export class ProviderController {
   constructor(
     @inject(TYPES.ProviderService)
-    private readonly _providerService: IProviderService,
+    private readonly _providerService: IProviderService
   ) {}
 
-  async getDashboard(req: AuthRequest, res: Response): Promise<Response> {
-    if (!req.provider) {
-      throw new UnauthorizedError("Provider not authenticated");
-    }
+  async getDashboard(req: Request, res: Response) {
+    const providerId = req.user?.id;
 
-    const data = await this._providerService.getDashboard(req.provider.id);
+    logger.info("Provider dashboard accessed", { providerId });
 
-    return res.status(200).json({
-      success: true,
+    const data = await this._providerService.createProvider({}); 
+
+    return sendResponse({
+      res,
+      message: "Dashboard fetched",
       data,
     });
   }

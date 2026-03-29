@@ -1,10 +1,5 @@
 import { Schema, model, Document } from "mongoose";
-
-export enum ProviderRequestStatus {
-  PENDING = "pending",
-  APPROVED = "approved",
-  REJECTED = "rejected",
-}
+import { ProviderRequestStatus } from "../shared/constants/providerRequestStatus";
 
 export interface IProviderRequest extends Document {
   readonly brandName: string;

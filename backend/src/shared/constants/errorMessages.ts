@@ -19,6 +19,7 @@ export const ERROR_MESSAGES = {
     GOOGLE_CREDENTIAL_MISSING: "Google credential missing",
     INVALID_ACCESS_TOKEN_PAYLOAD: "Invalid access token payload",
     INVALID_REFRESH_TOKEN_PAYLOAD: "Invalid refresh token payload",
+    TOO_MANY_REQUESTS: "Too many requests",
   },
   OTP: {
     INVALID_OTP: "Invalid OTP",

@@ -4,8 +4,9 @@ import { Types } from "mongoose";
 import {
   ProviderRequestModel,
   IProviderRequest,
-  ProviderRequestStatus,
 } from "../../../models/ProviderRequest.model";
+
+import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
 
 import {
   IProviderRequestRepository,
@@ -19,10 +20,7 @@ export class ProviderRequestRepository implements IProviderRequestRepository {
   }
 
   async findById(id: string): Promise<IProviderRequest | null> {
-    if (!Types.ObjectId.isValid(id)) {
-      return null;
-    }
-
+    if (!Types.ObjectId.isValid(id)) return null;
     return ProviderRequestModel.findById(id).exec();
   }
 
@@ -40,9 +38,7 @@ export class ProviderRequestRepository implements IProviderRequestRepository {
     reviewedBy: string,
     rejectionReason?: string,
   ): Promise<IProviderRequest | null> {
-    if (!Types.ObjectId.isValid(id)) {
-      return null;
-    }
+    if (!Types.ObjectId.isValid(id)) return null;
 
     return ProviderRequestModel.findByIdAndUpdate(
       id,

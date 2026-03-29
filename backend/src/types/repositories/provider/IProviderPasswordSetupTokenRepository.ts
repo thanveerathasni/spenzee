@@ -1,16 +1,22 @@
 import { Types } from "mongoose";
-import { IProviderPasswordSetupToken } from "../../../models/ProviderPasswordSetupToken.model";
+
+export interface ProviderPasswordSetupTokenEntity {
+  _id?: Types.ObjectId;
+  providerId: Types.ObjectId;
+  hashedToken: string;
+  expiresAt: Date;
+  isUsed?: boolean;
+  createdAt?: Date;
+}
 
 export interface IProviderPasswordSetupTokenRepository {
-  create(data: {
-    providerId: Types.ObjectId;
-    hashedToken: string;
-    expiresAt: Date;
-  }): Promise<IProviderPasswordSetupToken>;
+  create(data: ProviderPasswordSetupTokenEntity): Promise<ProviderPasswordSetupTokenEntity>;
 
-  findByHashedToken(hashedToken: string): Promise<IProviderPasswordSetupToken | null>;
+  findByTokenHash(tokenHash: string): Promise<ProviderPasswordSetupTokenEntity | null>;
+
+  findByHashedToken(tokenHash: string): Promise<ProviderPasswordSetupTokenEntity | null>;
+
+  deleteByTokenHash(tokenHash: string): Promise<void>;
 
   markAsUsed(id: string): Promise<void>;
-
-  deleteByProviderId(providerId: string): Promise<void>;
 }

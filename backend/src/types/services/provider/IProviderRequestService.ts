@@ -22,8 +22,7 @@ export interface ProviderRequestDTO {
 export interface IProviderRequestService {
   createRequest(data: CreateProviderRequestDTO): Promise<ProviderRequestDTO>;
 
-  getAllRequests(): Promise<ProviderRequestDTO[]>;
-
+getAllRequests(): Promise<ProviderRequestDTO[]>;
   getRequestsByStatus(status: ProviderRequestStatus): Promise<ProviderRequestDTO[]>;
 
   reviewRequest(

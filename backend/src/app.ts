@@ -1,42 +1,33 @@
-import "reflect-metadata";
-import dotenv from "dotenv";
-dotenv.config();
-import express from "express";
-import cors from "cors";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
+
 import { errorHandler } from "./middleware/errorHandler";
-import adminAuthRouter from "./routes/admin/admin.auth.routes";
-import adminRouter from "./routes/admin/admin.routes";
-import providerAuthRoutes from "./routes/provider/provider.auth.routes";
-import providerRequestRoutes from "./routes/provider/provider.request.routes";
-import testRoutes from "./routes/test.routes";
+import adminRoutes from "./routes/admin/admin.routes";
+import providerRoutes from "./routes/provider/provider.routes";
+
 import authRoutes from "./routes/user/auth.routes";
+import { logger } from "./shared/logger/logger";
+
+dotenv.config();
 
 const app = express();
 
-// middleware
-
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  }),
-);
-
+/* ================= MIDDLEWARE ================= */
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-// routes
-app.use("/auth", authRoutes);
-app.use("/test", testRoutes);
-app.use("/admin/auth", adminAuthRouter);
+/* ================= ROUTES ================= */
+app.use("/api/auth", authRoutes);
+app.use("/api/provider", providerRoutes);
+app.use("/api/admin", adminRoutes);
 
-app.use("/admin", adminRouter);
-
-app.use("/api", providerRequestRoutes);
-app.use("/provider/auth", providerAuthRoutes);
-
-// global error handler
+/* ================= ERROR HANDLER ================= */
 app.use(errorHandler);
+
+/* ================= START LOG ================= */
+logger.info("App initialized");
 
 export default app;

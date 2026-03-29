@@ -1,61 +1,42 @@
-import { Request, Response, NextFunction } from "express";
-import { inject, injectable } from "inversify";
+import { Request, Response } from "express";
+import { injectable, inject } from "inversify";
+
 import { TYPES } from "../../../di/types";
 import { ProviderAuthService } from "../../../services/provider/auth/ProviderAuthService";
-import { ProviderCredentialService } from "../../../services/provider/auth/ProviderCredentialService";
-import { ERROR_MESSAGES } from "../../../shared/constants/errorMessages";
-import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
-import { SUCCESS_MESSAGES } from "../../../shared/constants/successMessages";
-import { AppError } from "../../../shared/errors/AppError";
+import { logger } from "../../../shared/logger/logger";
+import { sendResponse } from "../../../shared/utils/sendResponse";
 
 @injectable()
 export class ProviderAuthController {
   constructor(
     @inject(TYPES.ProviderAuthService)
-    private readonly providerAuthService: ProviderAuthService,
-
-    @inject(TYPES.ProviderCredentialService)
-    private readonly credentialService: ProviderCredentialService,
+    private readonly _service: ProviderAuthService
   ) {}
 
-  // ================= LOGIN =================
-  login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { email, password } = req.body;
+  async login(req: Request, res: Response) {
+    const { email, password } = req.body;
 
-      if (!email || !password) {
-        throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.BAD_REQUEST);
-      }
+    logger.info("Provider login", { email });
 
-      const result = await this.providerAuthService.login(email, password);
+    const data = await this._service.login(email, password);
 
-      res.status(HTTP_STATUS.OK).json({
-        success: true,
-        message: SUCCESS_MESSAGES.AUTH.LOGIN_SUCCESS,
-        data: result,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+    return sendResponse({
+      res,
+      message: "Provider login success",
+      data,
+    });
+  }
 
-  // ================= PASSWORD SETUP =================
-  setupPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { token, password } = req.body;
+  async setupPassword(req: Request, res: Response) {
+    const { token, password } = req.body;
 
-      if (!token || !password) {
-        throw new AppError(ERROR_MESSAGES.GENERAL.INVALID_REQUEST, HTTP_STATUS.BAD_REQUEST);
-      }
+    logger.info("Provider setup password");
 
-      await this.credentialService.setupPassword(token, password);
+    await this._service.setupPassword(token, password);
 
-      res.status(HTTP_STATUS.OK).json({
-        success: true,
-        message: SUCCESS_MESSAGES.PROVIDER.PASSWORD_SETUP_SUCCESS,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+    return sendResponse({
+      res,
+      message: "Password setup successful",
+    });
+  }
 }

@@ -21,5 +21,9 @@ export const sendResponse = <T>({
     data: data ?? null,
   };
 
-  return res.status(statusCode).json(response);
+  return res.status(statusCode).json({
+  success: true,
+  message,
+  data: data ?? null,
+});
 };

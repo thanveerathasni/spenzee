@@ -1,38 +1,12 @@
-// import { Response, NextFunction } from "express";
-// import { Role } from "../constants/roles";
-// import { AuthRequest } from "../types/AuthRequest";
-// import { UnauthorizedError } from "../utils/errors";
-// import { ERROR_MESSAGES } from "../constants/errorMessages";
-
-// export const roleGuard =
-//   (allowedRoles: Role[]) =>
-//   (req: AuthRequest, _res: Response, next: NextFunction): void => {
-//     if (!req.user) {
-//       throw new UnauthorizedError(
-//         ERROR_MESSAGES.AUTH.ACCESS_DENIED
-//       );
-//     }
-
-//     const { role } = req.user;
-
-//     if (!allowedRoles.includes(role)) {
-//       throw new UnauthorizedError(
-//         ERROR_MESSAGES.AUTH.ACCESS_DENIED
-//       );
-//     }
-
-//     next();
-//   };
-
-import { Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
+
 import { Role } from "../shared/constants/roles";
 import { UnauthorizedError } from "../shared/errors/errors";
-import { AuthRequest } from "../types/services/user/AuthRequest";
 
 export const roleGuard =
   (allowedRoles: Role[]) =>
-  (req: AuthRequest, _res: Response, next: NextFunction): void => {
+  (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
     }

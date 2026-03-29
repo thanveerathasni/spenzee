@@ -1,47 +1,37 @@
 import { injectable } from "inversify";
-import { IProvider, ProviderModel, ProviderStatus } from "../../../models/Provider.model";
+import { Types } from "mongoose";
+
+import { ProviderModel, IProvider } from "../../../models/Provider.model";
+import { BaseRepository } from "../../../shared/base/BaseRepository";
 import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 
-
 @injectable()
-export class ProviderRepository implements IProviderRepository {
+export class ProviderRepository
+  extends BaseRepository<IProvider>
+  implements IProviderRepository
+{
+  constructor() {
+    super(ProviderModel);
+  }
+
   async findByEmail(email: string): Promise<IProvider | null> {
-    return ProviderModel.findOne({ email });
+    return this.model.findOne({ email }).exec();
   }
 
-  async findById(id: string): Promise<IProvider | null> {
-    return ProviderModel.findById(id);
+  async updatePassword(providerId: string, password: string): Promise<void> {
+    if (!Types.ObjectId.isValid(providerId)) return;
+
+    await this.model.findByIdAndUpdate(providerId, { password }).exec();
   }
 
-  async create(data: {
-    brandName: string;
-    email: string;
-    primaryCategory: string;
-    websiteUrl?: string;
-    description?: string;
-  }): Promise<IProvider> {
-    const provider = new ProviderModel(data);
-    return provider.save();
+  async updateStatus(providerId: string, status: string): Promise<void> {
+    if (!Types.ObjectId.isValid(providerId)) return;
+
+    await this.model.findByIdAndUpdate(providerId, { status }).exec();
   }
 
-  async updatePassword(providerId: string, hashedPassword: string): Promise<void> {
-    await ProviderModel.findByIdAndUpdate(providerId, {
-      password: hashedPassword,
-    });
-  }
-
-  async updateStatus(providerId: string, status: ProviderStatus): Promise<void> {
-    await ProviderModel.findByIdAndUpdate(providerId, {
-      status,
-    });
-  }
-
-  async getDashboardStats(_providerId: string): Promise<{
-    totalProducts: number;
-    totalSales: number;
-    revenue: number;
-  }> {
-    // Temporary placeholder until product/order modules exist
+  async getDashboardStats(providerId: string): Promise<any> {
+    if (!Types.ObjectId.isValid(providerId)) return null;
 
     return {
       totalProducts: 0,

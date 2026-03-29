@@ -2,20 +2,23 @@ import { Router } from "express";
 import { ProviderAuthController } from "../../controllers/provider/auth/ProviderAuthController";
 import { container } from "../../di/container";
 import { TYPES } from "../../di/types";
+import { ROUTES } from "../../shared/constants/routes";
 import { asyncHandler } from "../../shared/middleware/asyncHandler";
+
+
 
 const router = Router();
 
-const providerAuthController = container.get<ProviderAuthController>(TYPES.ProviderAuthController);
+const controller = container.get<ProviderAuthController>(TYPES.ProviderAuthController);
 
 router.post(
-  "/login",
-  asyncHandler(providerAuthController.login.bind(providerAuthController))
+  ROUTES.PROVIDER.LOGIN,
+  asyncHandler(controller.login.bind(controller))
 );
 
 router.post(
-  "/setup-password",
-  asyncHandler(providerAuthController.setupPassword.bind(providerAuthController))
+  ROUTES.PROVIDER.SETUP_PASSWORD,
+  asyncHandler(controller.setupPassword.bind(controller))
 );
 
 export default router;

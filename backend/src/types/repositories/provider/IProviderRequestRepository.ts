@@ -1,6 +1,7 @@
-import { IProviderRequest, ProviderRequestStatus } from "../../../models/ProviderRequest.model";
+import { IProviderRequest } from "../../../models/ProviderRequest.model";
+import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
 
-export interface CreateProviderRequestData {
+export interface CreateProviderRequestDTO {
   brandName: string;
   websiteUrl: string;
   primaryCategory: string;
@@ -9,7 +10,7 @@ export interface CreateProviderRequestData {
 }
 
 export interface IProviderRequestRepository {
-  create(data: CreateProviderRequestData): Promise<IProviderRequest>;
+  create(data: CreateProviderRequestDTO): Promise<IProviderRequest>;
 
   findById(id: string): Promise<IProviderRequest | null>;
 

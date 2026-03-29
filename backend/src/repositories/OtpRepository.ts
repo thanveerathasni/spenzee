@@ -1,36 +1,25 @@
 import { injectable } from "inversify";
 import { OtpModel } from "../models/OtpModel";
-import { IOtpRepository } from "../types/repositories/IOtpRepository";
 
 @injectable()
-export class OtpRepository implements IOtpRepository {
-  async create(email: string, otpHash: string, expiresAt: Date): Promise<void> {
-    await OtpModel.create({ email, otpHash, expiresAt });
+export class OtpRepository {
+  async create(email: string, otpHash: string, expiresAt: Date) {
+    return OtpModel.create({ email, otpHash, expiresAt });
   }
 
   async findByEmail(email: string) {
-    return OtpModel.findOne({ email }).lean().exec();
+    return OtpModel.findOne({ email });
   }
 
-  async deleteByEmail(email: string): Promise<void> {
-    await OtpModel.deleteOne({ email }).exec();
-  }
-
-  async incrementAttempts(email: string): Promise<void> {
-    await OtpModel.updateOne({ email }, { $inc: { attempts: 1 } }).exec();
-  }
-
-  async updateOtp(email: string, otpHash: string, expiresAt: Date): Promise<void> {
-    await OtpModel.updateOne({ email }, { otpHash, expiresAt }).exec();
-  }
-
-  async resetAttempts(email: string): Promise<void> {
-    await OtpModel.updateOne(
+  async updateOtp(email: string, otpHash: string, expiresAt: Date) {
+    return OtpModel.findOneAndUpdate(
       { email },
-      {
-        attempts: 0,
-        firstRequestedAt: new Date(),
-      },
-    ).exec();
+      { otpHash, expiresAt },
+      { upsert: true }
+    );
+  }
+
+  async deleteByEmail(email: string) {
+    await OtpModel.deleteOne({ email });
   }
 }

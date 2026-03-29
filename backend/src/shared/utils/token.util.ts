@@ -11,6 +11,10 @@ export interface JwtPayload {
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 
+if (!ACCESS_SECRET || !REFRESH_SECRET) {
+  throw new Error("JWT secrets are not defined");
+}
+
 export const createAccessToken = (payload: JwtPayload): string => {
   return jwt.sign(payload, ACCESS_SECRET, {
     expiresIn: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRES_IN,

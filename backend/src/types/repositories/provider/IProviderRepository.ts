@@ -1,29 +1,15 @@
-import { IProvider, ProviderStatus } from "../../../models/Provider.model";
-
-export interface CreateProviderData {
-  brandName: string;
-  email: string;
-  primaryCategory: string;
-  websiteUrl?: string;
-  description?: string;
-}
-
-export interface ProviderDashboardStats {
-  totalProducts: number;
-  totalSales: number;
-  revenue: number;
-}
+import { IProvider } from "../../../models/Provider.model";
 
 export interface IProviderRepository {
-  findByEmail(email: string): Promise<IProvider | null>;
+  create(data: Partial<IProvider>): Promise<IProvider>;
 
   findById(id: string): Promise<IProvider | null>;
 
-  create(data: CreateProviderData): Promise<IProvider>;
+  findByEmail(email: string): Promise<IProvider | null>;
 
-  updatePassword(providerId: string, hashedPassword: string): Promise<void>;
+  updatePassword(providerId: string, password: string): Promise<void>;
 
-  updateStatus(providerId: string, status: ProviderStatus): Promise<void>;
+  updateStatus(providerId: string, status: string): Promise<void>;
 
-  getDashboardStats(providerId: string): Promise<ProviderDashboardStats>;
+  getDashboardStats(providerId: string): Promise<any>;
 }
