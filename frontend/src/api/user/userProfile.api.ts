@@ -1,46 +1,37 @@
 import { api } from "../axios";
 
-/* ---------- Types ---------- */
-
-export interface UserProfile {
-  id: string;
+export interface UpdateProfilePayload {
   name?: string;
-  email: string;
   phone?: string;
-  profileImage?: string;
-  address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    pincode?: string;
-  };
-  role: string;
-  isVerified: boolean;
 }
 
-/* ---------- API ---------- */
+export interface AddressPayload {
+  street?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+}
 
 export const userProfileApi = {
-  getProfile: async (): Promise<UserProfile> => {
+  getProfile: async () => {
     const res = await api.get("/user/profile");
     return res.data.data;
   },
 
-  updateProfile: async (data: Partial<UserProfile>) => {
+  updateProfile: async (data: UpdateProfilePayload) => {
     const res = await api.patch("/user/profile", data);
     return res.data.data;
   },
 
-  uploadProfileImage: async (file: File) => {
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const res = await api.patch("/user/profile/image", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
+  updateAddress: async (data: AddressPayload) => {
+    const res = await api.patch("/user/profile", data);
     return res.data.data;
+  },
+
+  changePassword: async (data: {
+    currentPassword: string;
+    newPassword: string;
+  }) => {
+    await api.patch("/user/change-password", data);
   },
 };
