@@ -1,54 +1,58 @@
-// import { Request, Response, NextFunction } from "express";
-// import { Role } from "../constants/roles";
-// import { UnauthorizedError } from "../errors/errors";
-// import { verifyAccessToken } from "../utils/token.util";
+import { Request, Response, NextFunction } from "express";
 
-// export interface AuthRequest extends Request {
-//   user?: {
-//     id: string;
-//     role: Role;
-//   };
-// }
+import { ERROR_MESSAGES } from "../constants/errorMessages";
+import { Role } from "../constants/roles";
+import { UnauthorizedError } from "../errors/errors";
 
-// export const protect = (req: AuthRequest, _res: Response, next: NextFunction): void => {
-//   const authHeader = req.headers.authorization;
+import { verifyAccessToken } from "../utils/token.util";
 
-//   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//     next(new UnauthorizedError("Not authenticated"));
-//     return;
-//   }
+export interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    role: Role;
+  };
+}
 
-//   const token = authHeader.split(" ")[1];
+export const protect = (
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+): void => {
+  const authHeader = req.headers.authorization;
 
-//   try {
-//     const payload = verifyAccessToken(token);
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    next(new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS));
+    return;
+  }
 
-//     req.user = {
-//       id: payload.userId,
-//       role: payload.role,
-//     };
+  const token = authHeader.split(" ")[1];
 
-//     next();
-//     return;
-//   } catch (error) {
-//     next(new UnauthorizedError("Invalid token"));
-//     return;
-//   }
-// };
+  try {
+    const payload = verifyAccessToken(token);
 
-// export const authorize =
-//   (allowedRoles: Role[]) =>
-//   (req: AuthRequest, _res: Response, next: NextFunction): void => {
-//     if (!req.user) {
-//       next(new UnauthorizedError("Not authenticated"));
-//       return;
-//     }
+    req.user = {
+      id: payload.userId,
+      role: payload.role,
+    };
 
-//     if (!allowedRoles.includes(req.user.role)) {
-//       next(new UnauthorizedError("Access denied"));
-//       return;
-//     }
+    next();
+  } catch (_error) {
+    next(new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS));
+  }
+};
 
-//     next();
-//     return;
-//   };
+export const authorize =
+  (allowedRoles: Role[]) =>
+  (req: AuthRequest, _res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      next(new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS));
+      return;
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      next(new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS));
+      return;
+    }
+
+    next();
+  };
