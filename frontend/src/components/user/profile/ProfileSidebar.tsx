@@ -33,8 +33,8 @@ export default function ProfileSidebar({ activeTab, setActiveTab }: Props) {
           <motion.button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`flex items-center gap-3 p-3 rounded ${
-              activeTab === item.id ? "bg-black text-white" : ""
+            className={`flex items-center  gap-4 px-5 py-3 rounded-xl transition-all ${
+              activeTab === item.id ? "bg-black text-white shadow-md" : "bg-transparent text-gray-400"
             }`}
           >
             <Icon size={18} />
