@@ -20,4 +20,8 @@ export interface IUserRepository {
   findById(id: string): Promise<IUser | null>;
 
   updatePassword(userId: string, password: string): Promise<void>;
+  update(
+  filter: Record<string, unknown>,
+  update: Record<string, unknown>
+): Promise<IUser | null>;
 }

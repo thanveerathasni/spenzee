@@ -6,6 +6,8 @@ export const TYPES = {
   MailService: Symbol.for("MailService"),
   RefreshTokenRepository: Symbol.for("RefreshTokenRepository"),
   ResetPasswordRepository: Symbol.for("ResetPasswordRepository"),
+UserService: Symbol.for("UserService"),
+  UserController: Symbol.for("UserController"),
 
   // ===== ADMIN AUTH =====
   AdminRepository: Symbol.for("AdminRepository"),

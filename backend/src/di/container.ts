@@ -9,6 +9,7 @@ import { ProviderController } from "../controllers/provider/ProviderController";
 import { ProviderAuthController } from "../controllers/provider/auth/ProviderAuthController";
 import { ProviderRequestController } from "../controllers/provider/auth/ProviderRequestController";
 import { AuthController } from "../controllers/user/AuthController";
+import { UserController } from "../controllers/user/UserController"; 
 import { OtpRepository } from "../repositories/OtpRepository";
 import { RefreshTokenRepository } from "../repositories/RefreshTokenRepository";
 import { ResetPasswordRepository } from "../repositories/ResetPasswordRepository";
@@ -25,8 +26,10 @@ import { AdminService } from "../services/admin/AdminService";
 import { ProviderDashboardService } from "../services/provider/ProviderDashboardService";
 import { ProviderService } from "../services/provider/ProviderService";
 import { ProviderAuthService } from "../services/provider/auth/ProviderAuthService";
+import { ProviderCredentialService } from "../services/provider/auth/ProviderCredentialService"; 
 import { ProviderRequestService } from "../services/provider/auth/ProviderRequestService";
 import { AuthService } from "../services/user/AuthService";
+import { UserService } from "../services/user/UserService"; 
 
 /* Controllers */
 
@@ -51,6 +54,8 @@ container.bind(TYPES.ProviderDashboardService).to(ProviderDashboardService);
 container.bind(TYPES.AdminService).to(AdminService);
 container.bind(TYPES.AdminAuthService).to(AdminAuthService);
 container.bind(TYPES.MailService).to(MailService);
+container.bind(TYPES.UserService).to(UserService); 
+container.bind(TYPES.ProviderCredentialService).to(ProviderCredentialService); 
 
 /* ================= CONTROLLERS ================= */
 container.bind(TYPES.AuthController).to(AuthController);
@@ -59,5 +64,6 @@ container.bind(TYPES.ProviderAuthController).to(ProviderAuthController);
 container.bind(TYPES.ProviderRequestController).to(ProviderRequestController);
 container.bind(TYPES.AdminController).to(AdminController);
 container.bind(TYPES.AdminAuthController).to(AdminAuthController);
+container.bind(TYPES.UserController).to(UserController); 
 
 export { container };

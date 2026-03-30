@@ -24,4 +24,6 @@ export class UserRepository
   async updatePassword(userId: string, password: string): Promise<void> {
     await this.model.findByIdAndUpdate(userId, { password }).exec();
   }
+
+ 
 }

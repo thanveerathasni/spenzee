@@ -8,22 +8,27 @@ import adminRoutes from "./routes/admin/admin.routes";
 import providerRoutes from "./routes/provider/provider.routes";
 
 import authRoutes from "./routes/user/auth.routes";
+import userRoutes from "./routes/user/user.routes";
 import { logger } from "./shared/logger/logger";
-
 dotenv.config();
 
 const app = express();
 
 /* ================= MIDDLEWARE ================= */
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", 
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
 /* ================= ROUTES ================= */
 app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 app.use("/api/provider", providerRoutes);
 app.use("/api/admin", adminRoutes);
-
 /* ================= ERROR HANDLER ================= */
 app.use(errorHandler);
 
