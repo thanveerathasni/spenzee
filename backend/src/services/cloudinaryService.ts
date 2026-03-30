@@ -1,14 +1,14 @@
 import cloudinary from "../config/cloudinary";
 
-export const uploadToCloudinary = async (fileBuffer: Buffer) => {
-  return new Promise<string>((resolve, reject) => {
-    cloudinary.uploader
-      .upload_stream({ folder: "profiles" }, (error, result) => {
-        if (error || !result) {
-          return reject(error);
-        }
-        resolve(result.secure_url);
-      })
-      .end(fileBuffer);
-  });
+export const uploadToCloudinary = async (buffer: Buffer) => {
+  const base64 = buffer.toString("base64");
+
+  const result = await cloudinary.uploader.upload(
+    `data:image/jpeg;base64,${base64}`,
+    {
+      folder: "profile_images",
+    }
+  );
+
+  return result.secure_url;
 };

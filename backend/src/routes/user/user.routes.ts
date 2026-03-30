@@ -29,8 +29,7 @@ router.patch(
 router.patch(
   "/profile/image",
   protect,
-  upload.single("image"), 
+  upload.single("image"),
   asyncHandler(controller.uploadProfileImage.bind(controller))
 );
-
 export default router;
