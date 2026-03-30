@@ -78,7 +78,7 @@ export default function ProfilePage() {
             key={activeTab}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex-1 bg-white rounded-3xl shadow-lg p-8 md:p-12 min-h-[600px]"
+            className="flex-1 bg-white rounded-3xl shadow-lg p-8 md:p-12 min-h-[600px] transition-all duration-300 hover:shadow-2xl"
           >
             {renderContent()}
           </motion.div>
