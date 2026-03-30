@@ -4,6 +4,9 @@ import { injectable, inject } from "inversify";
 import { TYPES } from "../../di/types";
 
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
+
+import { LOG_MESSAGES } from "../../shared/constants/logMessages";
+
 import { ROLES } from "../../shared/constants/roles";
 
 import { UnauthorizedError, BadRequestError } from "../../shared/errors/errors";
@@ -44,8 +47,7 @@ export class AuthService implements IAuthService {
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    logger.info("User login attempt", { email });
-
+logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email });
     const user = await this._userRepository.findByEmail(email);
 
     if (!user || !user.password) {
@@ -68,6 +70,7 @@ export class AuthService implements IAuthService {
       tokenHash: hashRefreshToken(refreshToken),
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
+ logger.info(LOG_MESSAGES.AUTH.LOGIN_SUCCESS, { userId: user._id.toString() });
 
     return AuthMapper.toAuthResponse(user, accessToken, refreshToken);
   }

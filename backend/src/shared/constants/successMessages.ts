@@ -10,21 +10,18 @@ export const SUCCESS_MESSAGES = {
     PASSWORD_RESET_SUCCESS: "Password reset successful",
     GOOGLE_LOGIN_SUCCESS: "Google login successful",
   },
-  OTP: {
-    OTP_SENT: "OTP sent successfully",
-    OTP_VERIFIED: "OTP verified successfully",
-  },
-   ADMIN: {
-    DASHBOARD_FETCHED: "Admin dashboard fetched successfully",
-  },
 
+  ADMIN: {
+    DASHBOARD_FETCHED: "Admin dashboard fetched successfully",
+    LOGIN_SUCCESS: "Admin login successful",
+  },
 
   PROVIDER: {
+    LOGIN_SUCCESS: "Provider login successful",
     PASSWORD_SETUP_SUCCESS: "Provider password setup successful",
-    REQUEST_SUBMITTED: "Provider request submitted successfully",
-    REQUEST_APPROVED: "Provider request approved successfully",
-    REQUEST_REJECTED: "Provider request rejected successfully",
+    DASHBOARD_FETCHED: "Provider dashboard fetched successfully",
+    REQUEST_FETCHED: "Provider requests fetched successfully",
+    REQUEST_CREATED: "Provider request created successfully",
   },
-
 
 } as const;

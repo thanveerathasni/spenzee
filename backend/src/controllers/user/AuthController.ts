@@ -4,6 +4,7 @@ import { injectable, inject } from "inversify";
 import { TYPES } from "../../di/types";
 
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
+import { LOG_MESSAGES } from "../../shared/constants/logMessages";
 import { SUCCESS_MESSAGES } from "../../shared/constants/successMessages";
 import { TOKEN_CONFIG } from "../../shared/constants/token";
 
@@ -20,7 +21,6 @@ import { ResendOtpDTO } from "../../validators/auth/resendOtp.validator";
 import { SignupDTO } from "../../validators/auth/signup.validator";
 import { VerifyOtpDTO } from "../../validators/auth/verifyOtp.validator";
 
-
 @injectable()
 export class AuthController {
   constructor(
@@ -31,14 +31,14 @@ export class AuthController {
   async login(req: Request, res: Response): Promise<Response> {
     const dto = req.body as LoginDTO;
 
-    logger.info("Login request received", { email: dto.email });
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email: dto.email });
 
     const { accessToken, refreshToken, user } =
       await this._authService.login(dto.email, dto.password);
 
     setRefreshTokenCookie(res, refreshToken);
 
-    logger.info("Login successful", { userId: user.id });
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_SUCCESS, { userId: user.id });
 
     return sendResponse({
       res,
@@ -51,11 +51,11 @@ export class AuthController {
     const refreshToken = req.cookies?.[TOKEN_CONFIG.COOKIE_NAME];
 
     if (!refreshToken) {
-      logger.warn("Refresh token missing");
+      logger.warn(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_MISSING);
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_MISSING);
     }
 
-    logger.info("Refresh token request");
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT);
 
     const { accessToken, refreshToken: newToken, user } =
       await this._authService.refreshAccessToken(refreshToken);
@@ -72,7 +72,7 @@ export class AuthController {
   async logout(req: Request, res: Response): Promise<Response> {
     const refreshToken = req.cookies?.[TOKEN_CONFIG.COOKIE_NAME];
 
-    logger.info("Logout request");
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT);
 
     if (refreshToken) {
       await this._authService.logout(refreshToken);
@@ -89,7 +89,7 @@ export class AuthController {
   async signup(req: Request, res: Response): Promise<Response> {
     const dto = req.body as SignupDTO;
 
-    logger.info("Signup request", { email: dto.email });
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email: dto.email });
 
     await this._authService.signup(dto.email, dto.password);
 
@@ -102,7 +102,7 @@ export class AuthController {
   async verifyOtp(req: Request, res: Response): Promise<Response> {
     const dto = req.body as VerifyOtpDTO;
 
-    logger.info("Verify OTP", { email: dto.email });
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email: dto.email });
 
     await this._authService.verifyOtp(dto.email, dto.otp);
 
@@ -115,7 +115,7 @@ export class AuthController {
   async resendOtp(req: Request, res: Response): Promise<Response> {
     const dto = req.body as ResendOtpDTO;
 
-    logger.info("Resend OTP", { email: dto.email });
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email: dto.email });
 
     await this._authService.resendOtp(dto.email);
 
@@ -128,7 +128,7 @@ export class AuthController {
   async forgotPassword(req: Request, res: Response): Promise<Response> {
     const { email } = req.body;
 
-    logger.info("Forgot password", { email });
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email });
 
     const resetToken = await this._authService.forgotPassword(email);
 
@@ -145,7 +145,7 @@ export class AuthController {
   async resetPassword(req: Request, res: Response): Promise<Response> {
     const { token, newPassword } = req.body;
 
-    logger.info("Reset password attempt");
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT);
 
     await this._authService.resetPassword(token, newPassword);
 
@@ -159,11 +159,11 @@ export class AuthController {
     const { credential } = req.body;
 
     if (!credential) {
-      logger.warn("Google login failed - missing credential");
+      logger.warn(ERROR_MESSAGES.AUTH.GOOGLE_CREDENTIAL_MISSING);
       throw new BadRequestError(ERROR_MESSAGES.AUTH.GOOGLE_CREDENTIAL_MISSING);
     }
 
-    logger.info("Google login attempt");
+    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT);
 
     const { accessToken, refreshToken, user } =
       await this._authService.googleLogin(credential);

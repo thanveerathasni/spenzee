@@ -6,6 +6,7 @@ import {
   IProviderRequest,
 } from "../../../models/ProviderRequest.model";
 
+import { BaseRepository } from "../../../shared/base/BaseRepository";
 import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
 
 import {
@@ -13,23 +14,31 @@ import {
   CreateProviderRequestDTO,
 } from "../../../types/repositories/provider/IProviderRequestRepository";
 
+
 @injectable()
-export class ProviderRequestRepository implements IProviderRequestRepository {
+export class ProviderRequestRepository
+  extends BaseRepository<IProviderRequest>
+  implements IProviderRequestRepository
+{
+  constructor() {
+    super(ProviderRequestModel);
+  }
+
   async create(data: CreateProviderRequestDTO): Promise<IProviderRequest> {
-    return ProviderRequestModel.create(data);
+    return super.create(data);
   }
 
   async findById(id: string): Promise<IProviderRequest | null> {
     if (!Types.ObjectId.isValid(id)) return null;
-    return ProviderRequestModel.findById(id).exec();
+    return super.findById(id);
   }
 
   async findAll(): Promise<IProviderRequest[]> {
-    return ProviderRequestModel.find().sort({ createdAt: -1 }).exec();
+    return this.model.find().sort({ createdAt: -1 }).exec();
   }
 
   async findByStatus(status: ProviderRequestStatus): Promise<IProviderRequest[]> {
-    return ProviderRequestModel.find({ status }).sort({ createdAt: -1 }).exec();
+    return this.model.find({ status }).sort({ createdAt: -1 }).exec();
   }
 
   async updateStatus(
@@ -40,15 +49,17 @@ export class ProviderRequestRepository implements IProviderRequestRepository {
   ): Promise<IProviderRequest | null> {
     if (!Types.ObjectId.isValid(id)) return null;
 
-    return ProviderRequestModel.findByIdAndUpdate(
-      id,
+    return this.update(
+      { _id: id },
       {
         status,
         reviewedBy,
         reviewedAt: new Date(),
-        rejectionReason: status === ProviderRequestStatus.REJECTED ? rejectionReason : undefined,
-      },
-      { new: true },
-    ).exec();
+        rejectionReason:
+          status === ProviderRequestStatus.REJECTED
+            ? rejectionReason
+            : undefined,
+      }
+    );
   }
 }

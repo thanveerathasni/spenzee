@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 
 import { ProviderModel, IProvider } from "../../../models/Provider.model";
 import { BaseRepository } from "../../../shared/base/BaseRepository";
+import { ProviderDashboardDTO } from "../../../shared/dto/provider/providerDashboard";
 import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 
 @injectable()
@@ -30,13 +31,13 @@ export class ProviderRepository
     await this.model.findByIdAndUpdate(providerId, { status }).exec();
   }
 
-  async getDashboardStats(providerId: string): Promise<any> {
-    if (!Types.ObjectId.isValid(providerId)) return null;
+async getDashboardStats(providerId: string): Promise<ProviderDashboardDTO | null> {
+  if (!Types.ObjectId.isValid(providerId)) return null;
 
-    return {
-      totalProducts: 0,
-      totalSales: 0,
-      revenue: 0,
-    };
-  }
+  return {
+    totalProducts: 0,
+    totalSales: 0,
+    revenue: 0,
+  };
+}
 }

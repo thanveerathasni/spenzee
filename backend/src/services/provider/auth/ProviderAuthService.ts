@@ -2,12 +2,15 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { inject, injectable } from "inversify";
 
+import { http } from "winston";
 import { TYPES } from "../../../di/types";
 
+import { HTTP_STATUS } from "../../../shared/constants/httpStatus";
+import { LOG_MESSAGES } from "../../../shared/constants/logMessages";
 import { PROVIDER_ERROR_MESSAGES } from "../../../shared/constants/provider";
 import { AppError } from "../../../shared/errors/AppError";
 import { logger } from "../../../shared/logger/logger";
-
+import { ProviderMapper } from "../../../shared/mapper/provider/ProviderMapper";
 import { IProviderPasswordSetupTokenRepository } from "../../../types/repositories/provider/IProviderPasswordSetupTokenRepository";
 import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 
@@ -22,18 +25,18 @@ export class ProviderAuthService {
   ) {}
 
   async login(email: string, password: string) {
-    logger.info("Provider login attempt", { email });
+logger.info(LOG_MESSAGES.PROVIDER.LOGIN_ATTEMPT, { email });
 
     const provider = await this._providerRepository.findByEmail(email);
 
     if (!provider || !provider.password) {
-      throw new AppError(PROVIDER_ERROR_MESSAGES.NOT_FOUND, 401);
+      throw new AppError(PROVIDER_ERROR_MESSAGES.NOT_FOUND, HTTP_STATUS.UNAUTHORIZED);
     }
 
     const valid = await bcrypt.compare(password, provider.password);
 
     if (!valid) {
-      throw new AppError(PROVIDER_ERROR_MESSAGES.NOT_FOUND, 401);
+      throw new AppError(PROVIDER_ERROR_MESSAGES.NOT_FOUND, HTTP_STATUS.UNAUTHORIZED);
     }
 
     return provider;
@@ -45,11 +48,11 @@ export class ProviderAuthService {
     const record = await this._tokenRepository.findByTokenHash(hashedToken);
 
     if (!record) {
-      throw new AppError(PROVIDER_ERROR_MESSAGES.INVALID_SETUP_TOKEN, 400);
+      throw new AppError(PROVIDER_ERROR_MESSAGES.INVALID_SETUP_TOKEN, HTTP_STATUS.BAD_REQUEST);
     }
 
     if (record.expiresAt < new Date()) {
-      throw new AppError(PROVIDER_ERROR_MESSAGES.SETUP_TOKEN_EXPIRED, 400);
+      throw new AppError(PROVIDER_ERROR_MESSAGES.SETUP_TOKEN_EXPIRED, HTTP_STATUS.BAD_REQUEST);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

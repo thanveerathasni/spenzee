@@ -5,6 +5,7 @@ import { TYPES } from "../../di/types";
 
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
 import { HTTP_STATUS } from "../../shared/constants/httpStatus";
+import { LOG_MESSAGES } from "../../shared/constants/logMessages";
 import { ROLES } from "../../shared/constants/roles";
 
 import { AppError } from "../../shared/errors/AppError";
@@ -23,19 +24,19 @@ export class AdminAuthService {
   ) {}
 
   async login(email: string, password: string) {
-    logger.info("Admin login attempt", { email });
+    logger.info(LOG_MESSAGES.ADMIN.LOGIN_ATTEMPT, { email });
 
     const admin = await this._adminRepository.findByEmail(email);
 
     if (!admin || !admin.isActive) {
-      logger.warn("Admin login failed - invalid admin", { email });
+      logger.warn(LOG_MESSAGES.ADMIN.LOGIN_FAILED, { email });
       throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
     }
 
     const valid = await bcrypt.compare(password, admin.password);
 
     if (!valid) {
-      logger.warn("Admin login failed - wrong password", { email });
+      logger.warn(LOG_MESSAGES.ADMIN.LOGIN_FAILED, { email });
       throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
     }
 
@@ -44,7 +45,7 @@ export class AdminAuthService {
       role: ROLES.ADMIN,
     });
 
-    logger.info("Admin login success", { adminId: admin._id.toString() });
+    logger.info(LOG_MESSAGES.ADMIN.LOGIN_SUCCESS, { adminId: admin._id.toString() });
 
     return {
       accessToken,
