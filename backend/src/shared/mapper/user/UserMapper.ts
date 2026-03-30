@@ -12,10 +12,21 @@ export class UserMapper {
       isVerified: user.isVerified,
     };
   }
-  static toProfileDTO(user: IUser): UserProfileDTO {
+static toProfileDTO(user: IUser): UserProfileDTO {
   return {
     id: user._id.toString(),
+    name: user.name,
     email: user.email,
+    phone: user.phone,
+    profileImage: user.profileImage,
+
+    address: {
+      street: user.address?.street,
+      city: user.address?.city,
+      state: user.address?.state,
+      pincode: user.address?.pincode,
+    },
+
     role: user.role,
     isVerified: user.isVerified,
   };
