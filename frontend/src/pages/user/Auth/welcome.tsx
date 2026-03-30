@@ -11,12 +11,12 @@ import { Menu, X, ArrowRight } from "lucide-react";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/store";
 import { useNavigate } from "react-router-dom";
-import { clearTokens } from "../../../util/tokenStorage";
+// import { clearTokens } from "../../../util/tokenStorage";
 import { authApi } from "../../../api/auth.api";
 import Swal from "sweetalert2";
 import { clearAuth } from "../../../store/auth";
 import { useDispatch } from "react-redux";
-
+import { ROUTES } from "../../../constants/routes";
 /* ---------------- NAVBAR ---------------- */
 
 const Navbar: React.FC = () => {
@@ -44,7 +44,7 @@ const dispatch = useDispatch();
     try {
       await authApi.logout();
     } catch (e) {
-      // ignore backend failure
+      console.error("Logout failed:", e);
     } finally {
     dispatch(clearAuth());
       navigate("/login", { replace: true });
@@ -56,9 +56,9 @@ const dispatch = useDispatch();
     if (item === "Logout") {
       handleLogout();
     } else if (item === "Dashboard") {
-      navigate("/dashboard");
+      navigate(ROUTES.USER.DASHBOARD);
     } else if (item === "Profile") {
-      navigate("/profile");
+     navigate(ROUTES.USER.PROFILE);
     }
   };
 

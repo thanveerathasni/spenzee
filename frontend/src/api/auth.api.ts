@@ -30,16 +30,14 @@ export const authApi = {
     await api.post("/auth/signup", data);
   },
 
-
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-  const res = await api.post("/auth/login", data);
+    const res = await api.post("/auth/login", data);
 
-  return {
-    accessToken: res.data.data.accessToken,
-    user: res.data.data.user,
-  };
-},
-
+    return {
+      accessToken: res.data.data.accessToken,
+      user: res.data.data.user,
+    };
+  },
 
   verifyOtp: async (payload: { email: string; otp: string }): Promise<void> => {
     await api.post("/auth/verify-otp", payload);
@@ -58,27 +56,26 @@ export const authApi = {
   ): Promise<void> => {
     await api.post("/auth/reset-password", payload);
   },
-refresh: async (): Promise<AuthResponse> => {
-   const res = await api.post("/auth/refresh");
-  return res.data.data; // { accessToken, user }
-},
 
+  refresh: async (): Promise<AuthResponse> => {
+    const res = await api.post("/auth/refresh");
 
-
+    return {
+      accessToken: res.data.data.accessToken,
+      user: res.data.data.user,
+    };
+  },
 
   logout: async (): Promise<void> => {
     await api.post("/auth/logout");
   },
 
- 
-
   googleLogin: async (credential: string): Promise<AuthResponse> => {
-  const res = await api.post("/auth/google", { credential });
+    const res = await api.post("/auth/google", { credential });
 
-  return {
-    accessToken: res.data.data.accessToken,
-    user: res.data.data.user,
-  };
-},
-
+    return {
+      accessToken: res.data.data.accessToken,
+      user: res.data.data.user,
+    };
+  },
 };

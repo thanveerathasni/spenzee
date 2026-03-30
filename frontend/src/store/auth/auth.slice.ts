@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
-import type { AuthState, User } from "./auth.types";
+import type { AuthState } from "./auth.types";
 
 const initialState: AuthState = {
   accessToken: null,
@@ -20,7 +19,7 @@ const authSlice = createSlice({
   state.isAuthChecked = true;
   state.isLoading = false;
 
-  // 🔥 persist
+  //  persist
   localStorage.setItem(
     "auth",
     JSON.stringify({
@@ -37,7 +36,7 @@ clearAuth: (state) => {
   state.isAuthChecked = true;
   state.isLoading = false;
 
-  // 🔥 clear persist
+  // clear persist
   localStorage.removeItem("auth");
 },
 hydrateAuth: (state) => {

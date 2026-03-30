@@ -6,7 +6,7 @@ interface OTPProps {
 }
 
 const OTP: React.FC<OTPProps> = ({ type }) => {
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otp] = useState(['', '', '', '']);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -19,7 +19,7 @@ const OTPInput: React.FC<OTPInputProps> = ({ length, values, onChange, disabled 
     if (firstEmpty !== -1 && inputsRef.current[firstEmpty]) {
       inputsRef.current[firstEmpty]?.focus();
     }
-  }, []);
+  }, [values]);
 
   const handleChange = (index: number, value: string) => {
     const sanitizedValue = value.replace(/[^0-9]/g, '').slice(-1);

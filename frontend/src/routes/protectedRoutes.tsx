@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import type { ReactNode } from "react";
 import type { RootState } from "../store/store";
 import type { Role } from "../constants/roles";
-import { de } from "zod/v4/locales";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -11,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { isAuthenticated, user, isLoading, isAuthChecked } = useSelector(
+  const { isAuthenticated, user, isAuthChecked } = useSelector(
     (state: RootState) => state.auth
   );
 if (!isAuthChecked) {

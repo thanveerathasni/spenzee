@@ -9,9 +9,8 @@ import RevenueChart from "../../../components/admin/charts/RevenueChart";
 import StatusDonut from "../../../components/admin/charts/StatusDonut";
 import Badge from "../../../components/admin/common/Badge";
 import { SEVERITY } from "../../../types/admin/dashboard.types";
-import  type { Severity } from "../../../types/admin/dashboard.types";
 
-/* ---------------- Mock Data (will move to Redux later) ---------------- */
+/* ---------------- Mock Data  ---------------- */
 
 const revenueData = [
   { name: "Jan", value: 42000 },
@@ -22,7 +21,7 @@ const revenueData = [
   { name: "Jun", value: 58000 },
   { name: "Jul", value: 72000 },
 ];
-
+type ActivityStatus = "pending" | "success";
 const statusData = [
   { name: "Approved", value: 65, color: "#111827" },
   { name: "Pending", value: 25, color: "#6B7280" },
@@ -275,7 +274,7 @@ const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                <Badge type={activity.status as any}>
+                <Badge type={activity.status as ActivityStatus}>
                   {activity.status}
                 </Badge>
               </div>

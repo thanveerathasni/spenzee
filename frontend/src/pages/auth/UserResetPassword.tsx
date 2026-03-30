@@ -44,10 +44,7 @@ const ResetPasswordPage: React.FC = () => {
     setIsValid(valid && formData.confirmPassword !== '');
   };
 
-  useEffect(() => {
-    validate();
-  }, [formData]);
-
+const isValid = validate(formData);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isValid) {

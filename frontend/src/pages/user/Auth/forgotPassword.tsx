@@ -30,9 +30,9 @@ const ForgotPassword: React.FC = () => {
       await authApi.forgotPassword(email);
       toast.success("Password reset link sent to your email");
       setStep("SUCCESS");
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg =
-        err.response?.data?.message ||
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
         "Failed to send password reset email";
       setError(msg);
       toast.error(msg);

@@ -5,94 +5,6 @@
 
 
 
-// import React from "react";
-// import { NavLink, useNavigate } from "react-router-dom";
-// import { motion } from "framer-motion";
-// import { LogOut } from "lucide-react";
-// import Swal from "sweetalert2";
-
-// import { sidebarConfig } from "../nav.config";
-// import type { AdminSection } from "../nav.config";
-// import { adminAuthStore } from "../../../store/admin/adminAuth";
-
-// interface SidebarProps {
-//   isExpanded: boolean;
-//   activeSection: AdminSection;
-// }
-
-// const Sidebar: React.FC<SidebarProps> = ({
-//   isExpanded,
-//   activeSection,
-// }) => {
-//   const navigate = useNavigate();
-//   const items = sidebarConfig[activeSection] ?? [];
-
-//   const handleLogout = async () => {
-//     const result = await Swal.fire({
-//       title: "Logout?",
-//       icon: "warning",
-//       showCancelButton: true,
-//       confirmButtonText: "Logout",
-//       confirmButtonColor: "#000",
-//     });
-
-//     if (!result.isConfirmed) return;
-
-//     adminAuthStore.clear();
-//     navigate("/admin/login", { replace: true });
-//   };
-
-//   return (
-//     <motion.aside
-//       animate={{ width: isExpanded ? 240 : 80 }}
-//       className="bg-white border-r h-full flex flex-col"
-//     >
-//       <nav className="flex-1 px-3 py-4 space-y-1">
-//         {items.map((item) => {
-//           const Icon = item.icon;
-//           return (
-//             <NavLink
-//               key={item.path}
-//               to={item.path}
-//               className={({ isActive }) =>
-//                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
-//                   isActive
-//                     ? "bg-gray-900 text-white"
-//                     : "text-gray-600 hover:bg-gray-100"
-//                 }`
-//               }
-//             >
-//               <Icon size={18} />
-//               {isExpanded && item.label}
-//             </NavLink>
-//           );
-//         })}
-//       </nav>
-
-//       <button
-//         onClick={handleLogout}
-//         className="m-3 flex items-center gap-3 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50"
-//       >
-//         <LogOut size={18} />
-//         {isExpanded && "Logout"}
-//       </button>
-//     </motion.aside>
-//   );
-// };
-
-// export default Sidebar;
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -113,7 +25,6 @@ interface SidebarProps {
 }
 
 export default function Sidebar({
-  isExpanded,
   activeSection,
   mobileOpen = false,
   onCloseMobile,

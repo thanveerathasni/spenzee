@@ -12,7 +12,6 @@ const ResetPassword: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ SAFE SIDE-EFFECT
   useEffect(() => {
     if (!token) {
       toast.error("Invalid or expired reset link");
