@@ -17,6 +17,7 @@ import { setAuth } from "../../../store/auth/auth.slice";
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("overview");
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -31,6 +32,8 @@ export default function ProfilePage() {
         );
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
 
