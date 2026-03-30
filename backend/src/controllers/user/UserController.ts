@@ -6,7 +6,15 @@ import { uploadToCloudinary } from "../../services/cloudinaryService";
 
 import { UserService } from "../../services/user/UserService";
 
+import { v2 as cloudinary } from "cloudinary";
 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME!,
+  api_key: process.env.CLOUD_API_KEY!,
+  api_secret: process.env.CLOUD_API_SECRET!,
+});
+
+export default cloudinary;
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
 import { LOG_MESSAGES } from "../../shared/constants/logMessages";
 import { SUCCESS_MESSAGES } from "../../shared/constants/successMessages";
@@ -77,4 +85,9 @@ async uploadProfileImage(req: Request, res: Response) {
     data,
   });
 }
+
+
+
+
+
 }
