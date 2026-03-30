@@ -8,6 +8,17 @@ export interface IUser extends Document {
   role: Role;
   isVerified: boolean;
   isActive: boolean;
+
+  phone?: string;
+  profileImage?: string;
+
+  address?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+  };
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,7 +27,6 @@ const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
-      required: false,
       trim: true,
     },
 
@@ -30,7 +40,6 @@ const userSchema = new Schema<IUser>(
 
     password: {
       type: String,
-      required: false,
       default: null,
     },
 
@@ -49,10 +58,27 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
     },
+
+
+    phone: {
+      type: String,
+      trim: true,
+    },
+
+    profileImage: {
+      type: String,
+    },
+
+    address: {
+      street: { type: String },
+      city: { type: String },
+      state: { type: String },
+      pincode: { type: String },
+    },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 export const UserModel = model<IUser>("User", userSchema);
