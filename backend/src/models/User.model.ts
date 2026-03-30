@@ -64,10 +64,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       trim: true,
     },
-
-    profileImage: {
-      type: String,
-    },
+profileImage: {
+  type: String,
+  required: false,
+},
 
     address: {
       street: { type: String },

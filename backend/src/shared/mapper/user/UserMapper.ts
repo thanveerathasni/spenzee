@@ -18,7 +18,7 @@ static toProfileDTO(user: IUser): UserProfileDTO {
     name: user.name,
     email: user.email,
     phone: user.phone,
-    profileImage: user.profileImage,
+    profileImage: user.profileImage || "",
 
     address: {
       street: user.address?.street,
