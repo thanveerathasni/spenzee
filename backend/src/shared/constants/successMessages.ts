@@ -10,7 +10,9 @@ export const SUCCESS_MESSAGES = {
     PASSWORD_RESET_SUCCESS: "Password reset successful",
     GOOGLE_LOGIN_SUCCESS: "Google login successful",
   },
-
+USER: {
+  PROFILE_UPDATED: "Profile updated successfully",
+},
   ADMIN: {
     DASHBOARD_FETCHED: "Admin dashboard fetched successfully",
     LOGIN_SUCCESS: "Admin login successful",
