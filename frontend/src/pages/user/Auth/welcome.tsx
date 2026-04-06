@@ -17,6 +17,7 @@ import Swal from "sweetalert2";
 import { clearAuth } from "../../../store/auth";
 import { useDispatch } from "react-redux";
 import { ROUTES } from "../../../constants/routes";
+import { ALERT_MESSAGES } from "../../../constants/messages";
 /* ---------------- NAVBAR ---------------- */
 
 const Navbar: React.FC = () => {
@@ -27,12 +28,12 @@ const dispatch = useDispatch();
 
   const handleLogout = async () => {
     const result = await Swal.fire({
-      title: "Log out?",
-      text: "You will be signed out of your account.",
+      title: ALERT_MESSAGES.AUTH.LOGOUT_TITLE,
+      text: ALERT_MESSAGES.AUTH.LOGOUT_TEXT,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Logout",
-      cancelButtonText: "Cancel",
+      confirmButtonText: ALERT_MESSAGES.AUTH.LOGOUT_CONFIRM,
+      cancelButtonText: ALERT_MESSAGES.AUTH.LOGOUT_CANCEL,
       background: "#ffffff",
       color: "#000000",
       confirmButtonColor: "#000000",
@@ -47,7 +48,7 @@ const dispatch = useDispatch();
       console.error("Logout failed:", e);
     } finally {
     dispatch(clearAuth());
-      navigate("/login", { replace: true });
+      navigate(ROUTES.AUTH.LOGIN, { replace: true });
     }
   };
 
@@ -67,9 +68,9 @@ const dispatch = useDispatch();
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-6 md:px-12 md:py-8 bg-white border-b border-black/5"
+      className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-6 md:px-12 md:py-8 bg-white dark:bg-black border-b border-black/5 dark:border-white/5 transition-colors duration-700"
     >
-      <div className="font-serif text-2xl font-medium tracking-tight text-black">
+      <div className="font-serif text-2xl font-medium tracking-tight text-black dark:text-white transition-colors duration-700">
         Spenzee
       </div>
 
@@ -79,7 +80,7 @@ const dispatch = useDispatch();
           <button
             key={item}
             onClick={() => handleNavClick(item)}
-            className="text-[11px] uppercase tracking-[0.25em] font-sans text-black/50 hover:text-black transition"
+            className="text-[11px] uppercase tracking-[0.25em] font-sans text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white transition-colors duration-700"
           >
             {item}
           </button>
@@ -88,7 +89,7 @@ const dispatch = useDispatch();
 
       {/* Mobile Toggle */}
       <div className="md:hidden">
-        <button onClick={() => setIsOpen(!isOpen)} className="text-black">
+        <button onClick={() => setIsOpen(!isOpen)} className="text-black dark:text-white transition-colors duration-700">
           {isOpen ? (
             <X size={24} strokeWidth={1.5} />
           ) : (
@@ -102,13 +103,13 @@ const dispatch = useDispatch();
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute top-full left-0 w-full bg-white border-b border-black/10 py-8 px-6 flex flex-col space-y-6 md:hidden z-40"
+          className="absolute top-full left-0 w-full bg-white dark:bg-black border-b border-black/10 dark:border-white/10 py-8 px-6 flex flex-col space-y-6 md:hidden z-40 transition-colors duration-700"
         >
           {navItems.map((item) => (
             <button
               key={item}
               onClick={() => handleNavClick(item)}
-              className="text-sm uppercase tracking-[0.15em] font-medium text-black/70 border-b border-black/5 pb-2 text-left"
+              className="text-sm uppercase tracking-[0.15em] font-medium text-black/70 dark:text-white/70 border-b border-black/5 dark:border-white/5 pb-2 text-left transition-colors duration-700"
             >
               {item}
             </button>
@@ -138,12 +139,12 @@ const WelcomePage: React.FC = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] },
+      transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
     },
   };
 
   return (
-    <div className="relative w-screen h-screen flex flex-col bg-white overflow-hidden">
+    <div className="relative w-screen h-screen flex flex-col bg-white dark:bg-black overflow-hidden transition-colors duration-700">
       <Navbar />
 
       <main className="flex-1 flex items-center justify-center px-6 md:px-24">
@@ -155,7 +156,7 @@ const WelcomePage: React.FC = () => {
         >
           <motion.h1
             variants={itemVariants}
-            className="text-5xl md:text-7xl font-serif font-medium tracking-tight text-black mb-4"
+            className="text-5xl md:text-7xl font-serif font-medium tracking-tight text-black dark:text-white mb-4 transition-colors duration-700"
           >
             Welcome back,
             <br />
@@ -169,17 +170,17 @@ const WelcomePage: React.FC = () => {
 
           <motion.p
             variants={itemVariants}
-            className="text-xs md:text-sm font-sans text-black/40 uppercase tracking-[0.35em] mb-12"
+            className="text-xs md:text-sm font-sans text-black/40 dark:text-white/40 uppercase tracking-[0.35em] mb-12 transition-colors duration-700"
           >
             Your personalized experience is ready.
           </motion.p>
 
           <motion.div variants={itemVariants} className="flex justify-center">
             <motion.button
-              whileHover={{ scale: 1.02, backgroundColor: "#000" }}
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="group flex items-center justify-center gap-4 px-14 py-5 bg-black text-white text-xs uppercase tracking-[0.25em] font-medium transition"
-              onClick={() => navigate("/dashboard")}
+              className="group flex items-center justify-center gap-4 px-14 py-5 bg-black text-white dark:bg-white dark:text-black hover:bg-black/80 dark:hover:bg-white/80 text-xs uppercase tracking-[0.25em] font-medium transition-all duration-700"
+              onClick={() => navigate(ROUTES.USER.DASHBOARD)}
             >
               <span>Go to Dashboard</span>
               <ArrowRight
@@ -195,7 +196,7 @@ const WelcomePage: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
-        className="px-12 py-8 flex justify-between items-center text-[10px] uppercase tracking-[0.2em] text-black/30 w-full"
+        className="px-12 py-8 flex justify-between items-center text-[10px] uppercase tracking-[0.2em] text-black/30 dark:text-white/30 transition-colors duration-700 w-full"
       >
         <div className="hidden md:block">Est. MMXXIV</div>
         <div className="w-full text-center md:w-auto">

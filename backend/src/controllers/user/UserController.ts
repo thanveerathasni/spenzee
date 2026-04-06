@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
+import {Express} from "express";
 import { inject, injectable } from "inversify";
-
+import { Multer } from "multer";
 import { TYPES } from "../../di/types";
 import { UserService } from "../../services/user/UserService";
-import { uploadToCloudinary } from "../../services/cloudinaryService";
 
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
 import { LOG_MESSAGES } from "../../shared/constants/logMessages";
@@ -11,6 +11,7 @@ import { SUCCESS_MESSAGES } from "../../shared/constants/successMessages";
 
 import { UnauthorizedError } from "../../shared/errors/errors";
 import { logger } from "../../shared/logger/logger";
+import { uploadToCloudinary } from "../../shared/utils/cloudinaryUpload";
 import { sendResponse } from "../../shared/utils/sendResponse";
 
 @injectable()
@@ -21,7 +22,7 @@ export class UserController {
   ) {}
 
   async getProfile(req: Request, res: Response) {
-    const userId = (req as any).user?.id;
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
 
     if (!userId) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
@@ -39,7 +40,7 @@ export class UserController {
   }
 
   async updateProfile(req: Request, res: Response) {
-    const userId = (req as any).user?.id;
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
 
     if (!userId) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
@@ -55,7 +56,7 @@ export class UserController {
   }
 
   async uploadProfileImage(req: Request, res: Response) {
-    const userId = (req as any).user?.id;
+    const userId = (req as Request & { user?: { id: string } }).user?.id;
 
     if (!userId) {
       throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
@@ -65,11 +66,10 @@ export class UserController {
       throw new UnauthorizedError("Image file required");
     }
 
-    const imageUrl = await uploadToCloudinary(req.file.buffer);
-
-    const data = await this._userService.updateProfile(userId, {
-      profileImage: imageUrl,
-    });
+    const data = await this._userService.updateProfileImage(
+      userId,
+      req.file as Express.Multer.File
+    );
 
     return sendResponse({
       res,

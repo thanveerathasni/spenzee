@@ -1,17 +1,15 @@
+import { Express  } from "express";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../di/types";
-
-
+import { uploadToCloudinary } from "../../services/cloudinaryService";
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
 import { LOG_MESSAGES } from "../../shared/constants/logMessages";
-import { SUCCESS_MESSAGES } from "../../shared/constants/successMessages";
 import { UserProfileDTO } from "../../shared/dto/user/userProfile.dto";
-
-
 import { UnauthorizedError } from "../../shared/errors/errors";
 import { logger } from "../../shared/logger/logger";
 import { UserMapper } from "../../shared/mapper/user/UserMapper";
 import { IUserRepository } from "../../types/repositories/user/IUserRepository";
+// import { uploadToCloudinary } from "../cloudinaryService";
 
 @injectable()
 export class UserService {
@@ -51,18 +49,23 @@ export class UserService {
   }
 
   async updateProfileImage(
-  userId: string,
-  imageUrl: string
-) {
-  const updatedUser = await this._userRepository.update(
-    { _id: userId },
-    { profileImage: imageUrl }
-  );
+    userId: string,
+    file: Express.Multer.File
+  ): Promise<UserProfileDTO> {
+    if (!file) {
+      throw new UnauthorizedError("Image file required");
+    }
 
-  if (!updatedUser) {
-    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.USER_NOT_FOUND);
+    const imageUrl = await uploadToCloudinary(file.buffer);
+
+    const updatedUser = await this._userRepository.updateById(userId, {
+      profileImage: imageUrl,
+    });
+
+    if (!updatedUser) {
+      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.USER_NOT_FOUND);
+    }
+
+    return UserMapper.toProfileDTO(updatedUser);
   }
-
-  return UserMapper.toProfileDTO(updatedUser);
-}
 }

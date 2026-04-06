@@ -24,4 +24,6 @@ export interface IUserRepository {
   filter: Record<string, unknown>,
   update: Record<string, unknown>
 ): Promise<IUser | null>;
+
+updateById(id: string, data: Partial<IUser>): Promise<IUser | null>;
 }

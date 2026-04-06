@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { authApi } from "../../../api/auth.api";
+import { ALERT_MESSAGES } from "../../../constants/messages";
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
@@ -37,8 +38,7 @@ const ResetPassword: React.FC = () => {
         token,
        newPassword : password,
       });
-
-      toast.success("Password reset successful");
+      toast.success(ALERT_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS);
       navigate("/login", { replace: true });
     } catch (err: unknown) {
       if (
@@ -47,9 +47,9 @@ const ResetPassword: React.FC = () => {
         "response" in err
       ) {
         const e = err as { response?: { data?: { message?: string } } };
-        toast.error(e.response?.data?.message ?? "Failed to reset password");
+        toast.error(e.response?.data?.message ?? ALERT_MESSAGES.AUTH.PASSWORD_RESET_FAILED);
       } else {
-        toast.error("Failed to reset password");
+        toast.error(ALERT_MESSAGES.AUTH.PASSWORD_RESET_FAILED);
       }
     } finally {
       setLoading(false);

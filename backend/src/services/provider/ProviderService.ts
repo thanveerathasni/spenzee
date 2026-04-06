@@ -1,5 +1,6 @@
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../di/types";
+import { IProvider } from "../../models/Provider.model";
 import { ProviderDTO } from "../../shared/dto/provider/provider.dto";
 
 import { ProviderMapper } from "../../shared/mapper/provider/ProviderMapper";
@@ -14,7 +15,7 @@ export class ProviderService {
     private readonly _repo: IProviderRepository
   ) {}
 
-  async createProvider(data: Partial<any>): Promise<ProviderDTO> {
+  async createProvider(data: Partial<IProvider>): Promise<ProviderDTO> {
   const provider = await this._repo.create(data);
   return ProviderMapper.toDTO(provider);
 }

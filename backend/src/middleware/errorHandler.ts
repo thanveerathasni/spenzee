@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
 import { HTTP_STATUS } from "../shared/constants/httpStatus";
 
+import { LOG_MESSAGES } from "../shared/constants/logMessages";
 import { AppError } from "../shared/errors/AppError";
 import { logger } from "../shared/logger/logger";
 
@@ -21,7 +22,7 @@ export const errorHandler = (
     });
   }
 
-logger.error("Unhandled Error", {
+logger.error(LOG_MESSAGES.SYSTEM.ERROR_OCCURRED, {
   message: err.message,
   stack: err.stack,
 });

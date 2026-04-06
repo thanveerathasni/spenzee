@@ -1,37 +1,99 @@
+// import { useState, useEffect } from "react";
+// import { useDispatch, useSelector } from "react-redux";
+
+// import ProfileLayout from "../../../components/user/profile/ProfileLayout";
+// import ProfileOverview from "../../../components/user/profile/ProfileOverview";
+// import EditProfile from "../../../components/user/profile/EditProfile";
+
+// import { userProfileApi } from "../../../api/user/userProfile.api";
+// import { RootState } from "../../../store/store";
+// import { User } from "../../../types/user";
+// import { setUser } from "../../../store/auth/auth.slice";
+
+// export default function ProfilePage() {
+//   const [active, setActive] = useState("edit-profile");
+//   const [loading, setLoading] = useState(true);
+
+//   const dispatch = useDispatch();
+
+//   const user = useSelector((state: RootState) => state.auth.user);
+
+//   useEffect(() => {
+//     const fetchProfile = async () => {
+//       try {
+//         const data: User = await userProfileApi.getProfile();
+
+//         dispatch(setUser(data));
+
+//       } catch (err) {
+//         console.error("Profile fetch failed:", err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchProfile();
+//   }, [dispatch]);
+
+//   if (loading || !user) {
+//     return <div className="p-6">Loading profile...</div>;
+//   }
+
+//   return (
+// <ProfileLayout user={user} active={active} setActive={setActive}>
+
+//   {active === "edit-profile" && <EditProfile user={user} />}
+
+//   {active === "address" && <div>Address Section</div>}
+
+//   {active === "settings" && <div>Settings Section</div>}
+
+//   {active === "statements" && <div>Statements Section</div>}
+
+//   {active === "upload" && <div>Upload Section</div>}
+
+//   {active === "security" && <div>Security Section</div>}
+
+//   {active === "billing" && <div>Billing Section</div>}
+
+// </ProfileLayout>
+//   );
+// }
+
+
+
+
+
+
+
+
+
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
-import ProfileNavbar from "../../../components/user/profile/ProfileNavbar";
-import ProfileSidebar from "../../../components/user/profile/ProfileSidebar";
-
+import ProfileLayout from "../../../components/user/profile/ProfileLayout";
 import ProfileOverview from "../../../components/user/profile/ProfileOverview";
 import EditProfile from "../../../components/user/profile/EditProfile";
-import AddressManagement from "../../../components/user/profile/AddressManagement";
-import ChangePassword from "../../../components/user/profile/ChangePassword";
-import EmailSettings from "../../../components/user/profile/EmailSettings";
 
 import { userProfileApi } from "../../../api/user/userProfile.api";
-import { setAuth } from "../../../store/auth/auth.slice";
+import { RootState } from "../../../store/store";
+import { User } from "../../../types/user";
+import { setUser } from "../../../store/auth/auth.slice";
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState("overview");
-  const dispatch = useDispatch();
+  const [active, setActive] = useState("overview"); 
   const [loading, setLoading] = useState(true);
+
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await userProfileApi.getProfile();
-
-        dispatch(
-          setAuth({
-            accessToken: "",
-            user: data,
-          })
-        );
-      } catch (error) {
-        console.error(error);
+        const data: User = await userProfileApi.getProfile();
+        dispatch(setUser(data));
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -40,54 +102,21 @@ export default function ProfilePage() {
     fetchProfile();
   }, [dispatch]);
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "overview":
-        return <ProfileOverview />;
-      case "edit":
-        return <EditProfile />;
-      case "address":
-        return <AddressManagement />;
-      case "password":
-        return <ChangePassword />;
-      case "email":
-        return <EmailSettings />;
-      default:
-        return <ProfileOverview />;
-    }
-  };
+  if (loading || !user) {
+    return <div className="p-6">Loading profile...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-[#F6F5F3]">
-      {/* NAVBAR */}
-      <ProfileNavbar />
+    <ProfileLayout user={user} active={active} setActive={setActive}>
 
-      {/* MAIN */}
-      <div className="pt-24 px-6 md:px-16">
-        
-        {/* FLEX FIX (IMPORTANT) */}
-        <div className="flex gap-10 max-w-7xl mx-auto">
-          
-          {/* SIDEBAR (FIXED WIDTH) */}
-          <div className="w-[280px] flex-shrink-0">
-            <ProfileSidebar
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-            />
-          </div>
+      {active === "overview" && <ProfileOverview user={user} />}
 
-          {/* CONTENT (TAKES REST SPACE) */}
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex-1 bg-white rounded-3xl shadow-lg p-8 md:p-12 min-h-[600px] transition-all duration-300 hover:shadow-2xl"
-          >
-            {renderContent()}
-          </motion.div>
+      {active === "edit-profile" && <EditProfile user={user} />}
 
-        </div>
-      </div>
-    </div>
+      {active === "address" && <div>Address Section</div>}
+
+      {active === "settings" && <div>Settings Section</div>}
+
+    </ProfileLayout>
   );
 }

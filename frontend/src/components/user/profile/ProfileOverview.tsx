@@ -1,47 +1,50 @@
-import { useSelector } from "react-redux";
-import { RootState } from "../../../store";
+import { User } from "../../../types/user";
+import ProfileCard from "./ProfileCard";
+import ImageUpload from "./ImageUpload";
+interface Props {
+  user: User;
+}
 
-export default function ProfileOverview() {
-  const user = useSelector((state: RootState) => state.auth.user);
-
-  if (!user) {
-    return <div className="text-gray-400">Loading profile...</div>;
-  }
-
+export default function ProfileOverview({ user }: Props) {
   return (
-    <div className="space-y-10 max-w-2xl">
-      <div>
-        <h2 className="text-3xl font-serif mb-2">Overview</h2>
-        <p className="text-gray-500 text-sm">
-          Your personal account information
-        </p>
-      </div>
+    <div className="space-y-6">
 
-      <div className="grid gap-6">
-        <div>
-          <p className="text-xs text-gray-400 uppercase">Name</p>
-          <p className="text-lg font-medium">{user.name || "Not set"}</p>
-        </div>
+      {/* PERSONAL INFO */}
+      <ProfileCard>
+        <h3 className="text-lg font-semibold mb-4">Personal Info</h3>
 
-        <div>
-          <p className="text-xs text-gray-400 uppercase">Email</p>
-          <p className="text-lg font-medium">{user.email}</p>
-        </div>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+<ImageUpload user={user} />
+          <div>
+            <p className="text-gray-500">Name</p>
+            <p className="font-medium">{user.name}</p>
+          </div>
 
-        <div>
-          <p className="text-xs text-gray-400 uppercase">Phone</p>
-          <p className="text-lg font-medium">
-            {user.phone || "Not added"}
-          </p>
-        </div>
+          <div>
+            <p className="text-gray-500">Email</p>
+            <p className="font-medium">{user.email}</p>
+          </div>
 
-        <div>
-          <p className="text-xs text-gray-400 uppercase">Address</p>
-          <p className="text-lg font-medium">
-            {user.address?.street || "No address added"}
-          </p>
+          <div>
+            <p className="text-gray-500">Phone</p>
+            <p className="font-medium">{user.phone}</p>
+          </div>
+
         </div>
-      </div>
+      </ProfileCard>
+
+      {/* ADDRESS */}
+      <ProfileCard>
+        <h3 className="text-lg font-semibold mb-4">Address</h3>
+
+        <div className="text-sm space-y-1">
+          <p>{user.address?.street || "—"}</p>
+          <p>{user.address?.city || "—"}</p>
+          <p>{user.address?.state || "—"}</p>
+          <p>{user.address?.pincode || "—"}</p>
+        </div>
+      </ProfileCard>
+
     </div>
   );
 }

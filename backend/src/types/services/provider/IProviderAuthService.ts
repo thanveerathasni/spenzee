@@ -1,6 +1,8 @@
+import { ProviderDTO } from "../../../shared/dto/provider/provider.dto";
+
 export interface ProviderAuthResponse {
   accessToken: string;
-  provider: any;
+  provider: ProviderDTO;
 }
 
 export interface IProviderAuthService {

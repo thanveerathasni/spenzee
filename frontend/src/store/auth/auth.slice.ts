@@ -28,7 +28,17 @@ const authSlice = createSlice({
     })
   );
 },
+setUser: (state, action) => {
+  state.user = action.payload;
 
+  localStorage.setItem(
+    "auth",
+    JSON.stringify({
+      accessToken: state.accessToken,
+      user: action.payload,
+    })
+  );
+},
 clearAuth: (state) => {
   state.accessToken = null;
   state.user = null;
@@ -59,9 +69,10 @@ hydrateAuth: (state) => {
       state.isLoading = false;
     }
   },
+  
 });
 
 
 
-export const { setAuth, clearAuth, markAuthChecked, hydrateAuth } = authSlice.actions;
+export const { setAuth, clearAuth, markAuthChecked, hydrateAuth, setUser } = authSlice.actions;
 export const authReducer = authSlice.reducer;

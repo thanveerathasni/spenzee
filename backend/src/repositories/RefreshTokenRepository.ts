@@ -1,21 +1,42 @@
 import { injectable } from "inversify";
-import { RefreshTokenModel } from "../models/RefreshToken.model";
+import { Types } from "mongoose";
+import { RefreshTokenModel, IRefreshToken } from "../models/RefreshToken.model";
 
 @injectable()
 export class RefreshTokenRepository {
-  async create(data: any) {
-    return RefreshTokenModel.create(data);
+  async create(data: { userId: Types.ObjectId; tokenHash: string; expiresAt: Date }) {
+    await RefreshTokenModel.create({
+      ...data,
+      isRevoked: false,
+    });
   }
 
-  async findValidTokenByHash(tokenHash: string) {
+  async findByTokenHash(tokenHash: string): Promise<IRefreshToken | null> {
     return RefreshTokenModel.findOne({ tokenHash });
   }
 
-  async deleteByTokenHash(tokenHash: string) {
+  async findValidTokenByHash(tokenHash: string): Promise<IRefreshToken | null> {
+    return RefreshTokenModel.findOne({
+      tokenHash,
+      isRevoked: false,
+      expiresAt: { $gt: new Date() },
+    });
+  }
+
+  async deleteByTokenHash(tokenHash: string): Promise<void> {
     await RefreshTokenModel.deleteOne({ tokenHash });
   }
 
-  async revokeAllForUser(userId: string) {
-    await RefreshTokenModel.deleteMany({ userId });
+  async revokeToken(tokenId: Types.ObjectId): Promise<void> {
+    await RefreshTokenModel.findByIdAndUpdate(tokenId, {
+      isRevoked: true,
+    });
+  }
+
+  async revokeAllForUser(userId: Types.ObjectId): Promise<void> {
+    await RefreshTokenModel.updateMany(
+      { userId },
+      { isRevoked: true }
+    );
   }
 }

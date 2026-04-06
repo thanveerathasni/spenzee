@@ -1,6 +1,7 @@
 import { injectable } from "inversify";
 import nodemailer from "nodemailer";
 
+import { SYSTEM_MESSAGES } from "../shared/constants/systemMessages";
 import { IMailService } from "../types/services/IMailService";
 
 @injectable()
@@ -9,7 +10,7 @@ export class MailService implements IMailService {
 
   constructor() {
     if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
-      throw new Error("Mail config missing");
+      throw new Error(SYSTEM_MESSAGES.CONFIG.MISSING_MAIL_CONFIG);
     }
 
     this._transporter = nodemailer.createTransport({

@@ -8,9 +8,10 @@ import { authApi } from "../../../api/auth.api";
 import { useAppDispatch } from "../../../store/hooks";
 import { setAuth } from "../../../store/auth";
 import toast from "react-hot-toast";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/store";
+import { ALERT_MESSAGES } from "../../../constants/messages";
 
 interface Errors {
   email?: string;
@@ -70,7 +71,7 @@ const LoginForm: React.FC = () => {
       });
 
       dispatch(setAuth(res));
-      toast.success("Login successful");
+      toast.success(ALERT_MESSAGES.AUTH.LOGIN_SUCCESS);
 
       if (res.user.role === "admin") {
         navigate("/admin/welcome", { replace: true });
@@ -80,11 +81,11 @@ const LoginForm: React.FC = () => {
         navigate("/welcome", { replace: true });
       }
     } catch {
-      toast.error("Login failed");
+      toast.error(ALERT_MESSAGES.AUTH.LOGIN_FAILED);
     }
   };
 
-  const handleGoogleSuccess = async (cred: any) => {
+  const handleGoogleSuccess = async (cred: CredentialResponse) => {
     if (!cred?.credential || googleLoginInProgress) return;
 
     googleLoginInProgress = true;
@@ -92,10 +93,10 @@ const LoginForm: React.FC = () => {
     try {
       const res = await authApi.googleLogin(cred.credential);
       dispatch(setAuth(res));
-      toast.success("Google login successful");
+      toast.success(ALERT_MESSAGES.AUTH.GOOGLE_LOGIN_SUCCESS);
       navigate("/welcome", { replace: true });
     } catch {
-      toast.error("Google login failed");
+      toast.error(ALERT_MESSAGES.AUTH.GOOGLE_LOGIN_FAILED);
     } finally {
       googleLoginInProgress = false;
     }
@@ -141,7 +142,7 @@ const LoginForm: React.FC = () => {
             {view === "login" && (
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
-                onError={() => toast.error("Google login failed")}
+                onError={() => toast.error(ALERT_MESSAGES.AUTH.GOOGLE_LOGIN_FAILED)}
               />
             )}
 

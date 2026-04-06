@@ -4,15 +4,12 @@ import { injectable, inject } from "inversify";
 import { TYPES } from "../../di/types";
 
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
-
 import { LOG_MESSAGES } from "../../shared/constants/logMessages";
-
 import { ROLES } from "../../shared/constants/roles";
 
 import { UnauthorizedError, BadRequestError } from "../../shared/errors/errors";
 import { logger } from "../../shared/logger/logger";
 import { AuthMapper } from "../../shared/mapper/AuthMapper";
-
 
 import { generateOtp, hashOtp, compareOtp } from "../../shared/utils/otp.util";
 import { comparePasswords, hashPassword } from "../../shared/utils/password";
@@ -46,69 +43,65 @@ export class AuthService implements IAuthService {
     this._oauthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
 
-  async login(email: string, password: string): Promise<AuthResponse> {
-logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email });
-    const user = await this._userRepository.findByEmail(email);
 
-    if (!user || !user.password) {
-      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
-    }
+async login(email: string, password: string): Promise<AuthResponse> {
+  const user = await this._userRepository.findByEmail(email);
 
-    const valid = await comparePasswords(password, user.password);
-
-    if (!valid) {
-      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
-    }
-
-    const payload = { userId: user._id.toString(), role: user.role };
-
-    const accessToken = createAccessToken(payload);
-    const refreshToken = createRefreshToken(payload);
-
-    await this._refreshRepo.create({
-      userId: user._id,
-      tokenHash: hashRefreshToken(refreshToken),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
- logger.info(LOG_MESSAGES.AUTH.LOGIN_SUCCESS, { userId: user._id.toString() });
-
-    return AuthMapper.toAuthResponse(user, accessToken, refreshToken);
+  if (!user || !user.password) {
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
-    const payload = verifyRefreshToken(refreshToken);
-    const tokenHash = hashRefreshToken(refreshToken);
+  const valid = await comparePasswords(password, user.password);
 
-    const stored = await this._refreshRepo.findValidTokenByHash(tokenHash);
-
-    if (!stored) {
-      await this._refreshRepo.revokeAllForUser(payload.userId as any);
-      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
-    }
-
-    const user = await this._userRepository.findById(payload.userId);
-    if (!user) throw new UnauthorizedError(ERROR_MESSAGES.AUTH.USER_NOT_FOUND);
-
-    await this._refreshRepo.deleteByTokenHash(tokenHash);
-
-    const newAccessToken = createAccessToken({
-      userId: user._id.toString(),
-      role: user.role,
-    });
-
-    const newRefreshToken = createRefreshToken({
-      userId: user._id.toString(),
-      role: user.role,
-    });
-
-    await this._refreshRepo.create({
-      userId: user._id,
-      tokenHash: hashRefreshToken(newRefreshToken),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
-
-    return AuthMapper.toAuthResponse(user, newAccessToken, newRefreshToken);
+  if (!valid) {
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
   }
+
+  const payload = { userId: user._id.toString(), role: user.role };
+
+  const accessToken = createAccessToken(payload);
+  const refreshToken = createRefreshToken(payload);
+
+  await this._refreshRepo.create({
+    userId: user._id,
+    tokenHash: hashRefreshToken(refreshToken),
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+
+  return AuthMapper.toAuthResponse(user, accessToken, refreshToken);
+}
+
+async refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
+  const payload = verifyRefreshToken(refreshToken);
+  const tokenHash = hashRefreshToken(refreshToken);
+
+  const stored = await this._refreshRepo.findValidTokenByHash(tokenHash);
+
+  if (!stored) {
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
+  }
+
+  const user = await this._userRepository.findById(payload.userId);
+  if (!user) throw new UnauthorizedError(ERROR_MESSAGES.AUTH.USER_NOT_FOUND);
+
+  const newAccessToken = createAccessToken({
+    userId: user._id.toString(),
+    role: user.role,
+  });
+
+  const newRefreshToken = createRefreshToken({
+    userId: user._id.toString(),
+    role: user.role,
+  });
+
+  await this._refreshRepo.create({
+    userId: user._id,
+    tokenHash: hashRefreshToken(newRefreshToken),
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+
+  return AuthMapper.toAuthResponse(user, newAccessToken, newRefreshToken);
+}
 
   async logout(refreshToken: string): Promise<void> {
     const tokenHash = hashRefreshToken(refreshToken);
@@ -183,8 +176,8 @@ logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email });
     return resetToken;
   }
 
-  async sendResetPasswordEmail(email: string, token: string): Promise<void> {
-    await this._mailService.sendResetPasswordEmail(email, token);
+  async sendResetPasswordEmail(email: string, resetToken: string): Promise<void> {
+    await this._mailService.sendResetPasswordEmail(email, resetToken);
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
@@ -199,6 +192,47 @@ logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email });
       await hashPassword(newPassword),
     );
   }
+
+  async sendEmailChangeOtp(email: string) {
+  const otp = generateOtp();
+
+  await this._otpRepository.updateOtp(email, hash(otp), expiry());
+
+  await this._mailService.sendOtp(email, otp);
+}
+
+async verifyEmailChangeOtp(email: string, otp: string) {
+  const record = await this._otpRepository.findByEmail(email);
+
+  if (!record) throw new Error("No OTP");
+
+  if (record.expiresAt < new Date()) throw new Error("Expired");
+
+  if (!compare(otp, record.otpHash)) throw new Error("Invalid");
+}
+
+async updateEmail(userId: string, newEmail: string) {
+  return this._userRepository.updateById(userId, {
+    email: newEmail,
+  });
+}
+
+
+async sendPasswordOtp(userId: string) {
+  const user = await this._userRepository.findById(userId);
+
+  const otp = generateOtp();
+
+  await this._otpRepository.updateOtp(user.email, hash(otp), expiry());
+
+  await this._mailService.sendOtp(user.email, otp);
+}
+
+async updatePassword(userId: string, newPassword: string) {
+  const hashed = await bcrypt.hash(newPassword, 10);
+
+  await this._userRepository.updatePassword(userId, hashed);
+}
 
   async googleLogin(credential: string): Promise<AuthResponse> {
     const ticket = await this._oauthClient.verifyIdToken({
@@ -233,6 +267,12 @@ logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email });
     const refreshToken = createRefreshToken({
       userId: user._id.toString(),
       role: user.role,
+    });
+
+    await this._refreshRepo.create({
+      userId: user._id,
+      tokenHash: hashRefreshToken(refreshToken),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     return AuthMapper.toAuthResponse(user, accessToken, refreshToken);

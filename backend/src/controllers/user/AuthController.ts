@@ -155,6 +155,70 @@ export class AuthController {
     });
   }
 
+  async sendEmailOtp(req: Request, res: Response) {
+  const { email } = req.body;
+
+  await this._authService.sendEmailChangeOtp(email);
+
+  return sendResponse({
+    res,
+    message: "OTP sent to email",
+  });
+}
+
+async verifyEmailOtp(req: Request, res: Response) {
+  const { email, otp } = req.body;
+
+  await this._authService.verifyEmailChangeOtp(email, otp);
+
+  return sendResponse({
+    res,
+    message: "OTP verified",
+  });
+}
+
+async updateEmail(req: Request, res: Response) {
+  const userId = (req as any).user.id;
+  const { newEmail } = req.body;
+
+  const user = await this._authService.updateEmail(userId, newEmail);
+
+  return sendResponse({
+    res,
+    message: "Email updated",
+    data: user,
+  });
+}
+
+
+async sendPasswordOtp(req: Request, res: Response) {
+  const userId = (req as any).user.id;
+
+  await this._authService.sendPasswordOtp(userId);
+
+  return sendResponse({ res, message: "OTP sent" });
+}
+
+async verifyPasswordOtp(req: Request, res: Response) {
+  const { otp } = req.body;
+
+  await this._authService.verifyPasswordOtp(otp);
+
+  return sendResponse({ res, message: "Verified" });
+}
+
+async updatePassword(req: Request, res: Response) {
+  const userId = (req as any).user.id;
+  const { newPassword } = req.body;
+
+  await this._authService.updatePassword(userId, newPassword);
+
+  return sendResponse({ res, message: "Password updated" });
+}
+
+
+
+
   async googleLogin(req: Request, res: Response): Promise<Response> {
     const { credential } = req.body;
 

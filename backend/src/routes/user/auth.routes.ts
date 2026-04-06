@@ -21,4 +21,12 @@ router.post(ROUTES.AUTH.FORGOT_PASSWORD, asyncHandler(controller.forgotPassword.
 router.post(ROUTES.AUTH.RESET_PASSWORD, asyncHandler(controller.resetPassword.bind(controller)));
 router.post(ROUTES.AUTH.GOOGLE, asyncHandler(controller.googleLogin.bind(controller)));
 
+router.post("/user/email/send-otp", asyncHandler(controller.sendEmailOtp.bind(controller)));
+router.post("/user/email/verify-otp", asyncHandler(controller.verifyEmailOtp.bind(controller)));
+router.patch("/user/email/update", asyncHandler(controller.updateEmail.bind(controller)));
+
+router.post("/user/password/send-otp", asyncHandler(controller.sendPasswordOtp.bind(controller)));
+router.post("/user/password/verify-otp", asyncHandler(controller.verifyPasswordOtp.bind(controller)));
+router.patch("/user/password/update", asyncHandler(controller.updatePassword.bind(controller)));
+
 export default router;

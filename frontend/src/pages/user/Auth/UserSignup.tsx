@@ -11,6 +11,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { api } from "../../../api/axios";
 import toast from "react-hot-toast";
 import { isAxiosError } from "axios";
+import { ALERT_MESSAGES } from "../../../constants/messages";
 interface Errors {
   name?: string;
   email?: string;
@@ -84,14 +85,14 @@ const SignupForm: React.FC = () => {
     setLoading(true);
     try {
       await authApi.resendOtp(formData.email);
-      toast.success(`OTP resent to ${formData.email}`);
+      toast.success(`${ALERT_MESSAGES.AUTH.OTP_RESEND_SUCCESS} to ${formData.email}`);
       setOtpTimer(60);
       setCanResend(false);
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        toast.error(err.response?.data?.message || "Resend failed");
+        toast.error(err.response?.data?.message || ALERT_MESSAGES.AUTH.OTP_RESEND_FAILED);
       } else {
-        toast.error("Resend failed");
+        toast.error(ALERT_MESSAGES.AUTH.OTP_RESEND_FAILED);
       }
     } finally {
       setLoading(false);
@@ -115,16 +116,16 @@ const SignupForm: React.FC = () => {
           password: formData.password,
           role: "user",
         });
-        toast.success("OTP sent to your email");
+        toast.success(ALERT_MESSAGES.AUTH.OTP_SENT);
         setShowOtpField(true);
         setOtpTimer(60);
         setCanResend(false);
         setErrors({});
       } catch (err: unknown) {
         if (isAxiosError(err)) {
-          toast.error(err.response?.data?.message || "Signup failed");
+          toast.error(err.response?.data?.message || ALERT_MESSAGES.AUTH.SIGNUP_FAILED);
         } else {
-          toast.error("Signup failed");
+          toast.error(ALERT_MESSAGES.AUTH.SIGNUP_FAILED);
         }
       } finally {
         setLoading(false);
@@ -139,13 +140,13 @@ const SignupForm: React.FC = () => {
           email: formData.email,
           otp: formData.otp,
         });
-        toast.success("Account verified successfully");
+        toast.success(ALERT_MESSAGES.AUTH.OTP_VERIFICATION_SUCCESS);
         navigate("/login", { replace: true });
       } catch (err: unknown) {
         if (isAxiosError(err)) {
-          toast.error(err.response?.data?.message || "OTP verification failed");
+          toast.error(err.response?.data?.message || ALERT_MESSAGES.AUTH.OTP_VERIFICATION_FAILED);
         } else {
-          toast.error("OTP verification failed");
+          toast.error(ALERT_MESSAGES.AUTH.OTP_VERIFICATION_FAILED);
         }
       } finally {
         setLoading(false);
@@ -196,13 +197,13 @@ const SignupForm: React.FC = () => {
                     credential: cred.credential,
                   });
                   localStorage.setItem("accessToken", res.data.accessToken);
-                  toast.success("Google signup successful");
+                  toast.success(ALERT_MESSAGES.AUTH.GOOGLE_SIGNUP_SUCCESS);
                   navigate("/welcome", { replace: true });
                 } catch {
-                  toast.error("Google signup failed");
+                  toast.error(ALERT_MESSAGES.AUTH.GOOGLE_SIGNUP_FAILED);
                 }
               }}
-              onError={() => toast.error("Google signup failed")}
+              onError={() => toast.error(ALERT_MESSAGES.AUTH.GOOGLE_SIGNUP_FAILED)}
             />
 
             {/* Name */}

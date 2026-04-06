@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "../../public/Landing";
 import { authApi } from "../../../api/auth.api";
 import toast from "react-hot-toast";
+import { ALERT_MESSAGES } from "../../../constants/messages";
 
 /* ---------------- Types ---------------- */
 type Step = "EMAIL" | "SUCCESS";
@@ -28,12 +29,12 @@ const ForgotPassword: React.FC = () => {
 
     try {
       await authApi.forgotPassword(email);
-      toast.success("Password reset link sent to your email");
+      toast.success(ALERT_MESSAGES.AUTH.FORGOT_PASSWORD_SUCCESS);
       setStep("SUCCESS");
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        "Failed to send password reset email";
+        ALERT_MESSAGES.AUTH.FORGOT_PASSWORD_FAILED;
       setError(msg);
       toast.error(msg);
     } finally {

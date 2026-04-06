@@ -3,26 +3,21 @@ import type { AxiosInstance, AxiosRequestConfig } from "axios";
 import { store } from "../store/store";
 import { clearAuth, setAuth } from "../store/auth";
 
-  //  Types
-
 interface RetryAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
 }
 
-  //  Axios Instance
-
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export const api: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL, 
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
-  //  Request Interceptor
+/* ================= REQUEST ================= */
 
 api.interceptors.request.use((config) => {
   const accessToken = store.getState().auth.accessToken;
-
   if (accessToken) {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${accessToken}`;
@@ -31,7 +26,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-  //  Refresh Queue
+/* ================= QUEUE ================= */
 
 let isRefreshing = false;
 
@@ -51,7 +46,7 @@ const processQueue = (error: unknown, token: string | null) => {
   failedQueue = [];
 };
 
-  //  Response Interceptor
+/* ================= RESPONSE ================= */
 
 api.interceptors.response.use(
   (res) => res,
@@ -62,13 +57,14 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // If auth routes fail user will logout
-    if (original.url?.includes("/auth")) {
-      store.dispatch(clearAuth());
+    if (
+      original.url?.includes("/api/auth/login") ||
+      original.url?.includes("/api/auth/signup") ||
+      original.url?.includes("/api/auth/refresh")
+    ) {
       return Promise.reject(error);
     }
 
-    //  Prevent infinite retry
     if (original._retry) {
       store.dispatch(clearAuth());
       return Promise.reject(error);
@@ -76,7 +72,6 @@ api.interceptors.response.use(
 
     original._retry = true;
 
-    //  Queue handling
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({
@@ -93,9 +88,10 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const res = await api.post("/auth/refresh"); 
+  
+      const res = await api.post("/api/auth/refresh");
 
-      const data = res.data.data; 
+      const data = res.data.data;
 
       store.dispatch(
         setAuth({

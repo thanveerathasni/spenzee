@@ -11,5 +11,5 @@ export interface IProviderRepository {
 
   updateStatus(providerId: string, status: string): Promise<void>;
 
-  getDashboardStats(providerId: string): Promise<any>;
+  getDashboardStats(providerId: string): Promise<Record<string, unknown>>;
 }

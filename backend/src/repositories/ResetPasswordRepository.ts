@@ -1,9 +1,10 @@
 import { injectable } from "inversify";
+import { Types } from "mongoose";
 import { ResetPasswordTokenModel } from "../models/ResetPasswordToken.model";
 
 @injectable()
 export class ResetPasswordRepository {
-  async create(userId: any, tokenHash: string, expiresAt: Date) {
+  async create(userId: string | Types.ObjectId, tokenHash: string, expiresAt: Date) {
     return ResetPasswordTokenModel.create({ userId, tokenHash, expiresAt });
   }
 

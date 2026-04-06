@@ -5,6 +5,7 @@ import { TYPES } from "../../di/types";
 
 import { authGuard } from "../../middleware/authGuard";
 import { roleGuard } from "../../middleware/roleGuard";
+import { LOG_MESSAGES } from "../../shared/constants/logMessages";
 import { ROLES } from "../../shared/constants/roles";
 import { ROUTES } from "../../shared/constants/routes";
 import { logger } from "../../shared/logger/logger";
@@ -18,7 +19,7 @@ router.get(
   authGuard,
   roleGuard([ROLES.PROVIDER]),
   async (req, res) => {
-    logger.info("Provider dashboard route");
+    logger.info(LOG_MESSAGES.PROVIDER.DASHBOARD_ACCESSED);
     return controller.getDashboard(req, res);
   }
 );

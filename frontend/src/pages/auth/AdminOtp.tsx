@@ -116,7 +116,7 @@ const OTPVerification: React.FC = () => {
   };
 
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval>;
     if (timer > 0) {
       interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
     }

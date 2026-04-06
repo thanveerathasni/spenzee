@@ -27,7 +27,7 @@ export class ProviderRequestService implements IProviderRequestService {
     private readonly _tokenRepo: IProviderPasswordSetupTokenRepository,
   ) {}
 
-  async createRequest(data: any) {
+  async createRequest(data: CreateProviderRequestDTO) {
    logger.info(LOG_MESSAGES.PROVIDER.REQUEST_SUBMITTED);
     const request = await this._repo.create(data);
     return ProviderRequestMapper.toDTO(request);
@@ -38,12 +38,12 @@ export class ProviderRequestService implements IProviderRequestService {
     return requests.map(ProviderRequestMapper.toDTO);
   }
 
-  async getRequestsByStatus(status: any) {
+  async getRequestsByStatus(status: ProviderRequestStatus) {
     const requests = await this._repo.findByStatus(status);
     return requests.map(ProviderRequestMapper.toDTO);
   }
 
-  async reviewRequest(requestId: string, adminId: string, status: any) {
+  async reviewRequest(requestId: string, adminId: string, status: ProviderRequestStatus) {
     logger.info(LOG_MESSAGES.PROVIDER.REQUEST_REVIEWED, { requestId });
 
     const updated = await this._repo.updateStatus(requestId, status, adminId);
