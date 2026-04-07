@@ -2,6 +2,7 @@ import { Router } from "express";
 import { AuthController } from "../../controllers/user/AuthController";
 import { container } from "../../di/container";
 import { TYPES } from "../../di/types";
+import { authMiddleware } from "../../shared/middleware/authMiddleware";
 
 import { ROUTES } from "../../shared/constants/routes";
 import { asyncHandler } from "../../shared/middleware/asyncHandler";
@@ -29,4 +30,23 @@ router.post("/user/password/send-otp", asyncHandler(controller.sendPasswordOtp.b
 router.post("/user/password/verify-otp", asyncHandler(controller.verifyPasswordOtp.bind(controller)));
 router.patch("/user/password/update", asyncHandler(controller.updatePassword.bind(controller)));
 
+
+
+router.post(
+  "/user/password/send-otp",
+  authMiddleware,
+  asyncHandler(controller.sendPasswordOtp.bind(controller))
+);
+
+router.post(
+  "/user/password/verify-otp",
+  authMiddleware,
+  asyncHandler(controller.verifyPasswordOtp.bind(controller))
+);
+
+router.patch(
+  "/user/password/update",
+  authMiddleware,
+  asyncHandler(controller.updatePassword.bind(controller))
+);
 export default router;

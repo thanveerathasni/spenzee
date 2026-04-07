@@ -3,6 +3,7 @@ import {Express} from "express";
 import { inject, injectable } from "inversify";
 import { Multer } from "multer";
 import { TYPES } from "../../di/types";
+import { OtpService } from "../../services/otp.service";
 import { UserService } from "../../services/user/UserService";
 
 import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
@@ -18,7 +19,9 @@ import { sendResponse } from "../../shared/utils/sendResponse";
 export class UserController {
   constructor(
     @inject(TYPES.UserService)
-    private readonly _userService: UserService
+    private readonly _userService: UserService,
+@inject(TYPES.OtpService)
+private readonly _otpService: OtpService
   ) {}
 
   async getProfile(req: Request, res: Response) {
@@ -77,4 +80,72 @@ export class UserController {
       data,
     });
   }
+
+
+
+  // ✅ EMAIL CHANGE REQUEST
+  async requestEmailChange(req: Request, res: Response) {
+    try {
+      const { newEmail } = req.body as { newEmail: string };
+
+      await this._otpService.sendOtp(newEmail);
+
+      return sendResponse({
+        res,
+        message: "OTP sent to new email",
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Something went wrong";
+
+      return sendResponse({
+        res,
+        message,
+      });
+    }
+  }
+
+  // ✅ EMAIL CHANGE CONFIRM
+  async confirmEmailChange(req: Request, res: Response) {
+    try {
+      const userId = (req as Request & { user?: { id: string } }).user?.id;
+
+      if (!userId) {
+        throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
+      }
+
+      const { newEmail, otp } = req.body as {
+        newEmail: string;
+        otp: string;
+      };
+
+      await this._otpService.verifyOtp(newEmail, otp);
+
+      await this._userService.updateEmail(userId, newEmail);
+
+      return sendResponse({
+        res,
+        message: "Email updated successfully",
+        data: { email: newEmail },
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Something went wrong";
+
+      return sendResponse({
+        res,
+        message,
+      });
+    }
+  }
 }
+
+
+
+
+
+
+
+
+
+

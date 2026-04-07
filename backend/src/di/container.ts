@@ -23,6 +23,7 @@ import { UserRepository } from "../repositories/user/UserRepository";
 import { MailService } from "../services/MailService";
 import { AdminAuthService } from "../services/admin/AdminAuthService";
 import { AdminService } from "../services/admin/AdminService";
+import { OtpService } from "../services/otp.service";
 import { ProviderDashboardService } from "../services/provider/ProviderDashboardService";
 import { ProviderService } from "../services/provider/ProviderService";
 import { ProviderAuthService } from "../services/provider/auth/ProviderAuthService";
@@ -32,6 +33,8 @@ import { AuthService } from "../services/user/AuthService";
 import { UserService } from "../services/user/UserService"; 
 
 /* Controllers */
+
+
 
 const container = new Container();
 
@@ -65,5 +68,8 @@ container.bind(TYPES.ProviderRequestController).to(ProviderRequestController);
 container.bind(TYPES.AdminController).to(AdminController);
 container.bind(TYPES.AdminAuthController).to(AdminAuthController);
 container.bind(TYPES.UserController).to(UserController); 
+
+
+container.bind(TYPES.OtpService).to(OtpService);
 
 export { container };

@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { OAuth2Client } from "google-auth-library";
 import { injectable, inject } from "inversify";
 
@@ -43,65 +44,64 @@ export class AuthService implements IAuthService {
     this._oauthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   }
 
+  async login(email: string, password: string): Promise<AuthResponse> {
+    const user = await this._userRepository.findByEmail(email);
 
-async login(email: string, password: string): Promise<AuthResponse> {
-  const user = await this._userRepository.findByEmail(email);
+    if (!user || !user.password) {
+      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
+    }
 
-  if (!user || !user.password) {
-    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
+    const valid = await comparePasswords(password, user.password);
+
+    if (!valid) {
+      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
+    }
+
+    const payload = { userId: user._id.toString(), role: user.role };
+
+    const accessToken = createAccessToken(payload);
+    const refreshToken = createRefreshToken(payload);
+
+    await this._refreshRepo.create({
+      userId: user._id,
+      tokenHash: hashRefreshToken(refreshToken),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    return AuthMapper.toAuthResponse(user, accessToken, refreshToken);
   }
 
-  const valid = await comparePasswords(password, user.password);
+  async refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
+    const payload = verifyRefreshToken(refreshToken);
+    const tokenHash = hashRefreshToken(refreshToken);
 
-  if (!valid) {
-    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS);
+    const stored = await this._refreshRepo.findValidTokenByHash(tokenHash);
+
+    if (!stored) {
+      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
+    }
+
+    const user = await this._userRepository.findById(payload.userId);
+    if (!user) throw new UnauthorizedError(ERROR_MESSAGES.AUTH.USER_NOT_FOUND);
+
+    const newAccessToken = createAccessToken({
+      userId: user._id.toString(),
+      role: user.role,
+    });
+
+    const newRefreshToken = createRefreshToken({
+      userId: user._id.toString(),
+      role: user.role,
+    });
+
+    await this._refreshRepo.create({
+      userId: user._id,
+      tokenHash: hashRefreshToken(newRefreshToken),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    return AuthMapper.toAuthResponse(user, newAccessToken, newRefreshToken);
   }
-
-  const payload = { userId: user._id.toString(), role: user.role };
-
-  const accessToken = createAccessToken(payload);
-  const refreshToken = createRefreshToken(payload);
-
-  await this._refreshRepo.create({
-    userId: user._id,
-    tokenHash: hashRefreshToken(refreshToken),
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  });
-
-  return AuthMapper.toAuthResponse(user, accessToken, refreshToken);
-}
-
-async refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
-  const payload = verifyRefreshToken(refreshToken);
-  const tokenHash = hashRefreshToken(refreshToken);
-
-  const stored = await this._refreshRepo.findValidTokenByHash(tokenHash);
-
-  if (!stored) {
-    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_INVALID);
-  }
-
-  const user = await this._userRepository.findById(payload.userId);
-  if (!user) throw new UnauthorizedError(ERROR_MESSAGES.AUTH.USER_NOT_FOUND);
-
-  const newAccessToken = createAccessToken({
-    userId: user._id.toString(),
-    role: user.role,
-  });
-
-  const newRefreshToken = createRefreshToken({
-    userId: user._id.toString(),
-    role: user.role,
-  });
-
-  await this._refreshRepo.create({
-    userId: user._id,
-    tokenHash: hashRefreshToken(newRefreshToken),
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  });
-
-  return AuthMapper.toAuthResponse(user, newAccessToken, newRefreshToken);
-}
 
   async logout(refreshToken: string): Promise<void> {
     const tokenHash = hashRefreshToken(refreshToken);
@@ -160,79 +160,97 @@ async refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
 
     await this._mailService.sendOtp(email, otp);
   }
+async forgotPassword(email: string): Promise<void> {
+  const user = await this._userRepository.findByEmail(email);
 
-  async forgotPassword(email: string): Promise<string | null> {
-    const user = await this._userRepository.findByEmail(email);
-    if (!user) return null;
-
-    const resetToken = generateResetToken();
-
-    await this._resetRepo.create(
-      user._id,
-      hashResetToken(resetToken),
-      new Date(Date.now() + 15 * 60 * 1000),
-    );
-
-    return resetToken;
+  if (!user) {
+    throw new Error("User not found");
   }
 
-  async sendResetPasswordEmail(email: string, resetToken: string): Promise<void> {
-    await this._mailService.sendResetPasswordEmail(email, resetToken);
-  }
+  // 🔐 generate simple OTP (reuse your OtpService ideally)
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-  async resetPassword(token: string, newPassword: string): Promise<void> {
-    const record = await this._resetRepo.findByTokenHash(hashResetToken(token));
+  console.log("RESET OTP:", otp);
 
-    if (!record) {
-      throw new BadRequestError(ERROR_MESSAGES.AUTH.RESET_TOKEN_INVALID);
-    }
-
-    await this._userRepository.updatePassword(
-      record.userId.toString(),
-      await hashPassword(newPassword),
-    );
-  }
+}
+  // 🔥 EMAIL CHANGE FLOW
 
   async sendEmailChangeOtp(email: string) {
-  const otp = generateOtp();
+    const otp = generateOtp();
 
-  await this._otpRepository.updateOtp(email, hash(otp), expiry());
+    await this._otpRepository.updateOtp(
+      email,
+      await hashOtp(otp),
+      new Date(Date.now() + 5 * 60 * 1000),
+    );
 
-  await this._mailService.sendOtp(email, otp);
-}
+    await this._mailService.sendOtp(email, otp);
+  }
 
-async verifyEmailChangeOtp(email: string, otp: string) {
-  const record = await this._otpRepository.findByEmail(email);
+  async verifyEmailChangeOtp(email: string, otp: string) {
+    const record = await this._otpRepository.findByEmail(email);
 
-  if (!record) throw new Error("No OTP");
+    if (!record) throw new Error("No OTP");
 
-  if (record.expiresAt < new Date()) throw new Error("Expired");
+    if (record.expiresAt < new Date()) {
+      throw new Error("OTP expired");
+    }
 
-  if (!compare(otp, record.otpHash)) throw new Error("Invalid");
-}
+    const valid = await compareOtp(otp, record.otpHash);
 
-async updateEmail(userId: string, newEmail: string) {
-  return this._userRepository.updateById(userId, {
-    email: newEmail,
-  });
-}
+    if (!valid) {
+      throw new Error("Invalid OTP");
+    }
 
+    await this._otpRepository.deleteByEmail(email);
+  }
 
-async sendPasswordOtp(userId: string) {
-  const user = await this._userRepository.findById(userId);
+  async updateEmail(userId: string, newEmail: string) {
+    return this._userRepository.updateById(userId, {
+      email: newEmail,
+    });
+  }
 
-  const otp = generateOtp();
+  // 🔐 PASSWORD FLOW
 
-  await this._otpRepository.updateOtp(user.email, hash(otp), expiry());
+  async sendPasswordOtp(userId: string) {
+    const user = await this._userRepository.findById(userId);
+    if (!user) throw new Error("User not found");
 
-  await this._mailService.sendOtp(user.email, otp);
-}
+    const otp = generateOtp();
 
-async updatePassword(userId: string, newPassword: string) {
-  const hashed = await bcrypt.hash(newPassword, 10);
+    await this._otpRepository.updateOtp(
+      user.email,
+      await hashOtp(otp),
+      new Date(Date.now() + 5 * 60 * 1000),
+    );
 
-  await this._userRepository.updatePassword(userId, hashed);
-}
+    await this._mailService.sendOtp(user.email, otp);
+  }
+
+  async verifyPasswordOtp(email: string, otp: string) {
+    const record = await this._otpRepository.findByEmail(email);
+
+    if (!record) throw new Error("No OTP");
+
+    if (record.expiresAt < new Date()) {
+      throw new Error("OTP expired");
+    }
+
+    const valid = await compareOtp(otp, record.otpHash);
+
+    if (!valid) {
+      throw new Error("Invalid OTP");
+    }
+
+    await this._otpRepository.deleteByEmail(email);
+  }
+
+  async updatePassword(userId: string, newPassword: string) {
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await this._userRepository.updatePassword(userId, hashed);
+  }
 
   async googleLogin(credential: string): Promise<AuthResponse> {
     const ticket = await this._oauthClient.verifyIdToken({

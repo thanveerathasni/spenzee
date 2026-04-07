@@ -68,4 +68,17 @@ export class UserService {
 
     return UserMapper.toProfileDTO(updatedUser);
   }
+
+async updateEmail(userId: string, newEmail: string): Promise<void> {
+  const existing = await this._userRepository.findByEmail(newEmail);
+
+  if (existing) {
+    throw new Error("Email already in use");
+  }
+
+  await this._userRepository.updateById(userId, {
+    email: newEmail,
+  });
+}
+
 }

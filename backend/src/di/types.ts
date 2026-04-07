@@ -30,4 +30,7 @@ UserService: Symbol.for("UserService"),
   ProviderDashboardService: Symbol.for("ProviderDashboardService"),
   ProviderController: Symbol.for("ProviderController"),
   ProviderCredentialService: Symbol.for("ProviderCredentialService"),
+
+
+  OtpService: Symbol.for("OtpService"),
 } as const;
