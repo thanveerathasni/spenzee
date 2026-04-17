@@ -3,7 +3,6 @@ export const LOG_MESSAGES = {
     LOGIN_ATTEMPT: "User login attempt",
     LOGIN_SUCCESS: "User login success",
     LOGIN_FAILED: "User login failed",
-   
   },
 
   PROVIDER: {
@@ -11,7 +10,7 @@ export const LOG_MESSAGES = {
     PASSWORD_SETUP: "Provider password setup",
     DASHBOARD_ACCESSED: "Provider dashboard accessed",
     REQUEST_SUBMITTED: "Provider request submitted",
-    REQUEST_REVIEWED: "Review provider request"
+    REQUEST_REVIEWED: "Review provider request",
   },
 
   ADMIN: {
@@ -24,5 +23,10 @@ export const LOG_MESSAGES = {
   SYSTEM: {
     APP_STARTED: "Application started",
     ERROR_OCCURRED: "Unhandled error occurred",
+  },
+
+  EMAIL: {
+    RESET_PASSWORD_SENT: "Reset password email sent",
+    OTP_SENT: "OTP email sent",
   },
 } as const;

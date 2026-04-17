@@ -19,4 +19,13 @@ router.get(
   asyncHandler(controller.getAllRequests.bind(controller))
 );
 
+router.post(
+  "/",
+  asyncHandler(controller.createRequest.bind(controller))
+);
+router.post(
+  "/requests",
+  asyncHandler(controller.createRequest.bind(controller))
+);
+
 export default router;

@@ -1,8 +1,11 @@
 import { Schema, model, Document } from "mongoose";
 
 export enum ProviderStatus {
+  PENDING = "pending",
   ACTIVE = "active",
   SUSPENDED = "suspended",
+  BLOCKED = "blocked",
+  REJECTED = "rejected",
 }
 
 export interface IProvider extends Document {
@@ -10,6 +13,7 @@ export interface IProvider extends Document {
   readonly email: string;
   readonly primaryCategory: string;
   readonly websiteUrl?: string;
+  readonly phone?: string;
   readonly description?: string;
 
   readonly role: "provider";
@@ -44,6 +48,10 @@ const ProviderSchema = new Schema<IProvider>(
       type: String,
       trim: true,
     },
+    phone: {
+      type: String,
+      trim: true,
+    },
     description: {
       type: String,
       trim: true,
@@ -59,7 +67,7 @@ const ProviderSchema = new Schema<IProvider>(
     status: {
       type: String,
       enum: Object.values(ProviderStatus),
-      default: ProviderStatus.ACTIVE,
+      default: ProviderStatus.PENDING,
     },
 
     password: {

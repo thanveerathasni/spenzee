@@ -1,28 +1,60 @@
 import { useState } from "react";
-import OtpModal from "../otp/OtpModal";
-import { requestEmailChangeApi } from "@/api/user.api";
+import OtpModal from "../../otp/OtpModal";
+import {
+  requestEmailChangeApi,
+  updateEmailApi,
+} from "../../../api/user/user.api";
 import { useDispatch } from "react-redux";
-import { setAuth } from "@/store/auth";
+import { clearAuth } from "../../../store/auth";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const ChangeEmail = () => {
   const [newEmail, setNewEmail] = useState("");
   const [showOtp, setShowOtp] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleRequest = async () => {
-    if (!newEmail) return alert("Enter email");
+    if (!newEmail) {
+      return toast.error("Please enter a valid email");
+    }
 
     try {
       await requestEmailChangeApi(newEmail);
+      toast.success("OTP sent to your new email ");
       setShowOtp(true);
-    } catch (err) {
-      alert("Failed to send OTP");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to send OTP");
     }
   };
 
-  const handleSuccess = (email: string) => {
-    dispatch(setAuth({ user: { email } }));
+  const handleOtpSuccess = () => {
+    setVerified(true);
+    setShowOtp(false);
+    toast.success("OTP verified successfully ");
+  };
+
+  const handleUpdate = async () => {
+    if (!verified) {
+      return toast.error("Please verify OTP first");
+    }
+
+    try {
+      await updateEmailApi(newEmail);
+
+      dispatch(clearAuth());
+
+      toast.success("Email updated. Please login again ");
+
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update email");
+    }
   };
 
   return (
@@ -35,18 +67,28 @@ const ChangeEmail = () => {
         className="border p-2 w-full rounded-xl"
       />
 
-      <button
-        onClick={handleRequest}
-        className="bg-black text-white px-4 py-2 rounded-xl"
-      >
-        Change Email
-      </button>
+      {!verified ? (
+        <button
+          onClick={handleRequest}
+          className="bg-black text-white px-4 py-2 rounded-xl"
+        >
+          Send OTP
+        </button>
+      ) : (
+        <button
+          onClick={handleUpdate}
+          className="bg-black text-white px-4 py-2 rounded-xl"
+        >
+          Update Email
+        </button>
+      )}
 
       {showOtp && (
         <OtpModal
+          type="email"
           email={newEmail}
           onClose={() => setShowOtp(false)}
-          onSuccess={handleSuccess}
+          onSuccess={handleOtpSuccess}
         />
       )}
     </div>

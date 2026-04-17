@@ -39,7 +39,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface IOtp extends Document {
   email: string;
-  otp: string;
+  otpHash: string;
   expiresAt: Date;
   attempts: number;
   createdAt: Date;
@@ -50,7 +50,7 @@ export interface IOtp extends Document {
 const otpSchema = new Schema<IOtp>(
   {
     email: { type: String, required: true },
-    otp: { type: String, required: true },
+    otpHash: { type: String, required: true },
     expiresAt: { type: Date, required: true },
     attempts: { type: Number, default: 0 },
         firstRequestedAt: {

@@ -8,4 +8,5 @@ export interface ProviderAuthResponse {
 export interface IProviderAuthService {
   login(email: string, password: string): Promise<ProviderAuthResponse>;
   setupPassword(token: string, password: string): Promise<void>;
+  changePassword(providerId: string, oldPassword: string, newPassword: string): Promise<void>;
 }

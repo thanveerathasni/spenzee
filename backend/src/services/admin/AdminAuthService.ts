@@ -23,33 +23,40 @@ export class AdminAuthService {
     private readonly _adminRepository: IAdminRepository,
   ) {}
 
-  async login(email: string, password: string) {
-    logger.info(LOG_MESSAGES.ADMIN.LOGIN_ATTEMPT, { email });
+ async login(email: string, password: string) {
+  logger.info(LOG_MESSAGES.ADMIN.LOGIN_ATTEMPT, { email });
 
-    const admin = await this._adminRepository.findByEmail(email);
+  const admin = await this._adminRepository.findByEmail(email);
 
-    if (!admin || !admin.isActive) {
-      logger.warn(LOG_MESSAGES.ADMIN.LOGIN_FAILED, { email });
-      throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
-    }
-
-    const valid = await bcrypt.compare(password, admin.password);
-
-    if (!valid) {
-      logger.warn(LOG_MESSAGES.ADMIN.LOGIN_FAILED, { email });
-      throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
-    }
-
-    const accessToken = createAccessToken({
-      userId: admin._id.toString(),
-      role: ROLES.ADMIN,
-    });
-
-    logger.info(LOG_MESSAGES.ADMIN.LOGIN_SUCCESS, { adminId: admin._id.toString() });
-
-    return {
-      accessToken,
-      admin: AdminMapper.toDTO(admin),
-    };
+  if (!admin) {
+    logger.warn("Admin not found", { email });
+    throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, 401);
   }
+
+  if (!admin.isActive) {
+    logger.warn("Admin inactive", { email });
+    throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, 401);
+  }
+
+  const valid = await bcrypt.compare(password, admin.password);
+
+  if (!valid) {
+    logger.warn("Password mismatch", { email });
+    throw new AppError(ERROR_MESSAGES.AUTH.INVALID_CREDENTIALS, 401);
+  }
+
+  const accessToken = createAccessToken({
+    userId: admin._id.toString(),
+    role: ROLES.ADMIN,
+  });
+
+  logger.info(LOG_MESSAGES.ADMIN.LOGIN_SUCCESS, { adminId: admin._id.toString() });
+
+  return {
+    accessToken,
+    admin: AdminMapper.toDTO(admin),
+  };
+}
+
+
 }

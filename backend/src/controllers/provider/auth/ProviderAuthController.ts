@@ -42,4 +42,18 @@ export class ProviderAuthController {
       message: SUCCESS_MESSAGES.PROVIDER.PASSWORD_SETUP_SUCCESS,
     });
   }
+
+  async changePassword(req: Request, res: Response) {
+    const providerId = req.user?.id;
+    const { oldPassword, newPassword } = req.body;
+
+    logger.info(`Provider password change attempt for id: ${providerId}`);
+
+    await this._service.changePassword(providerId!, oldPassword, newPassword);
+
+    return sendResponse({
+      res,
+      message: "Password changed successfully",
+    });
+  }
 }

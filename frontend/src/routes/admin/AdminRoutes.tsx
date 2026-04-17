@@ -3,17 +3,16 @@ import { Route } from "react-router-dom";
 import AdminLogin from "../../pages/admin/Auth/AdminLogin";
 import AdminProtectedRoute from "../AdminProtectedRoute";
 
-//  NEW STRUCTURE IMPORTS
 import AdminLayout from "../../layouts/admin/AdminLayout";
-import DashboardPage from "../../pages/admin/dashboard/DashboardPage"
-
+import DashboardPage from "../../pages/admin/dashboard/DashboardPage";
+import AdminUsersPage from "../../pages/admin/users/AdminUsersPage";
+import AdminUserDetails from "../../pages/admin/users/AdminUserDetails";
+import AdminProviderDetails from "../../pages/admin/providers/AdminProviderDetails";
 const AdminRoutes = () => {
   return (
     <>
-      {/* Admin Login */}
       <Route path="/admin/login" element={<AdminLogin />} />
 
-      {/* Protected Admin Area */}
       <Route element={<AdminProtectedRoute />}>
         <Route
           path="/admin/dashboard"
@@ -23,7 +22,26 @@ const AdminRoutes = () => {
             </AdminLayout>
           }
         />
+
+        <Route
+          path="/admin/users"
+          element={
+            <AdminLayout>
+              <AdminUsersPage />
+            </AdminLayout>
+          }
+        />
+
+        <Route
+          path="/admin/users/:id"
+          element={
+            <AdminLayout>
+              <AdminUserDetails />
+            </AdminLayout>
+          }
+        />
       </Route>
+      <Route path="/admin/providers/:id" element={<AdminProviderDetails />} />
     </>
   );
 };

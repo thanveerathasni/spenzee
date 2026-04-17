@@ -20,6 +20,7 @@ export const ERROR_MESSAGES = {
     INVALID_ACCESS_TOKEN_PAYLOAD: "Invalid access token payload",
     INVALID_REFRESH_TOKEN_PAYLOAD: "Invalid refresh token payload",
     TOO_MANY_REQUESTS: "Too many requests",
+    ACCOUNT_BLOCKED: "Your account is blocked",
   },
   OTP: {
     INVALID_OTP: "Invalid OTP",

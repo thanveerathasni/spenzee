@@ -32,6 +32,30 @@ export class ProviderRequestRepository
     if (!Types.ObjectId.isValid(id)) return null;
     return super.findById(id);
   }
+  async findAllPaginated(page: number, limit: number, search: string) {
+  const query = search
+    ? {
+        $or: [
+          { brandName: { $regex: search, $options: "i" } },
+          { contactEmail: { $regex: search, $options: "i" } },
+        ],
+      }
+    : {};
+
+  const requests = await ProviderRequestModel.find(query)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
+
+  const total = await ProviderRequestModel.countDocuments(query);
+
+  return {
+    requests,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  };
+}
 
   async findAll(): Promise<IProviderRequest[]> {
     return this.model.find().sort({ createdAt: -1 }).exec();

@@ -1,15 +1,23 @@
-import axios from "axios";
+import { api } from "../axios";
 
-export const requestEmailChangeApi = (newEmail: string) => {
-  return axios.post("/api/user/email/request", { newEmail });
+/* ---------- EMAIL CHANGE (LOGGED-IN USER) ---------- */
+
+
+export const requestEmailChangeApi = async (
+  newEmail: string
+): Promise<void> => {
+  await api.post("/auth/user/email/send-otp", { newEmail });
 };
 
-export const confirmEmailChangeApi = (
+export const verifyEmailOtpApi = async (
   newEmail: string,
   otp: string
-) => {
-  return axios.post("/api/user/email/confirm", {
-    newEmail,
-    otp,
-  });
+): Promise<void> => {
+  await api.post("/auth/user/email/verify-otp", { newEmail, otp });
+};
+
+export const updateEmailApi = async (
+  newEmail: string
+): Promise<void> => {
+  await api.patch("/auth/user/email/update", { newEmail });
 };

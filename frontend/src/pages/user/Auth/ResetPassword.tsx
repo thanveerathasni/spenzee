@@ -7,22 +7,19 @@ import { ALERT_MESSAGES } from "../../../constants/messages";
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const token = params.get("token");
-
+const token = params.get("token");
+const email = params.get("email");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!token) {
-      toast.error("Invalid or expired reset link");
-      navigate("/login", { replace: true });
-    }
-  }, [token, navigate]);
-
-  if (!token) {
-    return null;
+  if (!token || !email) {
+    toast.error("Invalid or expired reset link");
+    navigate("/login", { replace: true });
   }
+}, [token, email, navigate]);
+ if (!token || !email) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,10 +31,11 @@ const ResetPassword: React.FC = () => {
 
     setLoading(true);
     try {
-      await authApi.resetPassword({
-        token,
-       newPassword : password,
-      });
+    await authApi.resetPassword({
+  email,
+  token,
+  newPassword: password,
+});
       toast.success(ALERT_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS);
       navigate("/login", { replace: true });
     } catch (err: unknown) {

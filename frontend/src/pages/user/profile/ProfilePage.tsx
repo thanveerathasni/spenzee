@@ -74,7 +74,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ProfileLayout from "../../../components/user/profile/ProfileLayout";
 import ProfileOverview from "../../../components/user/profile/ProfileOverview";
 import EditProfile from "../../../components/user/profile/EditProfile";
-
+import SettingsContent from "../../../components/user/settings/SettingsContent";
 import { userProfileApi } from "../../../api/user/userProfile.api";
 import { RootState } from "../../../store/store";
 import { User } from "../../../types/user";
@@ -115,7 +115,7 @@ export default function ProfilePage() {
 
       {active === "address" && <div>Address Section</div>}
 
-      {active === "settings" && <div>Settings Section</div>}
+      {active === "settings" && <SettingsContent />}
 
     </ProfileLayout>
   );

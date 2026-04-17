@@ -25,7 +25,7 @@ export class OtpService {
 
     await OtpModel.create({
       email,
-      otp: hashedOtp,
+      otpHash: hashedOtp,
       expiresAt: new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000),
     });
 
@@ -50,7 +50,7 @@ export class OtpService {
 
     const hashedOtp = hashOtp(otp);
 
-    if (record.otp !== hashedOtp) {
+    if (record.otpHash !== hashedOtp) {
       record.attempts += 1;
       await record.save();
       throw new Error("Invalid OTP");

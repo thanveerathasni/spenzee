@@ -1,119 +1,107 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Navbar } from '../../public/Landing';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { api } from "../../../api/axios";
+import toast from "react-hot-toast";
+import axios from "axios";
 
-interface FormData {
-  brandName: string;
-  website: string;
-  category: string;
-  email: string;
-  description: string;
-}
-
-const ProviderRequestForm: React.FC = () => {
+const ProviderRequestForm = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<FormData>({
-    brandName: '',
-    website: '',
-    category: '',
-    email: '',
-    description: '',
+
+  const [formData, setFormData] = useState({
+    brandName: "",
+    website: "",
+    category: "",
+    email: "",
+    description: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Provider request submitted! Admin will review and grant access.');
-    navigate('/login');
+
+    try {
+      setLoading(true);
+
+      await api.post("/provider/requests", {
+        brandName: formData.brandName,
+        websiteUrl: formData.website,
+        primaryCategory: formData.category,
+        contactEmail: formData.email,
+        description: formData.description,
+      });
+
+      toast.success("Request submitted ");
+     navigate("/provider/pending");
+
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Failed");
+      } else {
+        toast.error("Something went wrong");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-neutral-50 dark:bg-black flex items-center justify-center px-4">
-        <div className="max-w-2xl w-full">
-          <button onClick={() => navigate(-1)} className="text-sm text-neutral-500 mb-8">
-            ← Back to landing page
-          </button>
+    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <form
+        onSubmit={handleSubmit}
+        className="w-[400px] space-y-4 bg-[#111] p-6 rounded-2xl shadow-lg"
+      >
+        <h1 className="text-xl font-bold text-center">
+          Provider Request
+        </h1>
 
-          <div className="bg-white dark:bg-neutral-900 rounded-3xl p-10 shadow-2xl">
-            <div className="text-center mb-8">
-              <p className="text-sm uppercase tracking-widest text-neutral-500 mb-2">Partner with us</p>
-              <h1 className="text-4xl font-black uppercase tracking-tighter">Provider Request</h1>
-              <p className="mt-4 text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
-                Submit your brand details below. spireeze is a curated platform, and we only partner with brands that share our values of quality, design, and privacy.
-              </p>
-            </div>
+        <input
+          name="brandName"
+          placeholder="Brand Name"
+          className="w-full p-3 bg-[#1a1a1a] rounded-lg"
+          onChange={handleChange}
+        />
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid md:grid-cols-2 gap-6">
-                <input
-                  name="brandName"
-                  value={formData.brandName}
-                  onChange={handleChange}
-                  placeholder="Brand Name"
-                  required
-                  className="px-6 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-                />
-                <input
-                  name="website"
-                  value={formData.website}
-                  onChange={handleChange}
-                  placeholder="Website URL"
-                  type="url"
-                  required
-                  className="px-6 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-                />
-              </div>
+        <input
+          name="website"
+          placeholder="Website"
+          className="w-full p-3 bg-[#1a1a1a] rounded-lg"
+          onChange={handleChange}
+        />
 
-              <input
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                placeholder="Primary Category"
-                required
-                className="w-full px-6 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-              />
+        <input
+          name="category"
+          placeholder="Category"
+          className="w-full p-3 bg-[#1a1a1a] rounded-lg"
+          onChange={handleChange}
+        />
 
-              <input
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Contact Email"
-                type="email"
-                required
-                className="w-full px-6 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-              />
+        <input
+          name="email"
+          placeholder="Email"
+          className="w-full p-3 bg-[#1a1a1a] rounded-lg"
+          onChange={handleChange}
+        />
 
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Tell us about your brand"
-                rows={5}
-                required
-                className="w-full px-6 py-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white resize-none"
-              />
+        <textarea
+          name="description"
+          placeholder="Description"
+          className="w-full p-3 bg-[#1a1a1a] rounded-lg"
+          onChange={handleChange}
+        />
 
-              <button
-                type="submit"
-                className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-full font-black uppercase tracking-wider text-sm hover:opacity-90 transition"
-              >
-                Submit Request
-              </button>
-
-              <p className="text-center text-xs uppercase tracking-widest text-neutral-500">
-                Privacy Protected Submission
-              </p>
-            </form>
-          </div>
-        </div>
-      </div>
-    </>
+        <button
+          disabled={loading}
+          className="w-full bg-white text-black py-3 rounded-lg font-semibold"
+        >
+          {loading ? "Submitting..." : "Submit"}
+        </button>
+      </form>
+    </div>
   );
 };
 

@@ -1,12 +1,15 @@
-import React, { useState } from "react";
-// import { Outlet } from "react-router-dom";
-import Sidebar  from "../../components/admin/sidebar/Sidebar";
-import  Header  from "../../components/admin/header/Header";
+import type { ReactNode } from "react";
+import Sidebar from "../../components/admin/sidebar/Sidebar";
+import Header from "../../components/admin/header/Header";
 import { motion } from "framer-motion";
-import { Outlet } from "react-router-dom";
+import { useState } from "react";
 import type { AdminSection } from "../../components/admin/nav.config";
 
-export default function DashboardLayout() {
+interface Props {
+  children: ReactNode;
+}
+
+export default function AdminLayout({ children }: Props) {
   const [activeSection, setActiveSection] =
     useState<AdminSection>("dashboard");
 
@@ -27,7 +30,7 @@ export default function DashboardLayout() {
         />
 
         <main className="flex-1 p-8 overflow-y-auto">
-          <Outlet />
+          {children}
         </main>
       </div>
     </motion.div>

@@ -107,7 +107,7 @@ const LoginForm: React.FC = () => {
       <Navbar />
 
       <div className="min-h-screen flex flex-col items-center pt-28 px-6">
-        <h1 className="text-4xl md:text-5xl font-serif text-white mb-10 tracking-tighter">
+        <h1 className="text-4xl md:text-5xl font-serif  mb-10 tracking-tighter">
           Spenzee
         </h1>
 
@@ -116,7 +116,7 @@ const LoginForm: React.FC = () => {
             <h1 className="text-xl text-white font-light">
               Sign In
             </h1>
-            <p className="text-xs text-gray-500 tracking-widest uppercase mt-2">
+            <p className="text-xs text-gray-700 tracking-widest uppercase mt-2">
               Access your account
             </p>
 
@@ -131,16 +131,16 @@ const LoginForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate("/provider/login")}
-                className="px-6 py-2 rounded-lg font-bold text-sm bg-white/10 text-gray-400 hover:text-white transition"
+                className="px-6 py-2 rounded-lg font-bold text-sm bg-white/10 text-gray-700 hover:text-white transition"
               >
                 Provider
               </button>
             </div>
           </header>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 ">
             {view === "login" && (
-              <GoogleLogin
+              <GoogleLogin 
                 onSuccess={handleGoogleSuccess}
                 onError={() => toast.error(ALERT_MESSAGES.AUTH.GOOGLE_LOGIN_FAILED)}
               />
@@ -212,7 +212,7 @@ const LoginForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate("/forgot-password")}
-                  className="text-xs text-gray-500 hover:text-white transition"
+                  className="text-xs text-gray-700 hover:text-white transition"
                 >
                   Forgot password?
                 </button>

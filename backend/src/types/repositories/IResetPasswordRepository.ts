@@ -9,4 +9,14 @@ export interface IResetPasswordRepository {
   deleteByUserId(userId: Types.ObjectId): Promise<void>;
 
   deleteByTokenHash(tokenHash: string): Promise<void>;
+
+
+  findValidToken(tokenHash: string): Promise<{
+    userId: Types.ObjectId;
+    email: string;
+    expiresAt: Date;
+  } | null>;
+
+  deleteByUserId(userId: Types.ObjectId): Promise<void>;
 }
+

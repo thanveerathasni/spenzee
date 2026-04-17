@@ -9,8 +9,23 @@ export const adminApi = axios.create({
 
 adminApi.interceptors.request.use((config) => {
   const token = adminAuthStore.getToken();
+
+  // console.log("ADMIN TOKEN:", token);
   if (token) {
+    config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
+
+adminApi.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401) {
+      adminAuthStore.clearToken();
+      window.location.href = "/admin/login";
+    }
+    return Promise.reject(error);
+  }
+);

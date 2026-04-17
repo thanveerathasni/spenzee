@@ -130,35 +130,28 @@ export class AuthController {
 
     logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email });
 
-    const resetToken = await this._authService.forgotPassword(email);
-
-    if (resetToken) {
-      await this._authService.sendResetPasswordEmail(email, resetToken);
-    }
+    await this._authService.forgotPassword(email);
 
     return sendResponse({
       res,
       message: SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SENT,
     });
   }
+async resetPassword(req: Request, res: Response): Promise<Response> {
+  const { email, token, newPassword } = req.body;
 
-  async resetPassword(req: Request, res: Response): Promise<Response> {
-    const { token, newPassword } = req.body;
+  await this._authService.resetPassword(email, token, newPassword);
 
-    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT);
+  return sendResponse({
+    res,
+    message: SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
+  });
+}
 
-    await this._authService.resetPassword(token, newPassword);
+async sendEmailOtp(req: Request, res: Response) {
+  const { newEmail } = req.body;
 
-    return sendResponse({
-      res,
-      message: SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
-    });
-  }
-
-  async sendEmailOtp(req: Request, res: Response) {
-  const { email } = req.body;
-
-  await this._authService.sendEmailChangeOtp(email);
+  await this._authService.sendEmailChangeOtp(newEmail);
 
   return sendResponse({
     res,
@@ -167,9 +160,9 @@ export class AuthController {
 }
 
 async verifyEmailOtp(req: Request, res: Response) {
-  const { email, otp } = req.body;
+  const { newEmail, otp } = req.body;
 
-  await this._authService.verifyEmailChangeOtp(email, otp);
+  await this._authService.verifyEmailChangeOtp(newEmail, otp);
 
   return sendResponse({
     res,
@@ -200,9 +193,10 @@ async sendPasswordOtp(req: Request, res: Response) {
 }
 
 async verifyPasswordOtp(req: Request, res: Response) {
+  const userId = (req as any).user.id;
   const { otp } = req.body;
 
-  await this._authService.verifyPasswordOtp(otp);
+  await this._authService.verifyPasswordOtp(userId, otp);
 
   return sendResponse({ res, message: "Verified" });
 }
@@ -215,7 +209,6 @@ async updatePassword(req: Request, res: Response) {
 
   return sendResponse({ res, message: "Password updated" });
 }
-
 
 
 

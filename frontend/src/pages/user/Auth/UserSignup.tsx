@@ -7,11 +7,14 @@ import { useNavigate } from "react-router-dom";
 import { Navbar } from "../../public/Landing";
 import { signupSchema } from "../../../validation/signupSchema";
 import { authApi } from "../../../api/auth.api";
-import { GoogleLogin } from "@react-oauth/google";
+// import { GoogleLogin } from "@react-oauth/google";
 import { api } from "../../../api/axios";
 import toast from "react-hot-toast";
 import { isAxiosError } from "axios";
 import { ALERT_MESSAGES } from "../../../constants/messages";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../../store/store";
+
 interface Errors {
   name?: string;
   email?: string;
@@ -27,6 +30,7 @@ const SignupForm: React.FC = () => {
   const [otpTimer, setOtpTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [loading, setLoading] = useState(false);
+const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -41,12 +45,21 @@ const SignupForm: React.FC = () => {
 
   const [errors, setErrors] = useState<Errors>({});
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      navigate("/welcome", { replace: true });
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("accessToken");
+  //   if (token) {
+  //     navigate("/welcome", { replace: true });
+  //   }
+  // }, [navigate]);
+
+
+
+useEffect(() => {
+  if (isAuthenticated) {
+    navigate("/welcome", { replace: true });
+  }
+}, [isAuthenticated, navigate]);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -190,7 +203,7 @@ const SignupForm: React.FC = () => {
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <GoogleLogin
+            {/* <GoogleLogin
               onSuccess={async (cred) => {
                 try {
                   const res = await api.post("/auth/google", {
@@ -204,7 +217,7 @@ const SignupForm: React.FC = () => {
                 }
               }}
               onError={() => toast.error(ALERT_MESSAGES.AUTH.GOOGLE_SIGNUP_FAILED)}
-            />
+            /> */}
 
             {/* Name */}
             <input
@@ -212,6 +225,7 @@ const SignupForm: React.FC = () => {
               value={formData.name}
               onChange={handleChange}
               placeholder="Full Name"
+               autoComplete="name"
               className="w-full bg-[#1A1A1A] border-b border-white/20 py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-white transition"
             />
             {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
@@ -222,6 +236,7 @@ const SignupForm: React.FC = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Email"
+               autoComplete="email"
               className="w-full bg-[#1A1A1A] border-b border-white/20 py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-white transition"
             />
             {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
@@ -234,6 +249,7 @@ const SignupForm: React.FC = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Password"
+                 autoComplete="new-password"
                 className="w-full bg-[#1A1A1A] border-b border-white/20 py-3 px-4 pr-12 text-white placeholder-gray-500 focus:outline-none focus:border-white transition"
               />
               <button

@@ -43,6 +43,11 @@ export const sidebarConfig: Record<AdminSection, SidebarItemConfig[]> = {
       path: "/admin/users",
       icon: Users,
     },
+    {
+      label: "Providers",
+      path: "/admin/providers",
+      icon: Users,
+    },
   ],
 
   finance: [

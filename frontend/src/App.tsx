@@ -1,4 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+
+
+import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
@@ -11,13 +14,21 @@ import ForgotPassword from "./pages/user/Auth/forgotPassword";
 import ResetPassword from "./pages/user/Auth/ResetPassword";
 import ProviderLoginForm from "./pages/provider/auth/ProviderLogin";
 import ProviderRequestForm from "./pages/provider/auth/ProviderRequest";
+import ProviderSetupPasswordPage from "./pages/provider/auth/ProviderSetupPassword";
+import ProviderWelcome from "./pages/provider/ProviderWelcome";
+import ProviderDashboard from "./pages/provider/Dashboard";
+import ProviderProfile from "./pages/provider/Profile";
 import ProfilePage from "./pages/user/profile/ProfilePage";
-
+import ProviderPending from "./pages/provider/auth/ProviderPending";
+import {ProviderRoutes} from "./routes/provider/ProviderRoutes";
 import AdminLogin from "./pages/admin/Auth/AdminLogin";
 import Dashboard from "./pages/admin/dashboard/Dashboard";
 import DashboardLayout from "./layouts/admin/DashboardLayout";
 import AdminProfile from "./pages/admin/profile/AdminProfile";
-
+import AdminUsersPage from "./pages/admin/users/AdminUsersPage";
+import AdminProvidersPage from "./pages/admin/providers/AdminProvidersPage";
+import AdminUserDetails from "./pages/admin/users/AdminUserDetails";
+import ProviderLayout from "./layouts/ProviderLayout";
 /* ---------- ROUTES ---------- */
 import ProtectedRoute from "./routes/protectedRoutes";
 import AdminProtectedRoute from "./routes/AdminProtectedRoute";
@@ -56,7 +67,7 @@ const AppContent = () => {
       <Route
         path={ROUTES.USER.WELCOME}
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["user", "provider", "admin"]}>
             <WelcomePage />
           </ProtectedRoute>
         }
@@ -65,7 +76,7 @@ const AppContent = () => {
       <Route
         path={ROUTES.USER.PROFILE}
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["user"]}>
             <ProfilePage />
           </ProtectedRoute>
         }
@@ -78,17 +89,38 @@ const AppContent = () => {
       {/* PROVIDER */}
       <Route path={ROUTES.PROVIDER.LOGIN} element={<ProviderLoginForm />} />
       <Route path={ROUTES.PROVIDER.REQUEST} element={<ProviderRequestForm />} />
+      <Route path="/provider/setup-password" element={<ProviderSetupPasswordPage />} />
+      <Route path="/provider/welcome" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderWelcome /></ProtectedRoute>} />
+      <Route path="/provider/pending" element={<ProtectedRoute allowedRoles={["provider"]}><ProviderPending /></ProtectedRoute>} />
+
+      {/* PROVIDER PROTECTED */}
+      <Route element={<ProtectedRoute allowedRoles={["provider"]}><Outlet />
+      </ProtectedRoute>}>
+        <Route element={<ProviderLayout><Outlet /></ProviderLayout>}>
+          <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+          <Route path="/provider/profile" element={<ProviderProfile />} />
+
+        </Route>
+
+      </Route>
 
       {/* ADMIN LOGIN */}
       <Route path={ROUTES.ADMIN.LOGIN} element={<AdminLogin />} />
 
       {/* ADMIN PROTECTED */}
-      <Route element={<AdminProtectedRoute />}>
-        <Route element={<DashboardLayout />}>
-          <Route path={ROUTES.ADMIN.DASHBOARD} element={<Dashboard />} />
-          <Route path={ROUTES.ADMIN.PROFILE} element={<AdminProfile />} />
-        </Route>
-      </Route>
+     <Route element={<AdminProtectedRoute />}>
+  <Route element={<DashboardLayout />}>
+    <Route path={ROUTES.ADMIN.DASHBOARD} element={<Dashboard />} />
+    <Route path={ROUTES.ADMIN.PROFILE} element={<AdminProfile />} />
+
+    {/* USERS */}
+    <Route path="/admin/users" element={<AdminUsersPage />} />
+    <Route path="/admin/users/:id" element={<AdminUserDetails />} />
+
+    {/* PROVIDERS */}
+    <Route path="/admin/providers" element={<AdminProvidersPage />} />
+  </Route>
+</Route>
 
       {/* FALLBACK */}
       <Route path="*" element={<NotFound />} />
@@ -105,4 +137,11 @@ export default function App() {
     </Router>
   );
 }
+
+
+
+
+
+
+
 

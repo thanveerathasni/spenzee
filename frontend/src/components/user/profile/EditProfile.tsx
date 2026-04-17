@@ -1,23 +1,15 @@
-import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useState } from "react";
 import { User } from "../../../types/user";
 import PersonalInfoForm from "./PersonalInfoForm";
 import AddressForm from "./AddressForm";
-import AvatarUpload from "./AvatarUpload";
-import { userProfileApi } from "../../../api/user/userProfile.api";
-import { setUser } from "../../../store/auth/auth.slice";
-import toast from "react-hot-toast";
 import ImageUpload from "./ImageUpload";
+
 interface Props {
   user: User;
 }
 
 export default function EditProfile({ user }: Props) {
-  const dispatch = useDispatch();
-
   const [step, setStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [previewImage, setPreviewImage] = useState(user.profileImage);
 
   const steps = [
     { label: "Personal", component: <PersonalInfoForm user={user} /> },
@@ -37,35 +29,10 @@ export default function EditProfile({ user }: Props) {
     (fields.filter(Boolean).length / fields.length) * 100
   );
 
-  const handleImageChange = async (file: File) => {
-    const tempUrl = URL.createObjectURL(file);
-    setPreviewImage(tempUrl); 
-    try {
-      setLoading(true);
-
-      const updatedUser = await userProfileApi.uploadImage(file);
-
-      dispatch(setUser(updatedUser));
-
-      setPreviewImage(updatedUser.profileImage);
-
-      toast.success("Image updated");
-    } catch {
-      toast.error("Upload failed");
-      setPreviewImage(user.profileImage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-  setPreviewImage(user.profileImage);
-}, [user.profileImage]);
-
   return (
     <div className="space-y-6">
 
-      {/*  AVATAR */}
+      {/* IMAGE UPLOAD */}
       <ImageUpload user={user} />
 
       {/* STEP NAV */}
@@ -96,7 +63,6 @@ export default function EditProfile({ user }: Props) {
 
       {/* CONTENT */}
       <div>{steps[step].component}</div>
-
     </div>
   );
 }

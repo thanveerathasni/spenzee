@@ -1,35 +1,39 @@
+import crypto from "crypto";
 import { inject, injectable } from "inversify";
+
 import { TYPES } from "../../../di/types";
 
 import { LOG_MESSAGES } from "../../../shared/constants/logMessages";
 import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
 import { logger } from "../../../shared/logger/logger";
 import { ProviderRequestMapper } from "../../../shared/mapper/provider/ProviderRequestMapper";
+
 import { IProviderPasswordSetupTokenRepository } from "../../../types/repositories/provider/IProviderPasswordSetupTokenRepository";
-
+import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
 import { IProviderRequestRepository } from "../../../types/repositories/provider/IProviderRequestRepository";
-
-import { CreateProviderRequestDTO } from "../../../types/repositories/provider/IProviderRequestRepository";
-import { IProviderRequestService } from "../../../types/services/provider/IProviderRequestService";
-import { IProviderService } from "../../../types/services/provider/IProviderService";
-
+import { IMailService } from "../../../types/services/IMailService";
 
 @injectable()
-export class ProviderRequestService implements IProviderRequestService {
+export class ProviderRequestService {
   constructor(
     @inject(TYPES.ProviderRequestRepository)
     private readonly _repo: IProviderRequestRepository,
 
-    @inject(TYPES.ProviderService)
-    private readonly _providerService: IProviderService,
+    @inject(TYPES.ProviderRepository)
+    private readonly _providerRepo: IProviderRepository,
 
     @inject(TYPES.ProviderPasswordSetupTokenRepository)
     private readonly _tokenRepo: IProviderPasswordSetupTokenRepository,
+
+    @inject(TYPES.MailService)
+    private readonly _mailService: IMailService
   ) {}
 
-  async createRequest(data: CreateProviderRequestDTO) {
-   logger.info(LOG_MESSAGES.PROVIDER.REQUEST_SUBMITTED);
-    const request = await this._repo.create(data);
+  async createRequest(data: any) {
+    logger.info(LOG_MESSAGES.PROVIDER.REQUEST_SUBMITTED);
+
+    const request = await this._repo.create({...data, status: ProviderRequestStatus.PENDING});
+
     return ProviderRequestMapper.toDTO(request);
   }
 
@@ -38,15 +42,53 @@ export class ProviderRequestService implements IProviderRequestService {
     return requests.map(ProviderRequestMapper.toDTO);
   }
 
-  async getRequestsByStatus(status: ProviderRequestStatus) {
-    const requests = await this._repo.findByStatus(status);
-    return requests.map(ProviderRequestMapper.toDTO);
-  }
+  async reviewRequest(
+    requestId: string,
+    adminId: string,
+    status: ProviderRequestStatus
+  ) {
+    logger.info("Provider request reviewed", { requestId, status });
 
-  async reviewRequest(requestId: string, adminId: string, status: ProviderRequestStatus) {
-    logger.info(LOG_MESSAGES.PROVIDER.REQUEST_REVIEWED, { requestId });
+    const request = await this._repo.updateStatus(
+      requestId,
+      status,
+      adminId
+    );
 
-    const updated = await this._repo.updateStatus(requestId, status, adminId);
-    return ProviderRequestMapper.toDTO(updated!);
+    if (!request) throw new Error("Request not found");
+
+    /* IF APPROVED → CREATE PROVIDER */
+    if (status === ProviderRequestStatus.APPROVED) {
+      const provider = await this._providerRepo.create({
+        name: request.brandName,
+        email: request.contactEmail,
+        status: "active",
+      });
+
+      /*  CREATE SETUP TOKEN */
+      const rawToken = crypto.randomBytes(32).toString("hex");
+
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(rawToken)
+        .digest("hex");
+
+      await this._tokenRepo.create({
+        providerId: provider._id,
+        hashedToken,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      });
+
+      /*  SEND EMAIL */
+      const link = `${process.env.FRONTEND_URL}/provider/setup-password?token=${rawToken}`;
+
+      await this._mailService.sendGenericEmail(
+        provider.email,
+        "Setup your account",
+        `Click here to set password: ${link}`
+      );
+    }
+
+    return ProviderRequestMapper.toDTO(request);
   }
 }

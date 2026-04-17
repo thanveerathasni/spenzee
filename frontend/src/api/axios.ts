@@ -58,9 +58,9 @@ api.interceptors.response.use(
     }
 
     if (
-      original.url?.includes("/api/auth/login") ||
-      original.url?.includes("/api/auth/signup") ||
-      original.url?.includes("/api/auth/refresh")
+      original.url?.includes("/auth/login") ||
+      original.url?.includes("/auth/signup") ||
+      original.url?.includes("/auth/refresh")
     ) {
       return Promise.reject(error);
     }
@@ -84,12 +84,19 @@ api.interceptors.response.use(
         });
       });
     }
+    if (
+  error.response?.status === 401 &&
+  error.response?.data?.message?.includes("blocked")
+) {
+  store.dispatch(clearAuth());
+  window.location.href = "/login";
+}
 
     isRefreshing = true;
 
     try {
   
-      const res = await api.post("/api/auth/refresh");
+      const res = await api.post("/auth/refresh");
 
       const data = res.data.data;
 

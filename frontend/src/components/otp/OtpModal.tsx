@@ -2,15 +2,17 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import OtpInput from "./OtpInput";
 import { useOtpTimer } from "./useOtpTimer";
-import axios from "axios";
+import { verifyPasswordOtpApi } from "../../api/auth.api";
+import { verifyEmailOtpApi } from "../../api/user/user.api";
 
 interface Props {
-  email: string;
+  email?: string;
+  type: "email" | "password";
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (email?: string) => void;
 }
 
-const OtpModal = ({ email, onClose, onSuccess }: Props) => {
+const OtpModal = ({ email, type, onClose, onSuccess }: Props) => {
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const { time, reset } = useOtpTimer(60);
@@ -26,14 +28,16 @@ const OtpModal = ({ email, onClose, onSuccess }: Props) => {
     try {
       setLoading(true);
 
-      await axios.post("/api/otp/verify", {
-        email,
-        otp: otpValue,
-      });
+      if (type === "password") {
+        await verifyPasswordOtpApi(email || "", otpValue);
+      } else {
+        await verifyEmailOtpApi(email || "", otpValue);
+      }
 
-      onSuccess();
+      onSuccess(email);
       onClose();
-    } catch (err: unknown) {
+    } catch (error) {
+      console.error(error);
       alert("Invalid or expired OTP");
     } finally {
       setLoading(false);
@@ -42,9 +46,10 @@ const OtpModal = ({ email, onClose, onSuccess }: Props) => {
 
   const handleResend = async () => {
     try {
-      await axios.post("/api/otp/send", { email });
+   
       reset();
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       alert("Wait before retrying");
     }
   };
