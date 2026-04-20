@@ -1,6 +1,3 @@
-
-
-
 import crypto from "crypto";
 import { inject, injectable } from "inversify";
 
@@ -19,6 +16,7 @@ import { IUserRepository } from "../../types/repositories/user/IUserRepository";
 import { IMailService } from "../../types/services/IMailService";
 
 import { IProvider } from "../../models/Provider.model";
+
 @injectable()
 export class AdminService {
   constructor(
@@ -35,11 +33,13 @@ export class AdminService {
     private readonly _setupTokenRepo: IProviderPasswordSetupTokenRepository,
 
     @inject(TYPES.ProviderRequestRepository)
-    private readonly _providerReqRepo: IProviderRequestRepository,
+    private readonly _providerRequestRepository: IProviderRequestRepository,
 
     @inject(TYPES.MailService)
     private readonly _mailService: IMailService
   ) {}
+
+  /* ================= DASHBOARD ================= */
 
   async getDashboard(adminId: string): Promise<AdminDashboardDTO> {
     logger.info(LOG_MESSAGES.ADMIN.DASHBOARD_ACCESSED, { adminId });
@@ -69,80 +69,75 @@ export class AdminService {
   /* ================= PROVIDERS ================= */
 
   async getProviders(
-  status: string,
-  page: number,
-  limit: number,
-  search: string
-): Promise<{ providers: IProvider[]; total: number }> {
+    status: string,
+    page: number,
+    limit: number,
+    search: string
+  ): Promise<{ providers: IProvider[]; total: number }> {
+    const query: any = {};
 
-  const query: any = {};
+    if (status) query.status = status;
 
-  if (status) {
-    query.status = status;
+    if (search) {
+      query.$or = [
+        { brandName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const total = await (this._providerRepo as any).model.countDocuments(query);
+
+    const providers = await (this._providerRepo as any).model
+      .find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    return { providers, total };
   }
 
-  if (search) {
-    query.$or = [
-      { brandName: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
-    ];
+  async updateProviderStatus(providerId: string, status: string): Promise<void> {
+    await this._providerRepo.updateStatus(providerId, status);
+
+    if (status === "active") {
+      const provider = await this._providerRepo.findById(providerId);
+      if (!provider) return;
+
+      const rawToken = crypto.randomBytes(32).toString("hex");
+
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(rawToken)
+        .digest("hex");
+
+      await this._setupTokenRepo.create({
+        providerId: provider._id,
+        hashedToken,
+        expiresAt: new Date(Date.now() + 86400000),
+        isUsed: false,
+      });
+
+      const setupLink = `http://localhost:5173/provider/setup-password?token=${rawToken}`;
+
+      await this._mailService.sendGenericEmail(
+        provider.email,
+        "Provider Approved",
+        `Setup your password: ${setupLink}`
+      );
+    }
   }
-
-  const total = await (this._providerRepo as any).model.countDocuments(query);
-
-  const providers = await (this._providerRepo as any).model
-    .find(query)
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit);
-
-  return { providers, total };
-}
-
-async updateProviderStatus(providerId: string, status: string): Promise<void> {
-  await this._providerRepo.updateStatus(providerId, status);
-
-  if (status === "active") {
-    const provider = await this._providerRepo.findById(providerId);
-
-    if (!provider) return;
-
-    /*  CREATE TOKEN */
-    const plainToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(plainToken).digest("hex");
-
-    await this._setupTokenRepo.create({
-      providerId: provider._id,
-      hashedToken,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      isUsed: false,
-    });
-
-    /*  LINK */
-    const setupLink = `http://localhost:5173/provider/setup-password?token=${plainToken}`;
-
-    /*  SEND MAIL */
-    await this._mailService.sendGenericEmail(
-      provider.email,
-      "Your Provider Account is Approved ",
-      `
-      Congratulations!
-
-      Your provider account has been approved.
-
-      Click below to set your password:
-      ${setupLink}
-
-      This link expires in 24 hours.
-      `
-    );
-  }
-}
 
   /* ================= PROVIDER REQUEST ================= */
 
   async getProviderRequests(page: number, limit: number, search: string) {
-    return this._providerReqRepo.findAllPaginated(page, limit, search);
+    const { requests, total } =
+      await this._providerRequestRepository.findAllPaginated(
+        page,
+        limit,
+        search
+      );
+
+    return { requests, total };
   }
 
   async reviewProviderRequest(
@@ -150,15 +145,13 @@ async updateProviderStatus(providerId: string, status: string): Promise<void> {
     adminId: string,
     status: ProviderRequestStatus
   ) {
-    const request = await this._providerReqRepo.updateStatus(
+    const request = await this._providerRequestRepository.updateStatus(
       requestId,
       status,
       adminId
     );
 
-    if (!request) {
-      throw new Error("Provider request not found");
-    }
+    if (!request) throw new Error("Provider request not found");
 
     if (status === ProviderRequestStatus.APPROVED) {
       const provider = await this._providerRepo.create({
@@ -170,8 +163,8 @@ async updateProviderStatus(providerId: string, status: string): Promise<void> {
         status: ProviderStatus.ACTIVE,
       });
 
-      /*  PASSWORD SETUP TOKEN */
       const rawToken = crypto.randomBytes(32).toString("hex");
+
       const hashedToken = crypto
         .createHash("sha256")
         .update(rawToken)
@@ -194,6 +187,6 @@ async updateProviderStatus(providerId: string, status: string): Promise<void> {
       );
     }
 
-    return request; 
+    return request;
   }
 }

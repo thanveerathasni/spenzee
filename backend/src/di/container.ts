@@ -32,6 +32,7 @@ import { ProviderRequestService } from "../services/provider/auth/ProviderReques
 import { AuthService } from "../services/user/AuthService";
 import { UserService } from "../services/user/UserService";
 
+/* ================= CONTAINER ================= */
 const container = new Container();
 
 /* ================= REPOSITORIES ================= */
@@ -70,3 +71,4 @@ container.bind(TYPES.AdminController).to(AdminController);
 container.bind(TYPES.AdminAuthController).to(AdminAuthController);
 
 export { container };
+

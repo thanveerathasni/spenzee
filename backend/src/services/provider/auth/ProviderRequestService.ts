@@ -5,6 +5,7 @@ import { TYPES } from "../../../di/types";
 
 import { LOG_MESSAGES } from "../../../shared/constants/logMessages";
 import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
+import { ProviderStatus } from "../../../models/Provider.model";
 import { logger } from "../../../shared/logger/logger";
 import { ProviderRequestMapper } from "../../../shared/mapper/provider/ProviderRequestMapper";
 
@@ -32,7 +33,10 @@ export class ProviderRequestService {
   async createRequest(data: any) {
     logger.info(LOG_MESSAGES.PROVIDER.REQUEST_SUBMITTED);
 
-    const request = await this._repo.create({...data, status: ProviderRequestStatus.PENDING});
+    const request = await this._repo.create({
+      ...data,
+      status: ProviderRequestStatus.PENDING,
+    });
 
     return ProviderRequestMapper.toDTO(request);
   }
@@ -57,15 +61,14 @@ export class ProviderRequestService {
 
     if (!request) throw new Error("Request not found");
 
-    /* IF APPROVED → CREATE PROVIDER */
     if (status === ProviderRequestStatus.APPROVED) {
       const provider = await this._providerRepo.create({
-        name: request.brandName,
+        brandName: request.brandName,
         email: request.contactEmail,
-        status: "active",
+        primaryCategory: request.primaryCategory,
+        status: ProviderStatus.ACTIVE,
       });
 
-      /*  CREATE SETUP TOKEN */
       const rawToken = crypto.randomBytes(32).toString("hex");
 
       const hashedToken = crypto
@@ -79,7 +82,6 @@ export class ProviderRequestService {
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
 
-      /*  SEND EMAIL */
       const link = `${process.env.FRONTEND_URL}/provider/setup-password?token=${rawToken}`;
 
       await this._mailService.sendGenericEmail(

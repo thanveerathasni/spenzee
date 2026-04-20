@@ -104,24 +104,26 @@ export class AdminController {
   }
 
   /* ================= PROVIDER REQUESTS ================= */
-  async getProviderRequests(req: Request, res: Response) {
-    const { page = 1, limit = 10, search = "" } = req.query;
+async getProviderRequests(req: Request, res: Response) {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const search = String(req.query.search || "");
 
-    const data = await this._adminService.getProviderRequests(
-      Number(page),
-      Number(limit),
-      String(search)
-    );
+  const data = await this._adminService.getProviderRequests(
+    page,
+    limit,
+    search
+  );
 
-    return sendResponse({
-      res,
-      message: "Provider requests fetched",
-      data: {
-        requests: data.requests,
-        total: data.total,
-      },
-    });
-  }
+  return sendResponse({
+    res,
+    message: "Provider requests fetched",
+    data: {
+      requests: data.requests,
+      total: data.total,
+    },
+  });
+}
 
   async reviewProviderRequest(req: Request, res: Response) {
   const { id } = req.params;

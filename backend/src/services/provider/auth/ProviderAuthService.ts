@@ -25,36 +25,35 @@ export class ProviderAuthService {
     private readonly _tokenRepository: IProviderPasswordSetupTokenRepository
   ) {}
 
-  /* ================= LOGIN ================= */
-
   async login(email: string, password: string) {
     logger.info(LOG_MESSAGES.PROVIDER.LOGIN_ATTEMPT, { email });
 
     const provider = await this._providerRepository.findByEmail(email);
 
-    if (!provider || !provider.password) {
+    if (!provider) {
       throw new AppError(
         PROVIDER_ERROR_MESSAGES.NOT_FOUND,
         HTTP_STATUS.UNAUTHORIZED
       );
     }
 
-    //  STATUS CHECK 
-    if (provider.status === ProviderStatus.PENDING) {
-      throw new AppError("Account pending approval", 403);
+    if (!provider.password) {
+      throw new AppError(
+        PROVIDER_ERROR_MESSAGES.PASSWORD_NOT_SET,
+        HTTP_STATUS.UNAUTHORIZED
+      );
     }
 
-    if (provider.status === ProviderStatus.REJECTED) {
-      throw new AppError("Account rejected", 403);
+    if (provider.status !== ProviderStatus.ACTIVE) {
+      throw new AppError(
+        PROVIDER_ERROR_MESSAGES.NOT_ACTIVE,
+        HTTP_STATUS.FORBIDDEN
+      );
     }
 
-    if (provider.status === ProviderStatus.SUSPENDED) {
-      throw new AppError("Account suspended", 403);
-    }
+    const isMatch = await bcrypt.compare(password, provider.password);
 
-    const valid = await bcrypt.compare(password, provider.password);
-
-    if (!valid) {
+    if (!isMatch) {
       throw new AppError(
         PROVIDER_ERROR_MESSAGES.NOT_FOUND,
         HTTP_STATUS.UNAUTHORIZED
@@ -71,8 +70,6 @@ export class ProviderAuthService {
       provider,
     };
   }
-
-  /* ================= SETUP PASSWORD ================= */
 
   async setupPassword(token: string, password: string): Promise<void> {
     const hashedToken = crypto
@@ -110,16 +107,12 @@ export class ProviderAuthService {
     );
   }
 
-  /* ================= CHANGE PASSWORD ================= */
-
   async changePassword(
     providerId: string,
     oldPassword: string,
     newPassword: string
   ): Promise<void> {
-    const provider = await this._providerRepository.findById(
-      providerId
-    );
+    const provider = await this._providerRepository.findById(providerId);
 
     if (!provider || !provider.password) {
       throw new AppError(
@@ -128,10 +121,7 @@ export class ProviderAuthService {
       );
     }
 
-    const valid = await bcrypt.compare(
-      oldPassword,
-      provider.password
-    );
+    const valid = await bcrypt.compare(oldPassword, provider.password);
 
     if (!valid) {
       throw new AppError(
@@ -140,10 +130,7 @@ export class ProviderAuthService {
       );
     }
 
-    const hashedNewPassword = await bcrypt.hash(
-      newPassword,
-      10
-    );
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
     await this._providerRepository.updatePassword(
       providerId,
