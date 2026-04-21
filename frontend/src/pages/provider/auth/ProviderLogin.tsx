@@ -4,9 +4,12 @@ import { api } from "../../../api/axios";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { useDispatch } from "react-redux";
+import { setAuth } from "../../../store/auth/auth.slice";
 
 export default function ProviderLogin() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,9 +23,22 @@ export default function ProviderLogin() {
         password,
       });
 
-      localStorage.setItem("provider_token", res.data.data.accessToken);
+      const { accessToken, provider } = res.data.data;
+
+      // ✅ FIX: UPDATE REDUX (CRITICAL)
+      dispatch(
+        setAuth({
+          accessToken,
+          user: {
+            ...provider,
+            role: "provider",
+          },
+        })
+      );
 
       toast.success("Login success");
+
+      // ✅ navigate AFTER state update
       navigate("/provider/dashboard");
 
     } catch (error: unknown) {

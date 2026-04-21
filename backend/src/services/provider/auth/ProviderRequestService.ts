@@ -30,7 +30,13 @@ export class ProviderRequestService {
     private readonly _mailService: IMailService
   ) {}
 
-  async createRequest(data: any) {
+  async createRequest(data: {
+    brandName: string;
+    websiteUrl: string;
+    primaryCategory: string;
+    contactEmail: string;
+    description: string;
+  }) {
     logger.info(LOG_MESSAGES.PROVIDER.REQUEST_SUBMITTED);
 
     const request = await this._repo.create({
@@ -59,36 +65,21 @@ export class ProviderRequestService {
       adminId
     );
 
-    if (!request) throw new Error("Request not found");
+    if (!request) {
+      throw new Error("Request not found");
+    }
 
     if (status === ProviderRequestStatus.APPROVED) {
-      const provider = await this._providerRepo.create({
+      await this._providerRepo.create({
         brandName: request.brandName,
         email: request.contactEmail,
         primaryCategory: request.primaryCategory,
+
+        description: request.description,
+        websiteUrl: request.websiteUrl,
+
         status: ProviderStatus.ACTIVE,
       });
-
-      const rawToken = crypto.randomBytes(32).toString("hex");
-
-      const hashedToken = crypto
-        .createHash("sha256")
-        .update(rawToken)
-        .digest("hex");
-
-      await this._tokenRepo.create({
-        providerId: provider._id,
-        hashedToken,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      });
-
-      const link = `${process.env.FRONTEND_URL}/provider/setup-password?token=${rawToken}`;
-
-      await this._mailService.sendGenericEmail(
-        provider.email,
-        "Setup your account",
-        `Click here to set password: ${link}`
-      );
     }
 
     return ProviderRequestMapper.toDTO(request);

@@ -41,6 +41,13 @@ router.get(
   providerController.getDashboard.bind(providerController)
 );
 
+router.get(
+  "/profile",
+  authGuard,
+  roleGuard([ROLES.PROVIDER]),
+  providerController.getProfile.bind(providerController)
+);
+
 router.patch(
   "/profile",
   authGuard,

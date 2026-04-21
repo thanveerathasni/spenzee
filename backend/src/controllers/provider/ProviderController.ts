@@ -45,7 +45,17 @@ export class ProviderController {
       data,
     });
   }
+async getProfile(req: Request, res: Response) {
+  const providerId = req.user?.id;
 
+  const data = await this._providerService.getProfile(providerId!);
+
+  return sendResponse({
+    res,
+    message: "Profile fetched",
+    data,
+  });
+}
   async updateProfile(req: Request, res: Response) {
     const providerId = req.user?.id;
 

@@ -4,8 +4,8 @@ import { adminAuthReducer } from "./admin";
 
 export const store = configureStore({
   reducer: {
-    auth: authReducer,        // user
-    adminAuth: adminAuthReducer, // admin
+    auth: authReducer,        
+    adminAuth: adminAuthReducer, 
   },
 });
 

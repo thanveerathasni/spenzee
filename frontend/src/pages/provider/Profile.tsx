@@ -28,99 +28,60 @@ export default function ProviderProfile() {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
 
+  /* ✅ FIX: correct API */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await api.get("/provider/dashboard");
-        const { provider } = res.data.data;
-        if (provider) {
-          setFormData({
-            brandName: provider.brandName || "",
-            email: provider.email || "",
-            phone: provider.phone || "",
-            description: provider.description || "",
-          });
-        }
-      } catch (error) {
+        const res = await api.get("/provider/profile");
+        const provider = res.data.data;
+
+        setFormData({
+          brandName: provider.brandName || "",
+          email: provider.email || "",
+          phone: provider.phone || "",
+          description: provider.description || "",
+        });
+      } catch {
         toast.error("Failed to load profile details");
       } finally {
         setFetching(false);
       }
     };
+
     fetchProfile();
   }, []);
 
+  /* ✅ FIX: update UI from response */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      await api.patch("/provider/profile", {
+      const res = await api.patch("/provider/profile", {
         brandName: formData.brandName,
         phone: formData.phone,
         description: formData.description,
       });
+
+      const updated = res.data.data;
+
+      setFormData({
+        brandName: updated.brandName || "",
+        email: updated.email || "",
+        phone: updated.phone || "",
+        description: updated.description || "",
+      });
+
       toast.success("Profile updated successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update profile");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("New passwords do not match");
-      return;
-    }
-    setPwdLoading(true);
-    try {
-      await api.patch("/provider/auth/change-password", {
-        oldPassword: passwordData.oldPassword,
-        newPassword: passwordData.newPassword,
-      });
-      toast.success("Password changed successfully!");
-      setPwdModalOpen(false);
-      setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to change password");
-    } finally {
-      setPwdLoading(false);
-    }
-  };
-
-  const handleRequestEmailChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setEmailLoading(true);
-    try {
-      await api.post("/provider/email/change-request", { email: emailData.newEmail });
-      toast.success("OTP sent to your new email address!");
-      setShowOtpInput(true);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to send OTP");
-    } finally {
-      setEmailLoading(false);
-    }
-  };
-
-  const handleVerifyEmailChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setEmailLoading(true);
-    try {
-      await api.post("/provider/email/verify", { email: emailData.newEmail, otp: emailData.otp });
-      toast.success("Email changed successfully!");
-      setFormData(prev => ({ ...prev, email: emailData.newEmail }));
-      setEmailModalOpen(false);
-      setShowOtpInput(false);
-      setEmailData({ newEmail: "", otp: "" });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to verify OTP");
-    } finally {
-      setEmailLoading(false);
-    }
-  };
-
   if (fetching) return <div className="p-8 text-center">Loading profile...</div>;
+
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto space-y-6">

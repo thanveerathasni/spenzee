@@ -45,6 +45,11 @@ export class ProviderService {
 
     await this._otpService.sendOtp(newEmail);
   }
+async getProfile(providerId: string): Promise<ProviderDTO | null> {
+  const provider = await this._repo.findById(providerId);
+  return provider ? ProviderMapper.toDTO(provider) : null;
+}
+
 
   async verifyEmailChange(
     providerId: string,
