@@ -38,8 +38,13 @@ export default function ProviderLogin() {
 
       toast.success("Login success");
 
-      // ✅ navigate AFTER state update
-      navigate("/provider/dashboard");
+      const seen = localStorage.getItem("provider_welcome_seen");
+
+if (seen) {
+  navigate("/provider/dashboard");
+} else {
+  navigate("/provider/welcome");
+}
 
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {

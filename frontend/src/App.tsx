@@ -97,6 +97,14 @@ const AppContent = () => {
       <Route element={<ProtectedRoute allowedRoles={["provider"]}><Outlet />
       </ProtectedRoute>}>
         <Route element={<ProviderLayout><Outlet /></ProviderLayout>}>
+        <Route 
+  path="/provider/welcome" 
+  element={
+    <ProtectedRoute allowedRoles={["provider"]}>
+      <ProviderWelcome />
+    </ProtectedRoute>
+  } 
+/>
           <Route path="/provider/dashboard" element={<ProviderDashboard />} />
           <Route path="/provider/profile" element={<ProviderProfile />} />
 

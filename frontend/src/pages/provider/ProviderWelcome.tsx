@@ -6,11 +6,12 @@ export default function ProviderWelcome() {
   const [accepted, setAccepted] = useState(false);
   const navigate = useNavigate();
 
-  const handleProceed = () => {
-    if (accepted) {
-      navigate("/provider/dashboard");
-    }
-  };
+ const handleProceed = () => {
+  if (accepted) {
+    localStorage.setItem("provider_welcome_seen", "true");
+    navigate("/provider/dashboard");
+  }
+};
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-black flex items-center justify-center p-6">
