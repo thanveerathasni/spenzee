@@ -17,9 +17,19 @@ if (!isAuthChecked) {
     return <div>Loading...</div>;
   }
 
+  // if (!isAuthenticated || !user) {
+  //   return <Navigate to="/login" replace />;
+  // }
+
+
+
   if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />;
+  if (allowedRoles?.includes("provider")) {
+    return <Navigate to="/provider/login" replace />;
   }
+  return <Navigate to="/login" replace />;
+}
+
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/unauthorized" replace />;

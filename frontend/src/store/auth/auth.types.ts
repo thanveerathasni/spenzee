@@ -15,6 +15,7 @@ export interface User {
   createdAt?: string;
   address?: Address;
   profilePicture?: string;
+    hasAcceptedTerms?: boolean;
   
 }
 export interface Address {

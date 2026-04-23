@@ -647,20 +647,37 @@ const dispatch = useDispatch();
   };
 
 
-  const handleLogout = async () => {
+//   const handleLogout = async () => {
+//   try {
+//     await api.post("/auth/logout"); // backend clear cookie
+//   } catch {
+//     // even if API fails, continue logout
+//   }
+
+//   dispatch(clearAuth()); 
+//   localStorage.removeItem("auth"); 
+//   localStorage.removeItem("provider_token"); 
+
+//   toast.success("Logged out");
+
+//   navigate("/provider/login"); // 
+// };
+
+
+
+const handleLogout = async () => {
   try {
-    await api.post("/auth/logout"); // backend clear cookie
-  } catch {
-    // even if API fails, continue logout
+    await api.post("/auth/logout");
+  } catch (err) {
+    console.log("Logout API failed, continuing anyway");
   }
 
-  dispatch(clearAuth()); 
-  localStorage.removeItem("auth"); 
-  localStorage.removeItem("provider_token"); 
+  dispatch(clearAuth());
+  localStorage.removeItem("auth");
 
   toast.success("Logged out");
 
-  navigate("/provider/login"); // 
+  navigate("/provider/login", { replace: true });
 };
 
   if (fetching) return <div className="p-8 text-center">Loading profile...</div>;

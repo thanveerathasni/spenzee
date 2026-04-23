@@ -36,7 +36,7 @@ const AdminLogin: React.FC = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-        className="mt-6 sm:mt-10 lg:mt-16 text-4xl md:text-5xl font-serif text-white mb-10 sm:mb-12 tracking-tighter"
+        className="mt-6 sm:mt-10 lg:mt-16 text-4xl md:text-5xl font-serif  mb-10 sm:mb-12 tracking-tighter"
       >
         Spenzee
       </motion.h1>

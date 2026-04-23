@@ -14,10 +14,11 @@ export const api: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-/* ================= REQUEST ================= */
+/* REQUEST */
 
 api.interceptors.request.use((config) => {
   const accessToken = store.getState().auth.accessToken;
+
   if (accessToken) {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${accessToken}`;
@@ -26,7 +27,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/* ================= QUEUE ================= */
+/* QUEUE */
 
 let isRefreshing = false;
 
@@ -46,12 +47,20 @@ const processQueue = (error: unknown, token: string | null) => {
   failedQueue = [];
 };
 
-/* ================= RESPONSE ================= */
+/* RESPONSE */
 
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config as RetryAxiosRequestConfig;
+
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.message === "Terms not accepted"
+    ) {
+      window.location.href = "/provider/welcome";
+      return Promise.reject(error);
+    }
 
     if (error.response?.status !== 401) {
       return Promise.reject(error);
@@ -60,7 +69,13 @@ api.interceptors.response.use(
     if (
       original.url?.includes("/auth/login") ||
       original.url?.includes("/auth/signup") ||
-      original.url?.includes("/auth/refresh")
+      original.url?.includes("/auth/refresh") ||
+      original.url?.includes("/provider/auth/login") ||
+      original.url?.includes("/provider/auth/signup") ||
+      original.url?.includes("/provider/auth/refresh")||
+      original.url?.includes("/admin/auth/login") ||
+      original.url?.includes("/admin/auth/refresh") ||
+      original.url?.includes("/auth/logout") 
     ) {
       return Promise.reject(error);
     }
@@ -71,6 +86,15 @@ api.interceptors.response.use(
     }
 
     original._retry = true;
+
+    if (
+      error.response?.status === 401 &&
+      error.response?.data?.message?.includes("blocked")
+    ) {
+      store.dispatch(clearAuth());
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
 
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
@@ -84,20 +108,11 @@ api.interceptors.response.use(
         });
       });
     }
-    if (
-  error.response?.status === 401 &&
-  error.response?.data?.message?.includes("blocked")
-) {
-  store.dispatch(clearAuth());
-  window.location.href = "/login";
-}
 
     isRefreshing = true;
 
     try {
-  
       const res = await api.post("/auth/refresh");
-
       const data = res.data.data;
 
       store.dispatch(

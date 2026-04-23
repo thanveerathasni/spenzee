@@ -1,6 +1,12 @@
+
+
+
+
+
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../../api/axios";
+import { providerAuthApi } from "../../../api/provider/providerAuth.api";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useDispatch } from "react-redux";
@@ -27,14 +33,15 @@ export default function ProviderLogin() {
     e.preventDefault();
     if (!validate()) return;
     try {
-      const res = await api.post("/provider/auth/login", { email, password });
-      const { accessToken, provider } = res.data.data;
+      const { accessToken, provider } = await providerAuthApi.login(email, password);
+
       dispatch(setAuth({ accessToken, user: { ...provider, role: "provider" } }));
       toast.success("Login success");
+
       if (provider.hasAcceptedTerms) {
         navigate("/provider/dashboard");
       } else {
-        navigate("/provider/welcome");
+        navigate("/provider/welcome",{replace : true});
       }
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -60,7 +67,6 @@ export default function ProviderLogin() {
             Provider Portal
           </p>
 
-          {/* User / Provider switch */}
           <div className="flex justify-center gap-4 mt-6">
             <button
               type="button"
@@ -79,7 +85,6 @@ export default function ProviderLogin() {
         </header>
 
         <form onSubmit={handleLogin} className="space-y-5">
-          {/* Email */}
           <div>
             <input
               type="email"
@@ -96,7 +101,6 @@ export default function ProviderLogin() {
             )}
           </div>
 
-          {/* Password */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -164,5 +168,4 @@ export default function ProviderLogin() {
     </div>
       </>
   );
-
 }
