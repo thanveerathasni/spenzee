@@ -3,7 +3,7 @@ import { ProviderController } from "../../controllers/provider/ProviderControlle
 import { ProviderAuthController } from "../../controllers/provider/auth/ProviderAuthController";
 import { container } from "../../di/container";
 import { TYPES } from "../../di/types";
-
+import { providerTermsGuard } from "../../middleware/providerTermsGuard";
 import { authGuard } from "../../middleware/authGuard";
 import { roleGuard } from "../../middleware/roleGuard";
 
@@ -16,7 +16,7 @@ const authController = container.get<ProviderAuthController>(TYPES.ProviderAuthC
 
 /* ================= PUBLIC ================= */
 
-// REQUEST (ONLY ONE)
+// REQUEST
 router.post("/requests", providerController.createRequest.bind(providerController));
 
 // LOGIN
@@ -38,6 +38,7 @@ router.get(
   "/dashboard",
   authGuard,
   roleGuard([ROLES.PROVIDER]),
+  providerTermsGuard,
   providerController.getDashboard.bind(providerController)
 );
 
@@ -67,6 +68,13 @@ router.post(
   authGuard,
   roleGuard([ROLES.PROVIDER]),
   providerController.verifyEmailChange.bind(providerController)
+);
+
+router.patch(
+  "/accept-terms",
+  authGuard,
+  roleGuard([ROLES.PROVIDER]),
+  providerController.acceptTerms.bind(providerController)
 );
 
 export default router;

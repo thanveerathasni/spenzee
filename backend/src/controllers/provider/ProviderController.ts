@@ -100,4 +100,16 @@ async getProfile(req: Request, res: Response) {
       data,
     });
   }
+
+  async acceptTerms(req: Request, res: Response) {
+  const providerId = req.user?.id;
+
+  const data = await this._providerService.acceptTerms(providerId!);
+
+  return sendResponse({
+    res,
+    message: "Terms accepted",
+    data,
+  });
+}
 }

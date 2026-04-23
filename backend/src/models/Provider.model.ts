@@ -15,7 +15,7 @@ export interface IProvider extends Document {
   readonly websiteUrl?: string;
   readonly phone?: string;
   readonly description?: string;
-
+  readonly hasAcceptedTerms: boolean;
   readonly role: "provider";
   status: ProviderStatus;
 
@@ -74,6 +74,10 @@ const ProviderSchema = new Schema<IProvider>(
       type: String,
       select: false,
     },
+    hasAcceptedTerms: {
+  type: Boolean,
+  default: false,
+},
   },
   {
     timestamps: true,

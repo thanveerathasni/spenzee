@@ -11,6 +11,7 @@ export class ProviderMapper {
       websiteUrl: provider.websiteUrl ?? undefined,
       description: provider.description ?? undefined,
       createdAt: provider.createdAt,
+      hasAcceptedTerms: provider.hasAcceptedTerms,
     };
   }
 }

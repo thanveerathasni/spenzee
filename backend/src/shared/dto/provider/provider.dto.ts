@@ -6,4 +6,5 @@ export interface ProviderDTO {
   websiteUrl?: string;
   description?: string;
   createdAt: Date;
+  hasAcceptedTerms: boolean;
 }

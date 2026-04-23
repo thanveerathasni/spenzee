@@ -27,7 +27,13 @@ export class ProviderService {
     const updated = await this._repo.updateById(providerId, data);
     return updated ? ProviderMapper.toDTO(updated) : null;
   }
+async acceptTerms(providerId: string) {
+  const updated = await this._repo.updateById(providerId, {
+    hasAcceptedTerms: true,
+  });
 
+  return updated ? ProviderMapper.toDTO(updated) : null;
+}
   /* ================= EMAIL CHANGE ================= */
 
   async requestEmailChange(
