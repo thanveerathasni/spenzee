@@ -195,7 +195,7 @@ useEffect(() => {
               <button
                 type="button"
                 onClick={() => navigate("/provider/request")}
-                className="px-6 py-2 rounded-lg font-bold text-sm bg-white/10 text-gray-400 hover:text-white transition"
+                className="px-6 py-2 rounded-lg font-bold text-sm bg-white/10 text-black hover:text-white transition"
               >
                 Provider
               </button>

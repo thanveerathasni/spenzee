@@ -131,7 +131,7 @@ const LoginForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate("/provider/login")}
-                className="px-6 py-2 rounded-lg font-bold text-sm bg-white/10 text-gray-700 hover:text-white transition"
+                className="px-6 py-2 rounded-lg font-bold text-sm bg-white/10 text-black hover:text-white transition"
               >
                 Provider
               </button>
