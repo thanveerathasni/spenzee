@@ -1,6 +1,5 @@
-
-
 import { api } from "./axios";
+import { API_ROUTES } from "../constants/apiRoutes";
 import type { User } from "../store/auth/auth.types";
 
 /* ---------- Types ---------- */
@@ -32,11 +31,11 @@ export interface ResetPasswordPayload {
 
 export const authApi = {
   signup: async (data: SignupRequest): Promise<void> => {
-    await api.post("/auth/signup", data);
+    await api.post(API_ROUTES.AUTH.SIGNUP, data);
   },
 
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const res = await api.post("/auth/login", data);
+    const res = await api.post(API_ROUTES.AUTH.LOGIN, data);
 
     return {
       accessToken: res.data.data.accessToken,
@@ -45,23 +44,28 @@ export const authApi = {
   },
 
   verifyOtp: async (payload: { email: string; otp: string }) => {
-    await api.post("/auth/verify-otp", payload);
+    await api.post(API_ROUTES.AUTH.VERIFY_OTP, payload);
   },
 
-  resendOtp: async (email: string) => {
-    await api.post("/auth/resend-otp", { email });
+  resendOtp: async (data: {
+    email: string;
+    name?: string;
+    password?: string;
+    role?: string;
+  }) => {
+    await api.post(API_ROUTES.AUTH.RESEND_OTP, data);
   },
 
   forgotPassword: async (email: string) => {
-    await api.post("/auth/forgot-password", { email });
+    await api.post(API_ROUTES.AUTH.FORGOT_PASSWORD, { email });
   },
 
   resetPassword: async (payload: ResetPasswordPayload) => {
-    await api.post("/auth/reset-password", payload);
+    await api.post(API_ROUTES.AUTH.RESET_PASSWORD, payload);
   },
 
   refresh: async (): Promise<AuthResponse> => {
-    const res = await api.post("/auth/refresh");
+    const res = await api.post(API_ROUTES.AUTH.REFRESH);
 
     return {
       accessToken: res.data.data.accessToken,
@@ -70,11 +74,11 @@ export const authApi = {
   },
 
   logout: async () => {
-    await api.post("/auth/logout");
+    await api.post(API_ROUTES.AUTH.LOGOUT);
   },
 
   googleLogin: async (credential: string): Promise<AuthResponse> => {
-    const res = await api.post("/auth/google", { credential });
+    const res = await api.post(API_ROUTES.AUTH.GOOGLE, { credential });
 
     return {
       accessToken: res.data.data.accessToken,
@@ -86,22 +90,22 @@ export const authApi = {
 /* ---------- PASSWORD CHANGE ---------- */
 
 export const sendPasswordOtpApi = async (): Promise<void> => {
-  await api.post("/user/password/send-otp");
+  await api.post(API_ROUTES.USER.CHANGE_PASSWORD_SEND_OTP);
 };
 
 export const verifyPasswordOtpApi = async (
   otp: string
 ): Promise<void> => {
-  await api.post("/user/password/verify-otp", { otp });
+  await api.post(API_ROUTES.USER.CHANGE_PASSWORD_VERIFY_OTP, { otp });
 };
 
 export const updatePasswordApi = async (
   newPassword: string
 ): Promise<void> => {
-  await api.patch("/user/password/update", { newPassword });
+  await api.patch(API_ROUTES.USER.CHANGE_PASSWORD_UPDATE, { newPassword });
 };
 
-/* ---------- EMAIL CHANGE (LOGGED-IN USER) ---------- */
+/* ---------- EMAIL CHANGE ---------- */
 
 export const requestEmailChangeApi = async (
   newEmail: string

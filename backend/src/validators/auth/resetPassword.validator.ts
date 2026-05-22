@@ -1,11 +1,31 @@
 import { z } from "zod";
 
-export const resetPasswordSchema = z.object({
-  body: z.object({
-    token: z.string().min(1, "Reset token is required"),
+import {
+  passwordSchema,
+} from "../common.validator";
 
-    newPassword: z.string().min(8, "Password must be at least 8 characters").max(100),
-  }),
-});
+export const resetPasswordSchema =
+  z.object({
+    body: z.object({
+      email: z
+        .string()
+        .email(
+          "Valid email is required",
+        ),
 
-export type ResetPasswordDTO = z.infer<typeof resetPasswordSchema>["body"];
+      token: z
+        .string()
+        .min(
+          1,
+          "Reset token is required",
+        ),
+
+      newPassword:
+        passwordSchema,
+    }),
+  });
+
+export type ResetPasswordDTO =
+  z.infer<
+    typeof resetPasswordSchema
+  >["body"];

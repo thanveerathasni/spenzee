@@ -20,6 +20,6 @@ export async function adminLogout(
 
   if (!result.isConfirmed) return;
 
-  adminAuthStore.clear();
+  adminAuthStore.clearToken();
   navigate("/admin/login", { replace: true });
 }

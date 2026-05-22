@@ -1,21 +1,13 @@
-
-
-
-
-
-
-
-
-
-
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, X } from "lucide-react";
 import Swal from "sweetalert2";
+import { useDispatch } from "react-redux"; 
 
 import { sidebarConfig } from "../nav.config";
 import type { AdminSection } from "../nav.config";
-import { adminAuthStore } from "../../../store/admin/adminAuth";
+import { clearAuth } from "../../../store/auth/auth.slice"; 
+import { api } from "../../../api/axios"; 
 
 interface SidebarProps {
   isExpanded: boolean;
@@ -30,6 +22,8 @@ export default function Sidebar({
   onCloseMobile,
 }: SidebarProps) {
   const navigate = useNavigate();
+  const dispatch = useDispatch(); 
+
   const items = sidebarConfig[activeSection] ?? [];
 
   const handleLogout = async () => {
@@ -44,7 +38,15 @@ export default function Sidebar({
 
     if (!result.isConfirmed) return;
 
-    adminAuthStore.clear();
+    try {
+      await api.post("/admin/auth/logout");
+    } catch {
+      console.log("Logout API failed");
+    }
+
+    dispatch(clearAuth());
+    localStorage.removeItem("auth");
+
     navigate("/admin/login", { replace: true });
   };
 
@@ -124,4 +126,3 @@ export default function Sidebar({
     </>
   );
 }
-

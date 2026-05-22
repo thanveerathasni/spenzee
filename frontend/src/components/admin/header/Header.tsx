@@ -1,13 +1,11 @@
-
-
-
 import React from "react";
 import { Search, Bell, Settings, HelpCircle, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-
-import { adminAuthStore } from "../../../store/admin/adminAuth";
+import { useDispatch } from "react-redux"; 
+import { clearAuth } from "../../../store/auth/auth.slice"; 
+import { api } from "../../../api/axios"; 
 import type { AdminSection } from "../nav.config";
 
 interface HeaderProps {
@@ -29,21 +27,29 @@ const Header: React.FC<HeaderProps> = ({
   onMobileMenuOpen,
 }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch(); 
 
-  const handleLogout = async (): Promise<void> => {
+  const handleLogout = async () => {
     const result = await Swal.fire({
-      title: "Log out of admin panel?",
-      text: "You will need to log in again.",
+      title: "Logout?",
+      text: "Admin session will be terminated",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Logout",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#000000",
+      confirmButtonColor: "#000",
     });
 
     if (!result.isConfirmed) return;
 
-    adminAuthStore.clear();
+    try {
+      await api.post("/admin/auth/logout");
+    } catch {
+      console.log("Logout API failed");
+    }
+
+    dispatch(clearAuth());
+    localStorage.removeItem("auth");
+
     navigate("/admin/login", { replace: true });
   };
 
@@ -51,7 +57,6 @@ const Header: React.FC<HeaderProps> = ({
     <header className="h-16 w-full bg-white border-b border-gray-100 flex items-center justify-between px-4 lg:px-8">
       {/* LEFT */}
       <div className="flex items-center gap-4">
-        {/* Mobile menu */}
         {onMobileMenuOpen && (
           <button
             onClick={onMobileMenuOpen}
@@ -61,7 +66,6 @@ const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
           {sections.map((s) => (
             <button
@@ -138,5 +142,3 @@ const HeaderIcon: React.FC<{
 );
 
 export default Header;
-
-

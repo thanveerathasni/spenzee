@@ -2,6 +2,7 @@ import axios from "axios";
 import type { AxiosInstance, AxiosRequestConfig } from "axios";
 import { store } from "../store/store";
 import { clearAuth, setAuth } from "../store/auth";
+import { API_ROUTES } from "../constants/apiRoutes";
 
 interface RetryAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -14,8 +15,6 @@ export const api: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-/* REQUEST */
-
 api.interceptors.request.use((config) => {
   const accessToken = store.getState().auth.accessToken;
 
@@ -26,8 +25,6 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
-
-/* QUEUE */
 
 let isRefreshing = false;
 
@@ -46,37 +43,36 @@ const processQueue = (error: unknown, token: string | null) => {
 
   failedQueue = [];
 };
-
-/* RESPONSE */
-
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config as RetryAxiosRequestConfig;
 
-    if (
-      error.response?.status === 403 &&
-      error.response?.data?.message === "Terms not accepted"
-    ) {
-      window.location.href = "/provider/welcome";
+    if (original.url?.includes("/user/profile/image")) {
+      return Promise.reject(error);
+    }
+
+ const isPublicAuthRoute =
+
+  /* USER AUTH */
+  original.url?.includes("/auth/login") ||
+  original.url?.includes("/auth/signup") ||
+  original.url?.includes("/auth/refresh") ||
+  original.url?.includes("/auth/verify-otp") ||
+  original.url?.includes("/auth/resend-otp") ||
+  original.url?.includes("/auth/forgot-password") ||
+  original.url?.includes("/auth/reset-password") ||
+
+  /* PROVIDER AUTH */
+  original.url?.includes("/provider/auth/login") ||
+  original.url?.includes("/provider/auth/setup-password") ||
+  original.url?.includes("/provider/auth/forgot-password") ||
+  original.url?.includes("/provider/auth/reset-password");
+    if (isPublicAuthRoute) {
       return Promise.reject(error);
     }
 
     if (error.response?.status !== 401) {
-      return Promise.reject(error);
-    }
-
-    if (
-      original.url?.includes("/auth/login") ||
-      original.url?.includes("/auth/signup") ||
-      original.url?.includes("/auth/refresh") ||
-      original.url?.includes("/provider/auth/login") ||
-      original.url?.includes("/provider/auth/signup") ||
-      original.url?.includes("/provider/auth/refresh")||
-      original.url?.includes("/admin/auth/login") ||
-      original.url?.includes("/admin/auth/refresh") ||
-      original.url?.includes("/auth/logout") 
-    ) {
       return Promise.reject(error);
     }
 
@@ -86,15 +82,6 @@ api.interceptors.response.use(
     }
 
     original._retry = true;
-
-    if (
-      error.response?.status === 401 &&
-      error.response?.data?.message?.includes("blocked")
-    ) {
-      store.dispatch(clearAuth());
-      window.location.href = "/login";
-      return Promise.reject(error);
-    }
 
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
@@ -112,7 +99,7 @@ api.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const res = await api.post("/auth/refresh");
+      const res = await api.post(API_ROUTES.AUTH.REFRESH);
       const data = res.data.data;
 
       store.dispatch(
@@ -137,3 +124,146 @@ api.interceptors.response.use(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+// import axios from "axios";
+// import type { AxiosInstance, AxiosRequestConfig } from "axios";
+// import { store } from "../store/store";
+// import { clearAuth, setAuth } from "../store/auth";
+// import { API_ROUTES } from "../constants/apiRoutes";
+
+// interface RetryAxiosRequestConfig extends AxiosRequestConfig {
+//   _retry?: boolean;
+// }
+
+// const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+// export const api: AxiosInstance = axios.create({
+//   baseURL: API_BASE_URL,
+//   withCredentials: true,
+// });
+
+// api.interceptors.request.use((config) => {
+//   const accessToken = store.getState().auth.accessToken;
+
+//   if (accessToken) {
+//     config.headers = config.headers ?? {};
+//     config.headers.Authorization = `Bearer ${accessToken}`;
+//   }
+
+//   return config;
+// });
+
+// let isRefreshing = false;
+
+// type FailedRequest = {
+//   resolve: (token: string) => void;
+//   reject: (error: unknown) => void;
+// };
+
+// let failedQueue: FailedRequest[] = [];
+
+// const processQueue = (error: unknown, token: string | null) => {
+//   failedQueue.forEach((promise) => {
+//     if (error) promise.reject(error);
+//     else if (token) promise.resolve(token);
+//   });
+
+//   failedQueue = [];
+// };
+
+// api.interceptors.response.use(
+//   (res) => res,
+//   async (error) => {
+//     const original = error.config as RetryAxiosRequestConfig;
+
+//     const isPublicAuthRoute =
+//       original.url?.includes("/auth/login") ||
+//       original.url?.includes("/auth/signup") ||
+//       original.url?.includes("/auth/refresh") ||
+//       original.url?.includes("/auth/verify-otp") ||
+//       original.url?.includes("/auth/resend-otp") ||
+//       original.url?.includes("/auth/forgot-password") ||
+//       original.url?.includes("/auth/reset-password");
+
+//     if (isPublicAuthRoute) {
+//       return Promise.reject(error);
+//     }
+
+//     if (error.response?.status !== 401) {
+//       return Promise.reject(error);
+//     }
+
+//           if (original._retry) {
+//       store.dispatch(clearAuth());
+//       return Promise.reject(error);
+//     }
+
+//     original._retry = true;
+
+//     if (isRefreshing) {
+//       return new Promise((resolve, reject) => {
+//         failedQueue.push({
+//           resolve: (token: string) => {
+//             original.headers = original.headers ?? {};
+//             original.headers.Authorization = `Bearer ${token}`;
+//             resolve(api(original));
+//           },
+//           reject,
+//         });
+//       });
+//     }
+
+//     isRefreshing = true;
+
+//     try {
+//       const res = await api.post(API_ROUTES.AUTH.REFRESH);
+//       const data = res.data.data;
+
+//       store.dispatch(
+//         setAuth({
+//           accessToken: data.accessToken,
+//           user: data.user,
+//         })
+//       );
+
+//       processQueue(null, data.accessToken);
+
+//       original.headers = original.headers ?? {};
+//       original.headers.Authorization = `Bearer ${data.accessToken}`;
+
+//       return api(original);
+//     } catch (err) {
+//       processQueue(err, null);
+//       store.dispatch(clearAuth());
+//       return Promise.reject(err);
+//     } finally {
+//       isRefreshing = false;
+//     }
+//   }
+// );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

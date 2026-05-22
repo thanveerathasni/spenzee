@@ -8,6 +8,7 @@ import DashboardPage from "../../pages/admin/dashboard/DashboardPage";
 import AdminUsersPage from "../../pages/admin/users/AdminUsersPage";
 import AdminUserDetails from "../../pages/admin/users/AdminUserDetails";
 import AdminProviderDetails from "../../pages/admin/providers/AdminProviderDetails";
+
 const AdminRoutes = () => {
   return (
     <>
@@ -40,8 +41,16 @@ const AdminRoutes = () => {
             </AdminLayout>
           }
         />
+
+        <Route
+          path="/admin/providers/:id"
+          element={
+            <AdminLayout>
+              <AdminProviderDetails />
+            </AdminLayout>
+          }
+        />
       </Route>
-      <Route path="/admin/providers/:id" element={<AdminProviderDetails />} />
     </>
   );
 };

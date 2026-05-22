@@ -1,15 +1,41 @@
 import { z } from "zod";
 
-export const updateProfileSchema = z.object({
-  name: z.string().optional(),
-  phone: z.string().optional(),
+export const updateProfileSchema =
+  z.object({
+    body: z.object({
+      name: z
+        .string()
+        .trim()
+        .min(2)
+        .max(100)
+        .optional(),
 
-  address: z
-    .object({
-      street: z.string().optional(),
-      city: z.string().optional(),
-      state: z.string().optional(),
-      pincode: z.string().optional(),
-    })
-    .optional(),
-});
+      phone: z
+        .string()
+        .trim()
+        .min(7)
+        .max(20)
+        .optional(),
+
+      gender: z
+        .string()
+        .trim()
+        .optional(),
+
+      occupation:
+        z.string()
+          .trim()
+          .optional(),
+
+      bio: z
+        .string()
+        .trim()
+        .max(500)
+        .optional(),
+    }),
+  });
+
+export type UpdateProfileDTO =
+  z.infer<
+    typeof updateProfileSchema
+  >["body"];

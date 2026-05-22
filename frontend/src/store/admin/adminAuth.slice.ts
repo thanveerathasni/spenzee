@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { AdminAuthState } from "./adminAuth.types";
+import type { Admin, AdminAuthState } from "../../types/admin/adminAuth.types";
 
 const initialState: AdminAuthState = {
   accessToken: null,

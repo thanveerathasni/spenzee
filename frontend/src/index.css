@@ -11,3 +11,9 @@
     min-width: 320px; */
   }
 }
+
+@layer components {
+  .profile-input {
+    @apply min-h-10 w-full rounded-lg border border-white/10 bg-black/30 px-3 text-sm text-white outline-none transition focus:border-white/40 placeholder:text-white/30;
+  }
+}

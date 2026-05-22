@@ -19,4 +19,8 @@ export interface IProviderPasswordSetupTokenRepository {
   deleteByTokenHash(tokenHash: string): Promise<void>;
 
   markAsUsed(id: string): Promise<void>;
+  
+    findByProviderId(
+    providerId: string
+  ): Promise<ProviderPasswordSetupTokenEntity[]>;
 }

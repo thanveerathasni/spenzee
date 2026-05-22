@@ -1,10 +1,11 @@
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import type { ReactElement } from "react";
 import type { RootState } from "../store/store";
 
 interface Props {
   allowedRoles: Array<"user" | "provider" | "admin">;
-  children: JSX.Element;
+  children: ReactElement;
 }
 
 const ProtectedRoute = ({ allowedRoles, children }: Props) => {

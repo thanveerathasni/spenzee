@@ -13,4 +13,3 @@ const PORT = Number(process.env.PORT) || 5000;
     console.log(`Server running on port ${PORT}`);
   });
 })();
-// console.log("ENV TEST:", process.env.CLOUDINARY_API_KEY);

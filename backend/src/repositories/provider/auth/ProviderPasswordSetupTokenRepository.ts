@@ -25,6 +25,34 @@ export class ProviderPasswordSetupTokenRepository
     };
   }
 
+  async findByProviderId(
+  providerId: string
+): Promise<ProviderPasswordSetupTokenEntity[]> {
+
+  const docs =
+    await ProviderPasswordSetupTokenModel
+      .find({
+        providerId,
+        isUsed: false,
+      })
+      .sort({ createdAt: -1 });
+
+  return docs.map((doc) => ({
+    _id: doc._id as Types.ObjectId,
+
+    providerId: doc.providerId as Types.ObjectId,
+
+    hashedToken: doc.hashedToken,
+
+    expiresAt: doc.expiresAt,
+
+    isUsed: doc.isUsed,
+
+    createdAt: doc.createdAt,
+  }));
+}
+
+
   async findByTokenHash(tokenHash: string): Promise<ProviderPasswordSetupTokenEntity | null> {
     const doc = await ProviderPasswordSetupTokenModel.findOne({
       hashedToken: tokenHash,

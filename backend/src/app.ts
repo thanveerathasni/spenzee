@@ -7,6 +7,7 @@ import { errorHandler } from "./middleware/errorHandler";
 import adminAuthRoutes from "./routes/admin/admin.auth.routes";
 import adminRoutes from "./routes/admin/admin.routes";
 import otpRoutes from "./routes/otp.routes";
+import notificationRoutes from "./routes/notification.routes";
 import providerRoutes from "./routes/provider/provider.routes";
 import authRoutes from "./routes/user/auth.routes";
 import userRoutes from "./routes/user/user.routes";
@@ -35,6 +36,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/provider", providerRoutes);
 app.use("/api/otp", otpRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/admin", adminRoutes);

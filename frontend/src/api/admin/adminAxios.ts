@@ -1,5 +1,6 @@
 import axios from "axios";
-import { adminAuthStore } from "../../store/admin/adminAuth";
+import { store } from "../../store/store";
+import { clearAuth } from "../../store/auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -8,12 +9,11 @@ export const adminApi = axios.create({
 });
 
 adminApi.interceptors.request.use((config) => {
-  const token = adminAuthStore.getToken();
+  const accessToken = store.getState().auth.accessToken;
 
-  // console.log("ADMIN TOKEN:", token);
-  if (token) {
+  if (accessToken) {
     config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
   return config;
@@ -23,9 +23,9 @@ adminApi.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
-      adminAuthStore.clearToken();
-      window.location.href = "/admin/login";
+      store.dispatch(clearAuth());
     }
+
     return Promise.reject(error);
   }
 );

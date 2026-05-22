@@ -47,7 +47,8 @@ const dispatch = useDispatch();
     } catch (e) {
       console.error("Logout failed:", e);
     } finally {
-    dispatch(clearAuth());
+    localStorage.removeItem("accessToken");
+      dispatch(clearAuth());  
       navigate(ROUTES.AUTH.LOGIN, { replace: true });
     }
   };
@@ -180,15 +181,19 @@ const WelcomePage: React.FC = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="group flex items-center justify-center gap-4 px-14 py-5 bg-black text-white dark:bg-white dark:text-black hover:bg-black/80 dark:hover:bg-white/80 text-xs uppercase tracking-[0.25em] font-medium transition-all duration-700"
-              onClick={() => navigate(ROUTES.USER.DASHBOARD)}
+              onClick={() => navigate("/user/dashboard")}
             >
               <span>Go to Dashboard</span>
               <ArrowRight
                 size={18}
                 className="group-hover:translate-x-1 transition-transform duration-300"
               />
+
             </motion.button>
           </motion.div>
+
+          
+         
         </motion.div>
       </main>
 

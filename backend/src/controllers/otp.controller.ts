@@ -1,49 +1,78 @@
-import { Request, Response } from "express";
+import {
+  Request,
+  Response,
+} from "express";
+
+import {
+  inject,
+  injectable,
+} from "inversify";
+
+import { TYPES } from "../di/types";
+
+import {
+  SUCCESS_MESSAGES,
+} from "../shared/constants/successMessages";
+
+import { sendResponse } from "../shared/utils/sendResponse";
+
 import { OtpService } from "../services/otp.service";
 
-const otpService = new OtpService();
+@injectable()
+export class OtpController {
+  constructor(
+    @inject(TYPES.OtpService)
+    private readonly _otpService: OtpService,
+  ) {}
 
-export const sendOtp = async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body as { email: string };
+  /* ====================================================== */
+  /* SEND OTP */
+  /* ====================================================== */
 
-    await otpService.sendOtp(email);
+  async sendOtp(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const { email } =
+      req.body;
 
-    res.status(200).json({
-      success: true,
-      message: "OTP sent successfully",
-    });
-  } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Something went wrong";
+    await this._otpService.sendOtp(
+      email,
+    );
 
-    res.status(400).json({
-      success: false,
-      message,
-    });
-  }
-};
+    return sendResponse({
+      res,
 
-export const verifyOtp = async (req: Request, res: Response) => {
-  try {
-    const { email, otp } = req.body as {
-      email: string;
-      otp: string;
-    };
-
-    await otpService.verifyOtp(email, otp);
-
-    res.status(200).json({
-      success: true,
-      message: "OTP verified successfully",
-    });
-  } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Something went wrong";
-
-    res.status(400).json({
-      success: false,
-      message,
+      message:
+        SUCCESS_MESSAGES.AUTH
+          .OTP_SENT,
     });
   }
-};
+
+  /* ====================================================== */
+  /* VERIFY OTP */
+  /* ====================================================== */
+
+  async verifyOtp(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const {
+      email,
+      otp,
+    } = req.body;
+
+    await this._otpService.verifyOtp(
+      email,
+      otp,
+    );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.AUTH
+          .ACCOUNT_VERIFIED,
+    });
+  }
+}

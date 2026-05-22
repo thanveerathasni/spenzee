@@ -1,25 +1,34 @@
+
+
+
+
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { authApi } from "../../../api/auth.api";
 import { ALERT_MESSAGES } from "../../../constants/messages";
+import { ROUTES } from "../../../constants/routes";
+import { mapApiError } from "../../../util/errorHandler";
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-const token = params.get("token");
-const email = params.get("email");
+
+  const token = params.get("token");
+  const email = params.get("email");
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-  if (!token || !email) {
-    toast.error("Invalid or expired reset link");
-    navigate("/login", { replace: true });
-  }
-}, [token, email, navigate]);
- if (!token || !email) return null;
+    if (!token || !email) {
+      toast.error("Invalid or expired reset link");
+      navigate(ROUTES.AUTH.LOGIN, { replace: true });
+    }
+  }, [token, email, navigate]);
+
+  if (!token || !email) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,25 +39,19 @@ const email = params.get("email");
     }
 
     setLoading(true);
+
     try {
-    await authApi.resetPassword({
-  email,
-  token,
-  newPassword: password,
-});
+      await authApi.resetPassword({
+        email,
+        token,
+        newPassword: password,
+      });
+
       toast.success(ALERT_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS);
-      navigate("/login", { replace: true });
+      navigate(ROUTES.AUTH.LOGIN, { replace: true });
     } catch (err: unknown) {
-      if (
-        typeof err === "object" &&
-        err !== null &&
-        "response" in err
-      ) {
-        const e = err as { response?: { data?: { message?: string } } };
-        toast.error(e.response?.data?.message ?? ALERT_MESSAGES.AUTH.PASSWORD_RESET_FAILED);
-      } else {
-        toast.error(ALERT_MESSAGES.AUTH.PASSWORD_RESET_FAILED);
-      }
+      const mapped = mapApiError(err);
+      toast.error(mapped.message || ALERT_MESSAGES.AUTH.PASSWORD_RESET_FAILED);
     } finally {
       setLoading(false);
     }

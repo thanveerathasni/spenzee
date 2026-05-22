@@ -7,10 +7,12 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Save, LogOut, X, Eye, EyeOff, Mail, Lock, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
-import { api } from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { clearAuth } from "../../store/auth/auth.slice";
+import { providerProfileApi } from "../../api/provider/providerProfile.api";
+import { mapApiError } from "../../util/errorHandler";
+import { authApi } from "../../api/auth.api";
 
 /* ─────────────── types ─────────────── */
 interface FormData {
@@ -147,30 +149,39 @@ function PasswordModal({ onClose }: { onClose: () => void }) {
   const set = (key: keyof PasswordData) => (val: string) =>
     setData((prev) => ({ ...prev, [key]: val }));
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (data.newPassword !== data.confirmPassword) {
-      toast.error("New passwords do not match");
-      return;
-    }
-    if (data.newPassword.length < 8) {
-      toast.error("Password must be at least 8 characters");
-      return;
-    }
-    setLoading(true);
-    try {
-      await api.patch("/provider/change-password", {
-        oldPassword: data.oldPassword,
-        newPassword: data.newPassword,
-      });
-      toast.success("Password updated successfully!");
-      onClose();
-    } catch {
-      toast.error("Failed to update password");
-    } finally {
-      setLoading(false);
-    }
-  };
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (data.newPassword !== data.confirmPassword) {
+    toast.error("New passwords do not match");
+    return;
+  }
+
+  if (data.newPassword.length < 8) {
+    toast.error("Password must be at least 8 characters");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    await providerProfileApi.changePassword({
+      oldPassword: data.oldPassword,
+      newPassword: data.newPassword,
+    });
+
+    toast.success("Password updated successfully!");
+
+    onClose();
+
+  } catch (error: unknown) {
+    toast.error(mapApiError(error).message || "Failed to update password");
+
+  } finally {
+
+    setLoading(false);
+  }
+};
 
   const strength = (() => {
     const p = data.newPassword;
@@ -296,12 +307,12 @@ function EmailModal({
     }
     setLoading(true);
     try {
-      await api.post("/provider/change-email/send-otp", { newEmail: data.newEmail });
+      await providerProfileApi.requestEmailChange(data.newEmail);
       toast.success("OTP sent to your new email!");
       setStep("otp");
       setResendCooldown(60);
-    } catch {
-      toast.error("Failed to send OTP");
+    } catch (error: unknown) {
+      toast.error(mapApiError(error).message || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -314,15 +325,12 @@ function EmailModal({
     }
     setLoading(true);
     try {
-      await api.post("/provider/change-email/verify-otp", {
-        newEmail: data.newEmail,
-        otp: data.otp,
-      });
+      await providerProfileApi.verifyEmailChange(data.newEmail, data.otp);
       toast.success("Email changed successfully!");
       onEmailChanged(data.newEmail);
       setStep("done");
-    } catch {
-      toast.error("Invalid or expired OTP");
+    } catch (error: unknown) {
+      toast.error(mapApiError(error).message || "Invalid or expired OTP");
     } finally {
       setLoading(false);
     }
@@ -332,11 +340,11 @@ function EmailModal({
     if (resendCooldown > 0) return;
     setLoading(true);
     try {
-      await api.post("/provider/change-email/send-otp", { newEmail: data.newEmail });
+      await providerProfileApi.requestEmailChange(data.newEmail);
       toast.success("OTP resent!");
       setResendCooldown(60);
-    } catch {
-      toast.error("Failed to resend OTP");
+    } catch (error: unknown) {
+      toast.error(mapApiError(error).message || "Failed to resend OTP");
     } finally {
       setLoading(false);
     }
@@ -595,8 +603,7 @@ const dispatch = useDispatch();
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await api.get("/provider/profile");
-        const provider = res.data.data;
+        const provider = await providerProfileApi.getProfile();
 
         setFormData({
           brandName: provider.brandName || "",
@@ -621,14 +628,12 @@ const dispatch = useDispatch();
     setLoading(true);
 
     try {
-      const res = await api.patch("/provider/profile", {
+      const updated = await providerProfileApi.updateProfile({
         brandName: formData.brandName,
         websiteUrl: formData.websiteUrl,
         primaryCategory: formData.primaryCategory,
         description: formData.description,
       });
-
-      const updated = res.data.data;
 
       setFormData({
         brandName: updated.brandName || "",
@@ -647,36 +652,19 @@ const dispatch = useDispatch();
   };
 
 
-//   const handleLogout = async () => {
-//   try {
-//     await api.post("/auth/logout"); // backend clear cookie
-//   } catch {
-//     // even if API fails, continue logout
-//   }
-
-//   dispatch(clearAuth()); 
-//   localStorage.removeItem("auth"); 
-//   localStorage.removeItem("provider_token"); 
-
-//   toast.success("Logged out");
-
-//   navigate("/provider/login"); // 
-// };
-
 
 
 const handleLogout = async () => {
   try {
-    await api.post("/auth/logout");
-  } catch (err) {
-    console.log("Logout API failed, continuing anyway");
+    await authApi.logout();
+  } catch {
+    toast.success("Can't Logged out");
   }
 
   dispatch(clearAuth());
   localStorage.removeItem("auth");
 
   toast.success("Logged out");
-
   navigate("/provider/login", { replace: true });
 };
 
@@ -842,7 +830,6 @@ const handleLogout = async () => {
     </>
   );
 }
-
 
 
 

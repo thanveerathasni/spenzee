@@ -29,7 +29,7 @@ const OtpModal = ({ email, type, onClose, onSuccess }: Props) => {
       setLoading(true);
 
       if (type === "password") {
-        await verifyPasswordOtpApi(email || "", otpValue);
+        await verifyPasswordOtpApi(otpValue);
       } else {
         await verifyEmailOtpApi(email || "", otpValue);
       }

@@ -1,64 +1,84 @@
-// import { Schema, model } from "mongoose";
+import mongoose, {
+  Document,
+  Schema,
+} from "mongoose";
 
-// const otpSchema = new Schema(
-//   {
-//     email: {
-//       type: String,
-//       required: true,
-//       index: true,
-//     },
-//     otpHash: {
-//       type: String,
-//       required: true,
-//     },
-//     expiresAt: {
-//       type: Date,
-//       required: true,
-//     },
-//     attempts: {
-//       type: Number,
-//       default: 1,
-//     },
-//     firstRequestedAt: {
-//       type: Date,
-//       default: Date.now,
-//     },
-//   },
-//   {
-//     timestamps: true,
-//   },
-// );
-
-// export const OtpModel = model("Otp", otpSchema);
-
-
-
-
-
-import mongoose, { Document, Schema } from "mongoose";
-
-export interface IOtp extends Document {
+export interface IOtp
+  extends Document {
   email: string;
+
   otpHash: string;
+
   expiresAt: Date;
+
   attempts: number;
-  createdAt: Date;
-  updatedAt: Date;
+
   firstRequestedAt: Date;
+
+  createdAt: Date;
+
+  updatedAt: Date;
 }
 
-const otpSchema = new Schema<IOtp>(
-  {
-    email: { type: String, required: true },
-    otpHash: { type: String, required: true },
-    expiresAt: { type: Date, required: true },
-    attempts: { type: Number, default: 0 },
-        firstRequestedAt: {
-      type: Date,
-      default: Date.now,
+const otpSchema =
+  new Schema<IOtp>(
+    {
+      email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true,
+      },
+
+      otpHash: {
+        type: String,
+        required: true,
+      },
+
+      expiresAt: {
+        type: Date,
+        required: true,
+      },
+
+      attempts: {
+        type: Number,
+        default: 0,
+      },
+
+      firstRequestedAt: {
+        type: Date,
+        default: Date.now,
+      },
     },
+    {
+      timestamps: true,
+    },
+  );
+
+/* ====================================================== */
+/* INDEXES */
+/* ====================================================== */
+
+otpSchema.index(
+  {
+    expiresAt: 1,
   },
-  { timestamps: true }
+  {
+    expireAfterSeconds: 0,
+  },
 );
 
-export const OtpModel = mongoose.model<IOtp>("Otp", otpSchema);
+otpSchema.index({
+  email: 1,
+});
+
+export const OtpModel =
+  mongoose.model<IOtp>(
+    "Otp",
+    otpSchema,
+  );
+
+
+
+  

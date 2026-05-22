@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import * as userApi from "@/api/user/userProfile.api";
+import { userProfileApi } from "../../api/user/userProfile.api";
 
 interface User {
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
   phone?: string;
   profileImage?: string;
   address?: {
@@ -25,7 +25,8 @@ const initialState: AuthState = {
 };
 
 export const fetchProfile = createAsyncThunk("auth/profile", async () => {
-  return await userApi.getProfile();
+  const data = await userProfileApi.getProfile();
+  return { data };
 });
 
 const authSlice = createSlice({

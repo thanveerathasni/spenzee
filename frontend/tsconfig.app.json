@@ -12,6 +12,7 @@
 
     "useDefineForClassFields": true,
     "allowJs": false,
+    "noEmit": true,
     "isolatedModules": true,
 
     "strict": true,

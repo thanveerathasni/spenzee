@@ -3,7 +3,11 @@ export interface UserProfileDTO {
   name?: string;
   email: string;
   phone?: string;
-  profileImage?: string;
+  profilePicture?: string;
+  gender?: string;
+  dob?: string;
+  occupation?: string;
+  bio?: string;
 
   address?: {
     street?: string;
@@ -14,4 +18,5 @@ export interface UserProfileDTO {
 
   role: string;
   isVerified: boolean;
+  verificationStatus: "verified" | "unverified";
 }

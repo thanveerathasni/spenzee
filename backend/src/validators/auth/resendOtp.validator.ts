@@ -1,9 +1,18 @@
 import { z } from "zod";
 
-export const resendOtpSchema = z.object({
-  body: z.object({
-    email: z.string().email("Invalid email").trim().toLowerCase(),
-  }),
-});
+import {
+  emailSchema,
+} from "../common.validator";
 
-export type ResendOtpDTO = z.infer<typeof resendOtpSchema>["body"];
+export const resendOtpSchema =
+  z.object({
+    body: z.object({
+      email:
+        emailSchema,
+    }),
+  });
+
+export type ResendOtpDTO =
+  z.infer<
+    typeof resendOtpSchema
+  >["body"];

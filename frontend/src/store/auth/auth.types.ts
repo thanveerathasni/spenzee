@@ -1,4 +1,3 @@
-// frontend/src/store/auth.types.ts
 
 export type UserRole = "user" | "admin" | "provider";
 export type AuthProvider = "local" | "google";

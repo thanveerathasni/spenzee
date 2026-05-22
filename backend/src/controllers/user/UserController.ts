@@ -1,18 +1,31 @@
 import { Request, Response } from "express";
-import {Express} from "express";
+
 import { inject, injectable } from "inversify";
-import { Multer } from "multer";
+
 import { TYPES } from "../../di/types";
-import { OtpService } from "../../services/otp.service";
+
 import { UserService } from "../../services/user/UserService";
 
-import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
-import { LOG_MESSAGES } from "../../shared/constants/logMessages";
-import { SUCCESS_MESSAGES } from "../../shared/constants/successMessages";
+import { OtpService } from "../../services/otp.service";
 
-import { UnauthorizedError } from "../../shared/errors/errors";
+import {
+  ERROR_MESSAGES,
+} from "../../shared/constants/errorMessages";
+
+import {
+  LOG_MESSAGES,
+} from "../../shared/constants/logMessages";
+
+import {
+  SUCCESS_MESSAGES,
+} from "../../shared/constants/successMessages";
+
+import {
+  UnauthorizedError,
+} from "../../shared/errors/errors";
+
 import { logger } from "../../shared/logger/logger";
-import { uploadToCloudinary } from "../../shared/utils/cloudinaryUpload";
+
 import { sendResponse } from "../../shared/utils/sendResponse";
 
 @injectable()
@@ -20,132 +33,202 @@ export class UserController {
   constructor(
     @inject(TYPES.UserService)
     private readonly _userService: UserService,
-@inject(TYPES.OtpService)
-private readonly _otpService: OtpService
+
+    @inject(TYPES.OtpService)
+    private readonly _otpService: OtpService,
   ) {}
 
-  async getProfile(req: Request, res: Response) {
-    const userId = (req as Request & { user?: { id: string } }).user?.id;
+  /* ====================================================== */
+  /* PROFILE */
+  /* ====================================================== */
 
-    if (!userId) {
-      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
-    }
+  async getProfile(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const userId =
+      this.getUserId(req);
 
-    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { userId });
+    logger.info(
+      LOG_MESSAGES.USER
+        .PROFILE_FETCHED,
+      { userId },
+    );
 
-    const data = await this._userService.getProfile(userId);
+    const data =
+      await this._userService.getProfile(
+        userId,
+      );
 
     return sendResponse({
       res,
-      message: SUCCESS_MESSAGES.AUTH.LOGIN_SUCCESS,
+
+      message:
+        SUCCESS_MESSAGES.USER
+          .PROFILE_FETCHED,
+
       data,
     });
   }
 
-  async updateProfile(req: Request, res: Response) {
-    const userId = (req as Request & { user?: { id: string } }).user?.id;
+  async updateProfile(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const userId =
+      this.getUserId(req);
 
-    if (!userId) {
-      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
-    }
-
-    const data = await this._userService.updateProfile(userId, req.body);
+    const data =
+      await this._userService.updateProfile(
+        userId,
+        req.body,
+      );
 
     return sendResponse({
       res,
-      message: SUCCESS_MESSAGES.USER.PROFILE_UPDATED,
+
+      message:
+        SUCCESS_MESSAGES.USER
+          .PROFILE_UPDATED,
+
       data,
     });
   }
 
-  async uploadProfileImage(req: Request, res: Response) {
-    const userId = (req as Request & { user?: { id: string } }).user?.id;
+  /* ====================================================== */
+  /* PROFILE IMAGE */
+  /* ====================================================== */
 
-    if (!userId) {
-      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
-    }
+  async uploadProfileImage(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const userId =
+      this.getUserId(req);
 
     if (!req.file) {
-      throw new UnauthorizedError("Image file required");
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.USER
+          .IMAGE_FILE_REQUIRED,
+      );
     }
 
-    const data = await this._userService.updateProfileImage(
-      userId,
-      req.file as Express.Multer.File
+    const data =
+      await this._userService.updateProfileImage(
+        userId,
+        req.file,
+      );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.USER
+          .PROFILE_UPDATED,
+
+      data,
+    });
+  }
+
+  async removeProfileImage(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const userId =
+      this.getUserId(req);
+
+    const data =
+      await this._userService.removeProfileImage(
+        userId,
+      );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.USER
+          .PROFILE_IMAGE_REMOVED,
+
+      data,
+    });
+  }
+
+  /* ====================================================== */
+  /* EMAIL CHANGE */
+  /* ====================================================== */
+
+  async requestEmailChange(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const { newEmail } =
+      req.body;
+
+    await this._otpService.sendOtp(
+      newEmail,
     );
 
     return sendResponse({
       res,
-      message: SUCCESS_MESSAGES.USER.PROFILE_UPDATED,
-      data,
+
+      message:
+        SUCCESS_MESSAGES.USER
+          .EMAIL_OTP_SENT,
     });
   }
 
+  async confirmEmailChange(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const userId =
+      this.getUserId(req);
 
+    const {
+      newEmail,
+      otp,
+    } = req.body;
 
-  // ✅ EMAIL CHANGE REQUEST
-  async requestEmailChange(req: Request, res: Response) {
-    try {
-      const { newEmail } = req.body as { newEmail: string };
+    await this._otpService.verifyOtp(
+      newEmail,
+      otp,
+    );
 
-      await this._otpService.sendOtp(newEmail);
+    await this._userService.updateEmail(
+      userId,
+      newEmail,
+    );
 
-      return sendResponse({
-        res,
-        message: "OTP sent to new email",
-      });
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Something went wrong";
+    return sendResponse({
+      res,
 
-      return sendResponse({
-        res,
-        message,
-      });
-    }
+      message:
+        SUCCESS_MESSAGES.USER
+          .EMAIL_UPDATED,
+
+      data: {
+        email: newEmail,
+      },
+    });
   }
 
-  // ✅ EMAIL CHANGE CONFIRM
-  async confirmEmailChange(req: Request, res: Response) {
-    try {
-      const userId = (req as Request & { user?: { id: string } }).user?.id;
+  /* ====================================================== */
+  /* HELPERS */
+  /* ====================================================== */
 
-      if (!userId) {
-        throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
-      }
+  private getUserId(
+    req: Request,
+  ): string {
+    const userId =
+      req.user?.id;
 
-      const { newEmail, otp } = req.body as {
-        newEmail: string;
-        otp: string;
-      };
-
-      await this._otpService.verifyOtp(newEmail, otp);
-
-      await this._userService.updateEmail(userId, newEmail);
-
-      return sendResponse({
-        res,
-        message: "Email updated successfully",
-        data: { email: newEmail },
-      });
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Something went wrong";
-
-      return sendResponse({
-        res,
-        message,
-      });
+    if (!userId) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH
+          .ACCESS_DENIED,
+      );
     }
+
+    return userId;
   }
 }
-
-
-
-
-
-
-
-
-
-

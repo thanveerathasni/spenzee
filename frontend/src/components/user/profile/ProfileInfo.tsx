@@ -1,30 +1,29 @@
+
+
+
+
+
+
 import { User } from "../../../types/user";
 import ProfileCard from "./ProfileCard";
 
-interface ProfileInfoProps {
-  user: User;
-}
+interface ProfileInfoProps { user: User; }
 
 export default function ProfileInfo({ user }: ProfileInfoProps) {
   return (
     <ProfileCard>
-      <h3 className="text-lg font-semibold mb-4">Personal Info</h3>
-
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <p className="text-gray-500">Name</p>
-          <p className="font-medium">{user?.name ?? ""}</p>
-        </div>
-
-        <div>
-          <p className="text-gray-500">Phone</p>
-          <p className="font-medium">{user.phone}</p>
-        </div>
-
-        <div>
-          <p className="text-gray-500">Email</p>
-          <p className="font-medium">{user.email}</p>
-        </div>
+      <h4 className="text-xs text-white/30 uppercase tracking-widest mb-4">Personal Info</h4>
+      <div className="grid grid-cols-2 gap-5 text-sm">
+        {[
+          { label: "Name",  value: user?.name },
+          { label: "Phone", value: user.phone },
+          { label: "Email", value: user.email },
+        ].map(({ label, value }) => (
+          <div key={label}>
+            <p className="text-white/30 text-xs uppercase tracking-widest mb-1">{label}</p>
+            <p className="text-white font-medium">{value || "—"}</p>
+          </div>
+        ))}
       </div>
     </ProfileCard>
   );

@@ -1,10 +1,17 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { adminAuthStore } from "../store/admin/adminAuth";
+import { useSelector } from "react-redux";
+import type { RootState } from "../store/store";
 
 const AdminProtectedRoute = () => {
-  const token = adminAuthStore.getToken();
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth
+  );
 
-  return token ? <Outlet /> : <Navigate to="/admin/login" replace />;
+  if (!isAuthenticated || !user || user.role !== "admin") {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default AdminProtectedRoute;

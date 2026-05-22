@@ -1,12 +1,30 @@
 import { inject, injectable } from "inversify";
+
 import { TYPES } from "../../di/types";
+
 import { IProvider } from "../../models/Provider.model";
-import { HTTP_STATUS } from "../../shared/constants/httpStatus";
+
+import { ERROR_MESSAGES } from "../../shared/constants/errorMessages";
+import { LOG_MESSAGES } from "../../shared/constants/logMessages";
+
 import { ProviderDTO } from "../../shared/dto/provider/provider.dto";
-import { AppError } from "../../shared/errors/AppError";
+
+import {
+  BadRequestError,
+  UnauthorizedError,
+} from "../../shared/errors/errors";
+
+import { logger } from "../../shared/logger/logger";
+
 import { ProviderMapper } from "../../shared/mapper/provider/ProviderMapper";
+
 import { IProviderRepository } from "../../types/repositories/provider/IProviderRepository";
+
+import { IMailService } from "../../types/services/IMailService";
+
 import { OtpService } from "../otp.service";
+
+import { DocumentUploadService } from "../upload/DocumentUploadService";
 
 @injectable()
 export class ProviderService {
@@ -15,59 +33,263 @@ export class ProviderService {
     private readonly _repo: IProviderRepository,
 
     @inject(TYPES.OtpService)
-    private readonly _otpService: OtpService
+    private readonly _otpService: OtpService,
+
+    @inject(TYPES.MailService)
+    private readonly _mailService: IMailService,
+
+    @inject(TYPES.DocumentUploadService)
+    private readonly _documentUploadService: DocumentUploadService,
   ) {}
 
-  /* ================= PROFILE ================= */
+  /* ====================================================== */
+  /* PROFILE */
+  /* ====================================================== */
 
-  async updateProfile(
+  async getProfile(
     providerId: string,
-    data: Partial<IProvider>
-  ): Promise<ProviderDTO | null> {
-    const updated = await this._repo.updateById(providerId, data);
-    return updated ? ProviderMapper.toDTO(updated) : null;
-  }
-async acceptTerms(providerId: string) {
-  const updated = await this._repo.updateById(providerId, {
-    hasAcceptedTerms: true,
-  });
+  ): Promise<ProviderDTO> {
+    const provider =
+      await this._repo.findById(
+        providerId,
+      );
 
-  return updated ? ProviderMapper.toDTO(updated) : null;
-}
-  /* ================= EMAIL CHANGE ================= */
-
-  async requestEmailChange(
-    providerId: string,
-    newEmail: string
-  ): Promise<void> {
-    const existing = await this._repo.findByEmail(newEmail);
-
-    if (existing) {
-      throw new AppError(
-        "Email already in use",
-        HTTP_STATUS.BAD_REQUEST
+    if (!provider) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
       );
     }
 
-    await this._otpService.sendOtp(newEmail);
-  }
-async getProfile(providerId: string): Promise<ProviderDTO | null> {
-  const provider = await this._repo.findById(providerId);
-  return provider ? ProviderMapper.toDTO(provider) : null;
-}
+    logger.info(
+      LOG_MESSAGES.PROVIDER
+        .DASHBOARD_ACCESSED,
+      {
+        providerId,
+      },
+    );
 
+    return ProviderMapper.toDTO(
+      provider,
+    );
+  }
+
+  async updateProfile(
+    providerId: string,
+    data: Partial<IProvider>,
+  ): Promise<ProviderDTO> {
+    const updated =
+      await this._repo.updateById(
+        providerId,
+        data,
+      );
+
+    if (!updated) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    logger.info(
+      LOG_MESSAGES.USER
+        .PROFILE_UPDATED,
+      {
+        providerId,
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
+    );
+  }
+
+  async acceptTerms(
+    providerId: string,
+  ): Promise<ProviderDTO> {
+    const updated =
+      await this._repo.updateById(
+        providerId,
+        {
+          hasAcceptedTerms: true,
+        },
+      );
+
+    if (!updated) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    logger.info(
+      LOG_MESSAGES.PROVIDER
+        .DASHBOARD_ACCESSED,
+      {
+        providerId,
+        acceptedTerms: true,
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
+    );
+  }
+
+  /* ====================================================== */
+  /* PROFILE IMAGE */
+  /* ====================================================== */
+
+  async updateProfileImage(
+    providerId: string,
+    file: Express.Multer.File,
+  ): Promise<ProviderDTO> {
+    if (!file) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.USER
+          .IMAGE_FILE_REQUIRED,
+      );
+    }
+
+    const imageUrl =
+      await this._documentUploadService.uploadDocument(
+        file,
+        "spenzee/provider-profile-images",
+      );
+
+    const updated =
+      await this._repo.updateById(
+        providerId,
+        {
+          profileImage: imageUrl,
+        },
+      );
+
+    if (!updated) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    logger.info(
+      LOG_MESSAGES.USER
+        .PROFILE_IMAGE_UPLOADED,
+      {
+        providerId,
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
+    );
+  }
+
+  async removeProfileImage(
+    providerId: string,
+  ): Promise<ProviderDTO> {
+    const updated =
+      await this._repo.updateById(
+        providerId,
+        {
+          profileImage: "",
+        },
+      );
+
+    if (!updated) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    logger.info(
+      LOG_MESSAGES.USER
+        .PROFILE_IMAGE_REMOVED,
+      {
+        providerId,
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
+    );
+  }
+
+  /* ====================================================== */
+  /* EMAIL CHANGE */
+  /* ====================================================== */
+
+  async requestEmailChange(
+    providerId: string,
+    newEmail: string,
+  ): Promise<void> {
+    const existingProvider =
+      await this._repo.findByEmail(
+        newEmail,
+      );
+
+    if (existingProvider) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.AUTH
+          .EMAIL_ALREADY_IN_USE,
+      );
+    }
+
+    await this._otpService.sendOtp(
+      newEmail,
+      this._mailService,
+    );
+
+    logger.info(
+      LOG_MESSAGES.PROVIDER
+        .EMAIL_CHANGE,
+      {
+        providerId,
+        newEmail,
+      },
+    );
+  }
 
   async verifyEmailChange(
     providerId: string,
     newEmail: string,
-    otp: string
-  ): Promise<ProviderDTO | null> {
-    await this._otpService.verifyOtp(newEmail, otp);
+    otp: string,
+  ): Promise<ProviderDTO> {
+    await this._otpService.verifyOtp(
+      newEmail,
+      otp,
+    );
 
-    const updated = await this._repo.updateById(providerId, {
-      email: newEmail,
-    });
+    const updated =
+      await this._repo.updateById(
+        providerId,
+        {
+          email: newEmail,
+        },
+      );
 
-    return updated ? ProviderMapper.toDTO(updated) : null;
+    if (!updated) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    logger.info(
+      LOG_MESSAGES.PROVIDER
+        .EMAIL_UPDATED,
+      {
+        providerId,
+        newEmail,
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
+    );
   }
 }
+
+
+

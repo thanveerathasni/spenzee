@@ -7,6 +7,7 @@ export interface CreateProviderRequestDTO {
   primaryCategory: string;
   contactEmail: string;
   description: string;
+  status?: ProviderRequestStatus;
 }
 
 export interface IProviderRequestRepository {
@@ -22,7 +23,7 @@ export interface IProviderRequestRepository {
     limit: number,
     search: string
   ): Promise<{
-    requests: any[];
+    requests: IProviderRequest[];
     total: number;
     page: number;
     totalPages: number;

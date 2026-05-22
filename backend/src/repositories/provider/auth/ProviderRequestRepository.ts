@@ -1,19 +1,22 @@
 import { injectable } from "inversify";
+
 import { Types } from "mongoose";
 
 import {
-  ProviderRequestModel,
   IProviderRequest,
+  ProviderRequestModel,
 } from "../../../models/ProviderRequest.model";
 
 import { BaseRepository } from "../../../shared/base/BaseRepository";
-import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
 
 import {
-  IProviderRequestRepository,
-  CreateProviderRequestDTO,
-} from "../../../types/repositories/provider/IProviderRequestRepository";
+  ProviderRequestStatus,
+} from "../../../shared/constants/providerRequestStatus";
 
+import {
+  CreateProviderRequestDTO,
+  IProviderRequestRepository,
+} from "../../../types/repositories/provider/IProviderRequestRepository";
 
 @injectable()
 export class ProviderRequestRepository
@@ -21,49 +24,136 @@ export class ProviderRequestRepository
   implements IProviderRequestRepository
 {
   constructor() {
-    super(ProviderRequestModel);
+    super(
+      ProviderRequestModel,
+    );
   }
 
-  async create(data: CreateProviderRequestDTO): Promise<IProviderRequest> {
-    return super.create(data);
+  /* ====================================================== */
+  /* CREATE */
+  /* ====================================================== */
+
+  async create(
+    data: CreateProviderRequestDTO,
+  ): Promise<IProviderRequest> {
+    return super.create(
+      data,
+    );
   }
 
-  async findById(id: string): Promise<IProviderRequest | null> {
-    if (!Types.ObjectId.isValid(id)) return null;
-    return super.findById(id);
-  }
-  async findAllPaginated(page: number, limit: number, search: string) {
-  const query = search
-    ? {
-        $or: [
-          { brandName: { $regex: search, $options: "i" } },
-          { contactEmail: { $regex: search, $options: "i" } },
-        ],
-      }
-    : {};
+  /* ====================================================== */
+  /* FIND */
+  /* ====================================================== */
 
-  const requests = await ProviderRequestModel.find(query)
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit);
+  async findById(
+    id: string,
+  ): Promise<IProviderRequest | null> {
+    if (
+      !Types.ObjectId.isValid(
+        id,
+      )
+    ) {
+      return null;
+    }
 
-  const total = await ProviderRequestModel.countDocuments(query);
-
-  return {
-    requests,
-    total,
-    page,
-    totalPages: Math.ceil(total / limit),
-  };
-}
-
-  async findAll(): Promise<IProviderRequest[]> {
-    return this.model.find().sort({ createdAt: -1 }).exec();
+    return super.findById(
+      id,
+    );
   }
 
-  async findByStatus(status: ProviderRequestStatus): Promise<IProviderRequest[]> {
-    return this.model.find({ status }).sort({ createdAt: -1 }).exec();
+  async findAll(): Promise<
+    IProviderRequest[]
+  > {
+    return this.model
+      .find()
+      .sort({
+        createdAt: -1,
+      })
+      .exec();
   }
+
+  async findByStatus(
+    status: ProviderRequestStatus,
+  ): Promise<
+    IProviderRequest[]
+  > {
+    return this.model
+      .find({
+        status,
+      })
+      .sort({
+        createdAt: -1,
+      })
+      .exec();
+  }
+
+  /* ====================================================== */
+  /* PAGINATION */
+  /* ====================================================== */
+
+  async findAllPaginated(
+    page: number,
+    limit: number,
+    search: string,
+  ): Promise<{
+    requests: IProviderRequest[];
+
+    total: number;
+
+    page: number;
+
+    totalPages: number;
+  }> {
+    const query = search
+      ? {
+          $or: [
+            {
+              brandName: {
+                $regex: search,
+                $options: "i",
+              },
+            },
+            {
+              contactEmail:
+                {
+                  $regex: search,
+                  $options: "i",
+                },
+            },
+          ],
+        }
+      : {};
+
+    const result =
+      await this.paginate(
+        query,
+        {
+          page,
+          limit,
+          sort: {
+            createdAt: -1,
+          },
+        },
+      );
+
+    return {
+      requests:
+        result.data,
+
+      total:
+        result.total,
+
+      page:
+        result.page,
+
+      totalPages:
+        result.totalPages,
+    };
+  }
+
+  /* ====================================================== */
+  /* STATUS */
+  /* ====================================================== */
 
   async updateStatus(
     id: string,
@@ -71,19 +161,32 @@ export class ProviderRequestRepository
     reviewedBy: string,
     rejectionReason?: string,
   ): Promise<IProviderRequest | null> {
-    if (!Types.ObjectId.isValid(id)) return null;
+    if (
+      !Types.ObjectId.isValid(
+        id,
+      )
+    ) {
+      return null;
+    }
 
-    return this.update(
-      { _id: id },
+    return this.updateOne(
+      {
+        _id: id,
+      },
       {
         status,
+
         reviewedBy,
-        reviewedAt: new Date(),
+
+        reviewedAt:
+          new Date(),
+
         rejectionReason:
-          status === ProviderRequestStatus.REJECTED
+          status ===
+          ProviderRequestStatus.REJECTED
             ? rejectionReason
             : undefined,
-      }
+      },
     );
   }
 }

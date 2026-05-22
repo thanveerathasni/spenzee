@@ -51,11 +51,22 @@ export class AuthController {
     const refreshToken = req.cookies?.[TOKEN_CONFIG.COOKIE_NAME];
 
     if (!refreshToken) {
-      logger.warn(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_MISSING);
-      throw new UnauthorizedError(ERROR_MESSAGES.AUTH.REFRESH_TOKEN_MISSING);
-    }
+  logger.warn(
+    ERROR_MESSAGES.AUTH
+      .REFRESH_TOKEN_MISSING,
+  );
 
-    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT);
+  res.status(401);
+
+  return sendResponse({
+    res,
+
+    message:
+      ERROR_MESSAGES.AUTH
+        .REFRESH_TOKEN_MISSING,
+  });
+}
+    logger.info(LOG_MESSAGES.AUTH.TOKEN_REFRESH);
 
     const { accessToken, refreshToken: newToken, user } =
       await this._authService.refreshAccessToken(refreshToken);
@@ -72,7 +83,7 @@ export class AuthController {
   async logout(req: Request, res: Response): Promise<Response> {
     const refreshToken = req.cookies?.[TOKEN_CONFIG.COOKIE_NAME];
 
-    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT);
+    logger.info(LOG_MESSAGES.AUTH.LOGOUT);
 
     if (refreshToken) {
       await this._authService.logout(refreshToken);
@@ -89,7 +100,7 @@ export class AuthController {
   async signup(req: Request, res: Response): Promise<Response> {
     const dto = req.body as SignupDTO;
 
-    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email: dto.email });
+    logger.info(LOG_MESSAGES.EMAIL.OTP_SENT, { email: dto.email });
 
     await this._authService.signup(dto.email, dto.password);
 
@@ -102,7 +113,7 @@ export class AuthController {
   async verifyOtp(req: Request, res: Response): Promise<Response> {
     const dto = req.body as VerifyOtpDTO;
 
-    logger.info(LOG_MESSAGES.AUTH.LOGIN_ATTEMPT, { email: dto.email });
+    logger.info(LOG_MESSAGES.EMAIL.OTP_SENT, { email: dto.email });
 
     await this._authService.verifyOtp(dto.email, dto.otp);
 
@@ -137,25 +148,42 @@ export class AuthController {
       message: SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_EMAIL_SENT,
     });
   }
-async resetPassword(req: Request, res: Response): Promise<Response> {
-  const { email, token, newPassword } = req.body;
+  
+async resetPassword(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const {
+    email,
+    token,
+    newPassword,
+  } = req.body;
 
-  await this._authService.resetPassword(email, token, newPassword);
+  await this._authService.resetPassword(
+    email,
+    token,
+    newPassword,
+  );
 
-  return sendResponse({
+  sendResponse({
     res,
-    message: SUCCESS_MESSAGES.AUTH.PASSWORD_RESET_SUCCESS,
+
+    message:
+      SUCCESS_MESSAGES.AUTH
+        .PASSWORD_RESET_SUCCESS,
   });
 }
 
 async sendEmailOtp(req: Request, res: Response) {
   const { newEmail } = req.body;
 
+  logger.info(LOG_MESSAGES.AUTH.EMAIL_CHANGE, { newEmail });
+
   await this._authService.sendEmailChangeOtp(newEmail);
 
   return sendResponse({
     res,
-    message: "OTP sent to email",
+    message: SUCCESS_MESSAGES.USER.EMAIL_OTP_SENT,
   });
 }
 
@@ -166,48 +194,64 @@ async verifyEmailOtp(req: Request, res: Response) {
 
   return sendResponse({
     res,
-    message: "OTP verified",
+    message: SUCCESS_MESSAGES.AUTH.ACCOUNT_VERIFIED,
   });
 }
 
 async updateEmail(req: Request, res: Response) {
-  const userId = (req as any).user.id;
+  const userId = req.user?.id;
   const { newEmail } = req.body;
+
+  if (!userId) {
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
+  }
 
   const user = await this._authService.updateEmail(userId, newEmail);
 
   return sendResponse({
     res,
-    message: "Email updated",
+    message: SUCCESS_MESSAGES.USER.EMAIL_UPDATED,
     data: user,
   });
 }
 
 
 async sendPasswordOtp(req: Request, res: Response) {
-  const userId = (req as any).user.id;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
+  }
 
   await this._authService.sendPasswordOtp(userId);
 
-  return sendResponse({ res, message: "OTP sent" });
+  return sendResponse({ res, message: SUCCESS_MESSAGES.AUTH.OTP_SENT });
 }
 
 async verifyPasswordOtp(req: Request, res: Response) {
-  const userId = (req as any).user.id;
+  const userId = req.user?.id;
   const { otp } = req.body;
+
+  if (!userId) {
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
+  }
 
   await this._authService.verifyPasswordOtp(userId, otp);
 
-  return sendResponse({ res, message: "Verified" });
+  return sendResponse({ res, message: SUCCESS_MESSAGES.AUTH.ACCOUNT_VERIFIED });
 }
 
 async updatePassword(req: Request, res: Response) {
-  const userId = (req as any).user.id;
-  const { newPassword } = req.body;
+  const userId = req.user?.id;
+  const { currentPassword, newPassword } = req.body;
 
-  await this._authService.updatePassword(userId, newPassword);
+  if (!userId) {
+    throw new UnauthorizedError(ERROR_MESSAGES.AUTH.ACCESS_DENIED);
+  }
 
-  return sendResponse({ res, message: "Password updated" });
+  await this._authService.updatePassword(userId, currentPassword, newPassword);
+
+  return sendResponse({ res, message: SUCCESS_MESSAGES.USER.PASSWORD_UPDATED });
 }
 
 

@@ -11,6 +11,8 @@ export const ERROR_MESSAGES = {
 
     OTP_INVALID: "OTP invalid",
     OTP_EXPIRED: "OTP expired",
+    REFRESH_TOKEN_REQUIRED:
+  "Refresh token required",
     REFRESH_TOKEN_INVALID: "Invalid refresh token",
     REFRESH_TOKEN_MISSING: "Refresh token missing",
     RESET_TOKEN_INVALID: "Invalid reset token",
@@ -21,6 +23,29 @@ export const ERROR_MESSAGES = {
     INVALID_REFRESH_TOKEN_PAYLOAD: "Invalid refresh token payload",
     TOO_MANY_REQUESTS: "Too many requests",
     ACCOUNT_BLOCKED: "Your account is blocked",
+    EMAIL_ALREADY_IN_USE: "Email already in use",
+    CURRENT_PASSWORD_INVALID: "Current password is invalid",
+    PASSWORD_REQUIRED: "Password is required",
+    PROVIDER_NOT_FOUND: "Provider not found",
+    TERMS_NOT_ACCEPTED: "Terms not accepted",
+    INVALID_OLD_PASSWORD: "Invalid old password",
+  },
+  USER: {
+    ADDRESS_NOT_FOUND: "Address not found",
+    IMAGE_FILE_REQUIRED: "Image file required",
+    INVALID_IMAGE_TYPE: "Invalid image type",
+  },
+  VERIFICATION: {
+    FILE_REQUIRED: "Document file required",
+    FRONT_FILE_REQUIRED: "Front document is required",
+    UPLOAD_FAILED: "Document upload failed",
+    INVALID_DOCUMENT_TYPE: "Invalid document type",
+    INVALID_LICENSE_TYPE: "Invalid license type",
+    PENDING_EXISTS: "A pending verification request already exists",
+    APPROVED_EXISTS: "Verification is already approved",
+    NOT_FOUND: "Verification request not found",
+    REJECTION_REASON_REQUIRED: "Rejection reason is required",
+    IDENTITY_APPROVAL_REQUIRED: "Identity verification approval is required before bank statement upload",
   },
   OTP: {
     INVALID_OTP: "Invalid OTP",

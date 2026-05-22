@@ -1,11 +1,21 @@
 import { z } from "zod";
 
-export const loginSchema = z.object({
-  body: z.object({
-    email: z.string().email("Invalid email").trim().toLowerCase(),
+import {
+  emailSchema,
+  passwordSchema,
+} from "../common.validator";
 
-    password: z.string().min(1, "Password is required"),
-  }),
-});
+export const loginSchema =
+  z.object({
+    body: z.object({
+      email: emailSchema,
 
-export type LoginDTO = z.infer<typeof loginSchema>["body"];
+      password:
+        passwordSchema,
+    }),
+  });
+
+export type LoginDTO =
+  z.infer<
+    typeof loginSchema
+  >["body"];

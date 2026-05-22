@@ -1,28 +1,33 @@
 import { Request, Response, NextFunction } from "express";
 import { ProviderModel } from "../models/Provider.model";
+import { ERROR_MESSAGES } from "../shared/constants/errorMessages";
+import { ROUTES } from "../shared/constants/routes";
 
 export const providerTermsGuard = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  const providerId = (req as any).user?.id;
+): Promise<void> => {
+  const providerId = req.user?.id;
 
   if (!providerId) {
-    return res.status(401).json({ message: "Unauthorized" });
+    res.status(401).json({ message: ERROR_MESSAGES.AUTH.ACCESS_DENIED });
+    return;
   }
 
   const provider = await ProviderModel.findById(providerId);
 
   if (!provider) {
-    return res.status(401).json({ message: "Provider not found" });
+    res.status(401).json({ message: ERROR_MESSAGES.AUTH.PROVIDER_NOT_FOUND });
+    return;
   }
 
   if (!provider.hasAcceptedTerms) {
-    return res.status(403).json({
-      message: "Terms not accepted",
-      redirect: "/provider/welcome",
+    res.status(403).json({
+      message: ERROR_MESSAGES.AUTH.TERMS_NOT_ACCEPTED,
+      redirect: ROUTES.PROVIDER.WELCOME,
     });
+    return;
   }
 
   next();

@@ -4,6 +4,7 @@ import {
   CreditCard,
   ShieldCheck,
   BarChart3,
+  FileCheck2,
 } from "lucide-react";
 
 /**
@@ -47,6 +48,16 @@ export const sidebarConfig: Record<AdminSection, SidebarItemConfig[]> = {
       label: "Providers",
       path: "/admin/providers",
       icon: Users,
+    },
+    {
+      label: "User Reviews",
+      path: "/admin/verifications/users",
+      icon: FileCheck2,
+    },
+    {
+      label: "Provider Reviews",
+      path: "/admin/verifications/providers",
+      icon: FileCheck2,
     },
   ],
 

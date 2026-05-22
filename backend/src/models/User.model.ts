@@ -1,84 +1,160 @@
-import { Schema, model, Document } from "mongoose";
-import { ROLES, Role } from "../shared/constants/roles";
+import {
+  Document,
+  model,
+  Schema,
+} from "mongoose";
 
-export interface IUser extends Document {
+import {
+  ROLES,
+  Role,
+} from "../shared/constants/roles";
+
+export interface IUser
+  extends Document {
   name?: string;
+
   email: string;
+
   password: string | null;
+
   role: Role;
+
   isVerified: boolean;
+
   isActive: boolean;
 
   phone?: string;
-  profileImage?: string;
 
-  address?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    pincode?: string;
-  };
+  profilePicture?: string;
+
+  gender?: string;
+
+  dob?: Date;
+
+  occupation?: string;
+
+  bio?: string;
+
+  provider?:
+    | "google"
+    | "local";
 
   createdAt: Date;
+
   updatedAt: Date;
 }
 
-const userSchema = new Schema<IUser>(
-  {
-    name: {
-      type: String,
-      trim: true,
+const userSchema =
+  new Schema<IUser>(
+    {
+      name: {
+        type: String,
+        trim: true,
+        minlength: 2,
+        maxlength: 100,
+      },
+
+      email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true,
+      },
+
+      password: {
+        type: String,
+        default: null,
+        select: false,
+      },
+
+      role: {
+        type: String,
+        enum:
+          Object.values(
+            ROLES,
+          ),
+        default:
+          ROLES.USER,
+        immutable: true,
+      },
+
+      isVerified: {
+        type: Boolean,
+        default: false,
+      },
+
+      isActive: {
+        type: Boolean,
+        default: true,
+      },
+
+      phone: {
+        type: String,
+        trim: true,
+      },
+
+      profilePicture: {
+        type: String,
+        trim: true,
+      },
+
+      gender: {
+        type: String,
+        trim: true,
+      },
+
+      dob: {
+        type: Date,
+      },
+
+      occupation: {
+        type: String,
+        trim: true,
+      },
+
+      bio: {
+        type: String,
+        trim: true,
+        maxlength: 500,
+      },
+
+      provider: {
+        type: String,
+        enum: [
+          "google",
+          "local",
+        ],
+        default: "local",
+      },
     },
-
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      index: true,
+    {
+      timestamps: true,
     },
+  );
 
-    password: {
-      type: String,
-      default: null,
-    },
+/* ====================================================== */
+/* INDEXES */
+/* ====================================================== */
 
-    role: {
-      type: String,
-      enum: Object.values(ROLES),
-      default: ROLES.USER,
-    },
+userSchema.index({
+  email: 1,
+});
 
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
+userSchema.index({
+  isActive: 1,
+});
 
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
+userSchema.index({
+  role: 1,
+});
 
+userSchema.index({
+  createdAt: -1,
+});
 
-    phone: {
-      type: String,
-      trim: true,
-    },
-profileImage: {
-  type: String,
-  required: false,
-},
-
-    address: {
-      street: { type: String },
-      city: { type: String },
-      state: { type: String },
-      pincode: { type: String },
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-export const UserModel = model<IUser>("User", userSchema);
+export const UserModel =
+  model<IUser>(
+    "User",
+    userSchema,
+  );

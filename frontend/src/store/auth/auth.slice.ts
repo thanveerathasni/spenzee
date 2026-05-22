@@ -45,7 +45,6 @@ clearAuth: (state) => {
   state.isAuthenticated = false;
   state.isAuthChecked = true;
   state.isLoading = false;
-
   // clear persist
   localStorage.removeItem("auth");
 },

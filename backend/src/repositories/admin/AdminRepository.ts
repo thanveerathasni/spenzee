@@ -17,4 +17,8 @@ export class AdminRepository
   async findByEmail(email: string): Promise<IAdmin | null> {
     return this.findOne({ email });
   }
+
+  async findActiveAdmins(): Promise<IAdmin[]> {
+    return this.model.find({ isActive: true }).exec();
+  }
 }

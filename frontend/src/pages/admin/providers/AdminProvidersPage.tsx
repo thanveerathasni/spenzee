@@ -1,4 +1,12 @@
-import { useState, useEffect } from "react";
+
+
+
+
+
+
+
+
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import AdminProviderRequestsTab from "./tabs/AdminProviderRequestsTab";
 import AdminActiveProvidersTab from "./tabs/AdminActiveProvidersTab";
@@ -10,13 +18,31 @@ export default function AdminProvidersPage() {
   const [activeTab, setActiveTab] = useState<TabTypes>("requests");
 
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [page, setPage] = useState(1);
 
-  const [reloadKey, setReloadKey] = useState(0);
+  //  DEBOUNCE 
+
+const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+useEffect(() => {
+  if (debounceRef.current) {
+    clearTimeout(debounceRef.current);
+  }
+
+  debounceRef.current = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 500);
+
+  return () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+  };
+}, [search]);
 
   useEffect(() => {
-    setReloadKey((prev) => prev + 1);
-  }, [search, page, activeTab]);
+    console.log("FINAL API VALUE:", debouncedSearch);
+  }, [debouncedSearch]);
 
   return (
     <motion.div
@@ -35,7 +61,7 @@ export default function AdminProvidersPage() {
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
-            setPage(1); 
+            setPage(1);
           }}
           className="border border-gray-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-black"
         />
@@ -80,24 +106,21 @@ export default function AdminProvidersPage() {
       {/* TAB CONTENT */}
       {activeTab === "requests" && (
         <AdminProviderRequestsTab
-          key={reloadKey}
-          search={search}
+          search={debouncedSearch}
           page={page}
         />
       )}
 
       {activeTab === "active" && (
         <AdminActiveProvidersTab
-          key={reloadKey}
-          search={search}
+          search={debouncedSearch}
           page={page}
         />
       )}
 
       {activeTab === "suspended" && (
         <AdminSuspendedProvidersTab
-          key={reloadKey}
-          search={search}
+          search={debouncedSearch}
           page={page}
         />
       )}

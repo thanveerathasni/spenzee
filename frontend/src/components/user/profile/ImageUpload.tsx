@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
 import { useDispatch } from "react-redux";
 import { userProfileApi } from "../../../api/user/userProfile.api";
 import { setUser } from "../../../store/auth/auth.slice";
 import { User } from "../../../types/user";
 import toast from "react-hot-toast";
+import { mapApiError } from "../../../util/errorHandler";
 
 interface Props {
   user: User;
@@ -19,7 +20,8 @@ interface CropArea {
 
 export default function ImageUpload({ user }: Props) {
   const [image, setImage] = useState<string | null>(null);
-  const [preview, setPreview] = useState(user.profileImage || "");
+  const [preview, setPreview] = useState(user.profilePicture || "");
+
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedArea, setCroppedArea] = useState<CropArea | null>(null);
@@ -27,6 +29,14 @@ export default function ImageUpload({ user }: Props) {
 
   const dispatch = useDispatch();
 
+  // 🔥 FIX 1: sync with redux user updates
+  useEffect(() => {
+    if (user.profilePicture) {
+      setPreview(user.profilePicture);
+    }
+  }, [user.profilePicture]);
+
+  // FILE SELECT
   const handleFile = (file: File) => {
     if (file.size > 2 * 1024 * 1024) {
       toast.error("Max 2MB allowed");
@@ -34,7 +44,9 @@ export default function ImageUpload({ user }: Props) {
     }
 
     const url = URL.createObjectURL(file);
+
     setImage(url);
+    setPreview(url); 
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,9 +55,7 @@ export default function ImageUpload({ user }: Props) {
     handleFile(file);
   };
 
-  
-
-  //  CROP COMPLETE
+  // CROP COMPLETE
   const onCropComplete = useCallback(
     (_: unknown, croppedPixels: CropArea) => {
       setCroppedArea(croppedPixels);
@@ -53,7 +63,7 @@ export default function ImageUpload({ user }: Props) {
     []
   );
 
-  //  CROP IMAGE (CANVAS)
+  // CROP IMAGE
   const getCroppedImage = async (): Promise<File | null> => {
     if (!image || !croppedArea) return null;
 
@@ -87,7 +97,7 @@ export default function ImageUpload({ user }: Props) {
         if (!blob) return resolve(null);
 
         resolve(
-          new File([blob], "cropped.jpg", {
+          new File([blob], "profile.jpg", {
             type: "image/jpeg",
           })
         );
@@ -95,15 +105,17 @@ export default function ImageUpload({ user }: Props) {
     });
   };
 
-  //  UPLOAD
+  // UPLOAD
   const handleUpload = async () => {
     try {
       setLoading(true);
 
       const croppedFile = await getCroppedImage();
-      if (!croppedFile) return toast.error("Crop failed");
+      if (!croppedFile) {
+        toast.error("Crop failed");
+        return;
+      }
 
-      // OPTIMISTIC PREVIEW
       const tempPreview = URL.createObjectURL(croppedFile);
       setPreview(tempPreview);
 
@@ -112,12 +124,14 @@ export default function ImageUpload({ user }: Props) {
 
       dispatch(setUser(updatedUser));
 
-      toast.success("Profile updated");
+      setPreview(updatedUser.profilePicture || tempPreview);
+
+      toast.success("Profile image updated");
       setImage(null);
 
     } catch (err) {
-      console.error(err);
-      toast.error("Upload failed");
+      const mapped = mapApiError(err);
+      toast.error(mapped.message || "Upload failed");
     } finally {
       setLoading(false);
     }
@@ -126,20 +140,26 @@ export default function ImageUpload({ user }: Props) {
   return (
     <div className="flex flex-col items-center gap-4">
 
-      {/*  CIRCULAR PREVIEW */}
-      <div className="w-28 h-28 rounded-full overflow-hidden border shadow">
-        <img
-          src={preview || "/default-avatar.png"}
-          className="w-full h-full object-cover"
+      {/* IMAGE */}
+      <label className="cursor-pointer">
+        <div className="w-28 h-28 rounded-full overflow-hidden border">
+          <img
+            src={preview || "/default-avatar.png"}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleChange}
+          className="hidden"
         />
-      </div>
+      </label>
 
-      
+      <p className="text-xs text-gray-400">Click image to change</p>
 
-      {/* FILE INPUT */}
-      <input type="file" accept="image/*" onChange={handleChange} />
-
-      {/* CROP SECTION */}
+      {/* CROP */}
       {image && (
         <>
           <div className="relative w-[300px] h-[300px] bg-black">
@@ -148,7 +168,7 @@ export default function ImageUpload({ user }: Props) {
               crop={crop}
               zoom={zoom}
               aspect={1}
-              cropShape="round" 
+              cropShape="round"
               showGrid={false}
               onCropChange={setCrop}
               onZoomChange={setZoom}
@@ -156,7 +176,6 @@ export default function ImageUpload({ user }: Props) {
             />
           </div>
 
-          {/*  ZOOM SLIDER */}
           <input
             type="range"
             min={1}
@@ -164,10 +183,8 @@ export default function ImageUpload({ user }: Props) {
             step={0.1}
             value={zoom}
             onChange={(e) => setZoom(Number(e.target.value))}
-            className="w-64"
           />
 
-          {/* SAVE BUTTON */}
           <button
             onClick={handleUpload}
             disabled={loading}

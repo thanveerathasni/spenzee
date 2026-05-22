@@ -3,9 +3,9 @@ import { inject, injectable } from "inversify";
 
 import { TYPES } from "../../../di/types";
 
+import { ProviderStatus } from "../../../models/Provider.model";
 import { LOG_MESSAGES } from "../../../shared/constants/logMessages";
 import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
-import { ProviderStatus } from "../../../models/Provider.model";
 import { logger } from "../../../shared/logger/logger";
 import { ProviderRequestMapper } from "../../../shared/mapper/provider/ProviderRequestMapper";
 

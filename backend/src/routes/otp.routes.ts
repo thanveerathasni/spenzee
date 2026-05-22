@@ -1,9 +1,36 @@
 import { Router } from "express";
-import { sendOtp, verifyOtp } from "../controllers/otp.controller";
+
+import { OtpController } from "../controllers/otp.controller";
+
+import { container } from "../di/container";
+
+import { TYPES } from "../di/types";
+
+import { asyncHandler } from "../shared/middleware/asyncHandler";
 
 const router = Router();
 
-router.post("/send", sendOtp);
-router.post("/verify", verifyOtp);
+const controller =
+  container.get<OtpController>(
+    TYPES.OtpController,
+  );
+
+router.post(
+  "/send",
+  asyncHandler(
+    controller.sendOtp.bind(
+      controller,
+    ),
+  ),
+);
+
+router.post(
+  "/verify",
+  asyncHandler(
+    controller.verifyOtp.bind(
+      controller,
+    ),
+  ),
+);
 
 export default router;
