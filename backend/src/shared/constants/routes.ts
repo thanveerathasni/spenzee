@@ -56,8 +56,20 @@ export const ROUTES = {
     USER_ANALYTICS: "/users/:id/analytics",
     USER_STATEMENT_STATUS: "/users/:id/statements/:statementId/status",
     PROVIDERS: "/providers",
+    PROVIDER_COMMERCE:
+      "/providers/commerce",
     PROVIDER_BY_ID: "/providers/:id",
     PROVIDER_STATUS: "/providers/:id/status",
+    PROVIDER_COMMERCE_APPROVE:
+      "/providers/:id/commerce/approve",
+    PROVIDER_COMMERCE_REJECT:
+      "/providers/:id/commerce/reject",
+    PROVIDER_COMMERCE_FREEZE:
+      "/providers/:id/commerce/freeze",
+    PROVIDER_COMMERCE_RESUME:
+      "/providers/:id/commerce/resume",
+    PROVIDER_COMMISSION:
+      "/providers/:id/commission",
     PROVIDER_REQUESTS: "/provider-requests",
     PROVIDER_REQUEST_REVIEW: "/provider-requests/:id/review",
   },
@@ -86,6 +98,8 @@ export const ROUTES = {
     EMAIL_CHANGE_REQUEST: "/email/change-request",
     EMAIL_VERIFY: "/email/verify",
     ACCEPT_TERMS: "/accept-terms",
+    COMMERCE_STATUS:
+      "/commerce-status",
 
     SETUP_PASSWORD: "/setup-password",
 

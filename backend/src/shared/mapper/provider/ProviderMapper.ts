@@ -90,6 +90,30 @@ export class ProviderMapper {
       status:
         provider.status,
 
+      commerceStatus:
+        provider.commerceStatus,
+
+      commerceEnabled:
+        provider.commerceEnabled,
+
+      commerceEnabledAt:
+        provider.commerceEnabledAt ??
+        undefined,
+
+      commerceApprovedBy:
+        provider.commerceApprovedBy
+          ?.toString(),
+
+      commerceRejectedReason:
+        provider.commerceRejectedReason ??
+        undefined,
+
+      commissionPercentage:
+        provider.commissionPercentage,
+
+      isCommerceFrozen:
+        provider.isCommerceFrozen,
+
       createdAt:
         provider.createdAt,
 
@@ -101,4 +125,3 @@ export class ProviderMapper {
     };
   }
 }
-

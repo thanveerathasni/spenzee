@@ -18,28 +18,28 @@ import { useDispatch } from "react-redux";
 import { setAuth } from "../../../store/auth/auth.slice";
 import { Navbar } from "../../public/Landing";
 import { motion, AnimatePresence } from "framer-motion";
-
-const EyeIcon = ({ open }: { open: boolean }) =>
-  open ? (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
-      <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  ) : (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" stroke="currentColor" strokeWidth="2" />
-      <path d="M6.35 6.35C4.31 7.72 2.85 9.68 2 12c1.73 4.39 6 7.5 10 7.5 1.55 0 3.03-.37 4.35-1.02" stroke="currentColor" strokeWidth="2" />
-      <path d="M17.94 17.94A9.96 9.96 0 0022 12c-1.73-4.39-6-7.5-10-7.5-1.3 0-2.55.24-3.7.68" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
+import PasswordInput from "../../../components/common/PasswordInput";
+// const EyeIcon = ({ open }: { open: boolean }) =>
+//   open ? (
+//     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+//       <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+//       <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" stroke="currentColor" strokeWidth="2" />
+//     </svg>
+//   ) : (
+//     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+//       <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+//       <path d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" stroke="currentColor" strokeWidth="2" />
+//       <path d="M6.35 6.35C4.31 7.72 2.85 9.68 2 12c1.73 4.39 6 7.5 10 7.5 1.55 0 3.03-.37 4.35-1.02" stroke="currentColor" strokeWidth="2" />
+//       <path d="M17.94 17.94A9.96 9.96 0 0022 12c-1.73-4.39-6-7.5-10-7.5-1.3 0-2.55.24-3.7.68" stroke="currentColor" strokeWidth="2" />
+//     </svg>
+//   );
 
 export default function ProviderLogin() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [activeField, setActiveField] = useState<string | null>(null);
 
@@ -244,42 +244,67 @@ export default function ProviderLogin() {
               </AnimatePresence>
             </div>
 
-            {/* Password */}
-            <div className={`border-t transition-colors duration-300 ${activeField === "password" ? "border-white/60" : "border-white/10"}`}>
-              <div className="pt-5 pb-4">
-                <label className="block text-[9px] font-black uppercase tracking-[0.35em] text-white/35 mb-3">
-                  Password
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, password: undefined })); }}
-                    onFocus={() => setActiveField("password")}
-                    onBlur={() => setActiveField(null)}
-                    placeholder="Enter your password"
-                    className="flex-1 bg-transparent text-white text-base font-light placeholder-white/20 focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((p) => !p)}
-                    className="text-white/25 hover:text-white/70 transition-colors shrink-0"
-                  >
-                    <EyeIcon open={showPassword} />
-                  </button>
-                </div>
-              </div>
-              <AnimatePresence>
-                {errors.password && (
-                  <motion.p
-                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                    className="text-[11px] text-red-400 pb-3"
-                  >
-                    {errors.password}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </div>
+           {/* Password */}
+<div
+  className={`border-t transition-colors duration-300 ${
+    activeField === "password"
+      ? "border-white/60"
+      : "border-white/10"
+  }`}
+>
+  <div className="pt-5 pb-4">
+    <label className="block text-[9px] font-black uppercase tracking-[0.35em] text-white/35 mb-3">
+      Password
+    </label>
+
+    <PasswordInput
+      value={password}
+      onChange={(value) => {
+        setPassword(value);
+
+        setErrors((prev) => ({
+          ...prev,
+          password: undefined,
+        }));
+      }}
+      onFocus={() =>
+        setActiveField(
+          "password"
+        )
+      }
+      onBlur={() =>
+        setActiveField(
+          null,
+        )
+      }
+      placeholder="Enter your password"
+      autoComplete="current-password"
+      className="flex-1 bg-transparent text-white text-base font-light placeholder-white/20 focus:outline-none"
+    />
+  </div>
+
+  <AnimatePresence>
+    {errors.password && (
+      <motion.p
+        initial={{
+          opacity: 0,
+          height: 0,
+        }}
+        animate={{
+          opacity: 1,
+          height: "auto",
+        }}
+        exit={{
+          opacity: 0,
+          height: 0,
+        }}
+        className="text-[11px] text-red-400 pb-3"
+      >
+        {errors.password}
+      </motion.p>
+    )}
+  </AnimatePresence>
+</div>
 
             {/* Forgot password */}
             <div className="border-t border-white/10 py-4 flex justify-between items-center">

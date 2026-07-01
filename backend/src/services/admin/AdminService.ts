@@ -5,12 +5,22 @@ import {
   injectable,
 } from "inversify";
 
+import {
+  Types,
+} from "mongoose";
+
 import { TYPES } from "../../di/types";
 
 import {
   IProvider,
   ProviderStatus,
 } from "../../models/Provider.model";
+
+import {
+  COMMERCE_STATUS,
+  DEFAULT_COMMISSION_PERCENTAGE,
+  CommerceStatus,
+} from "../../shared/constants/commerce";
 
 import {
   ERROR_MESSAGES,
@@ -21,8 +31,19 @@ import {
 } from "../../shared/constants/logMessages";
 
 import {
+  NOTIFICATION_CONTENT,
+  NOTIFICATION_TYPES,
+} from "../../shared/constants/notification";
+
+import {
   ProviderRequestStatus,
 } from "../../shared/constants/providerRequestStatus";
+
+import { ROLES } from "../../shared/constants/roles";
+
+import {
+  VERIFICATION_STATUS,
+} from "../../shared/constants/verification";
 
 import { AdminDashboardDTO } from "../../shared/dto/admin/adminDashboard.dto";
 
@@ -46,7 +67,13 @@ import { IProviderRequestRepository } from "../../types/repositories/provider/IP
 
 import { IUserRepository } from "../../types/repositories/user/IUserRepository";
 
+import {
+  IProviderVerificationRepository,
+} from "../../types/repositories/verification/IProviderVerificationRepository";
+
 import { IMailService } from "../../types/services/IMailService";
+
+import { NotificationService } from "../notification/NotificationService";
 
 const PROVIDER_SETUP_TOKEN_EXPIRY_MS =
   24 * 60 * 60 * 1000;
@@ -72,6 +99,14 @@ export class AdminService {
       TYPES.ProviderRequestRepository,
     )
     private readonly _providerRequestRepository: IProviderRequestRepository,
+
+    @inject(
+      TYPES.ProviderVerificationRepository,
+    )
+    private readonly _providerVerificationRepository: IProviderVerificationRepository,
+
+    @inject(TYPES.NotificationService)
+    private readonly _notificationService: NotificationService,
 
     @inject(TYPES.MailService)
     private readonly _mailService: IMailService,
@@ -170,6 +205,24 @@ export class AdminService {
     );
   }
 
+  async getCommerceProviders(
+    commerceStatus: CommerceStatus | "",
+    page: number,
+    limit: number,
+    search: string,
+  ): Promise<{
+    providers: IProvider[];
+
+    total: number;
+  }> {
+    return this._providerRepo.findCommercePaginated(
+      commerceStatus,
+      page,
+      limit,
+      search,
+    );
+  }
+
   async getProviderById(
     providerId: string,
   ): Promise<ProviderDTO> {
@@ -206,6 +259,381 @@ export class AdminService {
         providerId,
         status,
       },
+    );
+  }
+
+  async approveProviderCommerce(
+    providerId: string,
+    adminId: string,
+    commissionPercentage: number =
+      DEFAULT_COMMISSION_PERCENTAGE,
+  ): Promise<ProviderDTO> {
+    this.assertCommission(
+      commissionPercentage,
+    );
+
+    const provider =
+      await this.getProviderOrThrow(
+        providerId,
+      );
+
+    if (
+      provider.commerceStatus ===
+        COMMERCE_STATUS.APPROVED &&
+      provider.commerceEnabled &&
+      !provider.isCommerceFrozen
+    ) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.PROVIDER_COMMERCE
+          .ALREADY_APPROVED,
+      );
+    }
+
+    this.assertProviderCanBecomeSeller(
+      provider,
+    );
+
+    await this.assertProviderVerified(
+      providerId,
+    );
+
+    const updated =
+      await this._providerRepo.updateById(
+        providerId,
+        {
+          commerceStatus:
+            COMMERCE_STATUS.APPROVED,
+          commerceEnabled: true,
+          commerceEnabledAt:
+            new Date(),
+          commerceApprovedBy:
+            new Types.ObjectId(
+              adminId,
+            ),
+          commerceRejectedReason:
+            undefined,
+          commissionPercentage,
+          isCommerceFrozen: false,
+        },
+      );
+
+    if (!updated) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    await this.notifyProvider(
+      providerId,
+      NOTIFICATION_CONTENT
+        .PROVIDER_COMMERCE_APPROVED
+        .TITLE,
+      NOTIFICATION_CONTENT
+        .PROVIDER_COMMERCE_APPROVED
+        .MESSAGE,
+      NOTIFICATION_TYPES
+        .PROVIDER_COMMERCE_APPROVED,
+    );
+
+    logger.info(
+      LOG_MESSAGES.PROVIDER
+        .COMMERCE_APPROVED,
+      {
+        providerId,
+        adminId,
+        commissionPercentage,
+        timestamp: new Date(),
+        action: "APPROVE_COMMERCE",
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
+    );
+  }
+
+  async rejectProviderCommerce(
+    providerId: string,
+    adminId: string,
+    reason: string,
+  ): Promise<ProviderDTO> {
+    if (!reason.trim()) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.PROVIDER_COMMERCE
+          .REJECTION_REASON_REQUIRED,
+      );
+    }
+
+    const provider =
+      await this.getProviderOrThrow(
+        providerId,
+      );
+
+    if (
+      provider.commerceStatus ===
+      COMMERCE_STATUS.REJECTED
+    ) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.PROVIDER_COMMERCE
+          .ALREADY_REJECTED,
+      );
+    }
+
+    const updated =
+      await this._providerRepo.updateById(
+        providerId,
+        {
+          commerceStatus:
+            COMMERCE_STATUS.REJECTED,
+          commerceEnabled: false,
+          commerceApprovedBy:
+            new Types.ObjectId(
+              adminId,
+            ),
+          commerceRejectedReason:
+            reason.trim(),
+          isCommerceFrozen: false,
+        },
+      );
+
+    if (!updated) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    await this.notifyProvider(
+      providerId,
+      NOTIFICATION_CONTENT
+        .PROVIDER_COMMERCE_REJECTED
+        .TITLE,
+      reason.trim(),
+      NOTIFICATION_TYPES
+        .PROVIDER_COMMERCE_REJECTED,
+    );
+
+    logger.info(
+      LOG_MESSAGES.PROVIDER
+        .COMMERCE_REJECTED,
+      {
+        providerId,
+        adminId,
+        timestamp: new Date(),
+        action: "REJECT_COMMERCE",
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
+    );
+  }
+
+  async freezeProviderCommerce(
+    providerId: string,
+    adminId: string,
+  ): Promise<ProviderDTO> {
+    const provider =
+      await this.getProviderOrThrow(
+        providerId,
+      );
+
+    if (
+      provider.isCommerceFrozen ||
+      provider.commerceStatus ===
+        COMMERCE_STATUS.FROZEN
+    ) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.PROVIDER_COMMERCE
+          .ALREADY_FROZEN,
+      );
+    }
+
+    if (
+      provider.commerceStatus !==
+      COMMERCE_STATUS.APPROVED
+    ) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.PROVIDER_COMMERCE
+          .DISABLED,
+      );
+    }
+
+    const updated =
+      await this._providerRepo.updateById(
+        providerId,
+        {
+          commerceStatus:
+            COMMERCE_STATUS.FROZEN,
+          commerceEnabled: false,
+          commerceApprovedBy:
+            new Types.ObjectId(
+              adminId,
+            ),
+          isCommerceFrozen: true,
+        },
+      );
+
+    if (!updated) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    await this.notifyProvider(
+      providerId,
+      NOTIFICATION_CONTENT
+        .PROVIDER_COMMERCE_FROZEN
+        .TITLE,
+      NOTIFICATION_CONTENT
+        .PROVIDER_COMMERCE_FROZEN
+        .MESSAGE,
+      NOTIFICATION_TYPES
+        .PROVIDER_COMMERCE_FROZEN,
+    );
+
+    logger.info(
+      LOG_MESSAGES.PROVIDER
+        .COMMERCE_FROZEN,
+      {
+        providerId,
+        adminId,
+        timestamp: new Date(),
+        action: "FREEZE_COMMERCE",
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
+    );
+  }
+
+  async resumeProviderCommerce(
+    providerId: string,
+    adminId: string,
+  ): Promise<ProviderDTO> {
+    const provider =
+      await this.getProviderOrThrow(
+        providerId,
+      );
+
+    if (
+      !provider.isCommerceFrozen &&
+      provider.commerceStatus !==
+        COMMERCE_STATUS.FROZEN
+    ) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.PROVIDER_COMMERCE
+          .NOT_FROZEN,
+      );
+    }
+
+    const updated =
+      await this._providerRepo.updateById(
+        providerId,
+        {
+          commerceStatus:
+            COMMERCE_STATUS.APPROVED,
+          commerceEnabled: true,
+          commerceApprovedBy:
+            new Types.ObjectId(
+              adminId,
+            ),
+          isCommerceFrozen: false,
+        },
+      );
+
+    if (!updated) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    await this.notifyProvider(
+      providerId,
+      NOTIFICATION_CONTENT
+        .PROVIDER_COMMERCE_RESUMED
+        .TITLE,
+      NOTIFICATION_CONTENT
+        .PROVIDER_COMMERCE_RESUMED
+        .MESSAGE,
+      NOTIFICATION_TYPES
+        .PROVIDER_COMMERCE_RESUMED,
+    );
+
+    logger.info(
+      LOG_MESSAGES.PROVIDER
+        .COMMERCE_RESUMED,
+      {
+        providerId,
+        adminId,
+        timestamp: new Date(),
+        action: "RESUME_COMMERCE",
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
+    );
+  }
+
+  async updateProviderCommission(
+    providerId: string,
+    adminId: string,
+    commissionPercentage: number,
+  ): Promise<ProviderDTO> {
+    this.assertCommission(
+      commissionPercentage,
+    );
+
+    await this.getProviderOrThrow(
+      providerId,
+    );
+
+    const updated =
+      await this._providerRepo.updateById(
+        providerId,
+        {
+          commissionPercentage,
+        },
+      );
+
+    if (!updated) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    await this.notifyProvider(
+      providerId,
+      NOTIFICATION_CONTENT
+        .PROVIDER_COMMISSION_UPDATED
+        .TITLE,
+      NOTIFICATION_CONTENT
+        .PROVIDER_COMMISSION_UPDATED
+        .MESSAGE,
+      NOTIFICATION_TYPES
+        .PROVIDER_COMMISSION_UPDATED,
+    );
+
+    logger.info(
+      LOG_MESSAGES.PROVIDER
+        .COMMISSION_UPDATED,
+      {
+        providerId,
+        adminId,
+        commissionPercentage,
+        timestamp: new Date(),
+        action: "UPDATE_COMMISSION",
+      },
+    );
+
+    return ProviderMapper.toDTO(
+      updated,
     );
   }
 
@@ -332,5 +760,89 @@ export class AdminService {
     }
 
     return request;
+  }
+
+  private async getProviderOrThrow(
+    providerId: string,
+  ): Promise<IProvider> {
+    const provider =
+      await this._providerRepo.findById(
+        providerId,
+      );
+
+    if (!provider) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    return provider;
+  }
+
+  private assertProviderCanBecomeSeller(
+    provider: IProvider,
+  ): void {
+    if (
+      provider.status !==
+      ProviderStatus.ACTIVE
+    ) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.AUTH
+          .ACCOUNT_BLOCKED,
+      );
+    }
+  }
+
+  private async assertProviderVerified(
+    providerId: string,
+  ): Promise<void> {
+    const latestVerification =
+      await this._providerVerificationRepository.findLatestByProviderId(
+        providerId,
+      );
+
+    if (
+      latestVerification
+        ?.verificationStatus !==
+      VERIFICATION_STATUS.APPROVED
+    ) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.PROVIDER_COMMERCE
+          .PROVIDER_NOT_VERIFIED,
+      );
+    }
+  }
+
+  private assertCommission(
+    commissionPercentage: number,
+  ): void {
+    if (
+      commissionPercentage < 0 ||
+      commissionPercentage > 100
+    ) {
+      throw new BadRequestError(
+        ERROR_MESSAGES.PROVIDER_COMMERCE
+          .INVALID_COMMISSION,
+      );
+    }
+  }
+
+  private async notifyProvider(
+    providerId: string,
+    title: string,
+    message: string,
+    notificationType: typeof NOTIFICATION_TYPES[keyof typeof NOTIFICATION_TYPES],
+  ): Promise<void> {
+    await this._notificationService.create(
+      {
+        recipientId: providerId,
+        recipientRole:
+          ROLES.PROVIDER,
+        title,
+        message,
+        notificationType,
+      },
+    );
   }
 }

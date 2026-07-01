@@ -17,7 +17,12 @@ import type { RootState } from "../../../store/store";
 import { ALERT_MESSAGES } from "../../../constants/messages";
 import { mapApiError } from "../../../util/errorHandler";
 import { motion, AnimatePresence } from "framer-motion";
-
+import PasswordInput from "../../../components/common/PasswordInput";
+import { persistAuth } from "../../../store/auth/authStorage";
+import type {
+  User,
+  UserRole,
+} from "../../../store/auth/auth.types";
 interface Errors {
   email?: string;
   password?: string;
@@ -26,20 +31,20 @@ interface Errors {
 type LoginView = "login" | "forgot" | "reset";
 let googleLoginInProgress = false;
 
-const EyeIcon = ({ open }: { open: boolean }) =>
-  open ? (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
-      <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  ) : (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" stroke="currentColor" strokeWidth="2" />
-      <path d="M6.35 6.35C4.31 7.72 2.85 9.68 2 12c1.73 4.39 6 7.5 10 7.5 1.55 0 3.03-.37 4.35-1.02" stroke="currentColor" strokeWidth="2" />
-      <path d="M17.94 17.94A9.96 9.96 0 0022 12c-1.73-4.39-6-7.5-10-7.5-1.3 0-2.55.24-3.7.68" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
+// const EyeIcon = ({ open }: { open: boolean }) =>
+//   open ? (
+//     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+//       <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+//       <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" stroke="currentColor" strokeWidth="2" />
+//     </svg>
+//   ) : (
+//     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+//       <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+//       <path d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" stroke="currentColor" strokeWidth="2" />
+//       <path d="M6.35 6.35C4.31 7.72 2.85 9.68 2 12c1.73 4.39 6 7.5 10 7.5 1.55 0 3.03-.37 4.35-1.02" stroke="currentColor" strokeWidth="2" />
+//       <path d="M17.94 17.94A9.96 9.96 0 0022 12c-1.73-4.39-6-7.5-10-7.5-1.3 0-2.55.24-3.7.68" stroke="currentColor" strokeWidth="2" />
+//     </svg>
+//   );
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -48,14 +53,35 @@ const LoginForm: React.FC = () => {
   const [view] = useState<LoginView>("login");
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<Errors>({});
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
 
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+const { isAuthenticated, user } = useSelector(
+  (state: RootState) => state.auth
+);
+  // useEffect(() => {
+  //   if (isAuthenticated) navigate("/welcome", { replace: true });
+  // }, [isAuthenticated, navigate]);
+
 
   useEffect(() => {
-    if (isAuthenticated) navigate("/welcome", { replace: true });
-  }, [isAuthenticated, navigate]);
+  if (!isAuthenticated || !user) return;
+
+  if (user.role === "admin") {
+    navigate("/admin/dashboard", { replace: true });
+  } else if (user.role === "provider") {
+    if (!user.hasAcceptedTerms) {
+      navigate("/provider/welcome", { replace: true });
+    } else {
+      navigate("/provider/dashboard", { replace: true });
+    }
+  } else {
+    navigate("/welcome", { replace: true });
+  }
+}, [isAuthenticated, user, navigate]);
+
+
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -71,43 +97,196 @@ const LoginForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-    try {
-      const res = await authApi.login({ email: formData.email, password: formData.password });
-      localStorage.removeItem("admin_token");
-      localStorage.removeItem("provider_welcome_seen");
-      const safeUser = { ...res.user, role: res.user.role || "user" };
-      dispatch(setAuth({ accessToken: res.accessToken, user: safeUser }));
-      toast.success(ALERT_MESSAGES.AUTH.LOGIN_SUCCESS);
-      if (safeUser.role === "admin") navigate("/admin/dashboard", { replace: true });
-      else if (safeUser.role === "provider") navigate("/provider", { replace: true });
-      else navigate("/welcome", { replace: true });
-    } catch (err: unknown) {
-      const mapped = mapApiError(err);
-      if (mapped.field) setErrors((prev) => ({ ...prev, [mapped.field as keyof Errors]: mapped.message }));
-      else toast.error(mapped.message || ALERT_MESSAGES.AUTH.LOGIN_FAILED);
-    }
-  };
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!validate()) return;
+  //   try {
+  //     const res = await authApi.login({ email: formData.email, password: formData.password });
+  //     const safeUser = { ...res.user, role: res.user.role || "user" };
+  //     persistAuth(res.accessToken, safeUser);
+  //     localStorage.removeItem("admin_token");
+  //     localStorage.removeItem("provider_welcome_seen");
+  //     dispatch(setAuth({ accessToken: res.accessToken, user: safeUser }));
+  //     toast.success(ALERT_MESSAGES.AUTH.LOGIN_SUCCESS);
+  //     if (safeUser.role === "admin") navigate("/admin/dashboard", { replace: true });
+  //     else if (safeUser.role === "provider") navigate("/provider", { replace: true });
+  //     else navigate("/welcome", { replace: true });
+  //   } catch (err: unknown) {
+  //     const mapped = mapApiError(err);
+  //     if (mapped.field) setErrors((prev) => ({ ...prev, [mapped.field as keyof Errors]: mapped.message }));
+  //     else toast.error(mapped.message || ALERT_MESSAGES.AUTH.LOGIN_FAILED);
+  //   }
+  // };
 
-  const handleGoogleSuccess = async (cred: CredentialResponse) => {
-    if (!cred?.credential || googleLoginInProgress) return;
-    googleLoginInProgress = true;
-    try {
-      const res = await authApi.googleLogin(cred.credential);
-      localStorage.removeItem("admin_token");
-      localStorage.removeItem("provider_welcome_seen");
-      const safeUser = { ...res.user, role: (res.user.role || "user").toLowerCase() };
-      dispatch(setAuth({ accessToken: res.accessToken, user: safeUser }));
-      toast.success(ALERT_MESSAGES.AUTH.GOOGLE_LOGIN_SUCCESS);
-      navigate("/welcome", { replace: true });
-    } catch {
-      toast.error(ALERT_MESSAGES.AUTH.GOOGLE_LOGIN_FAILED);
-    } finally {
-      googleLoginInProgress = false;
+  // const handleGoogleSuccess = async (cred: CredentialResponse) => {
+  //   if (!cred?.credential || googleLoginInProgress) return;
+  //   googleLoginInProgress = true;
+  //   try {
+  //     const res = await authApi.googleLogin(cred.credential);
+  //     localStorage.removeItem("admin_token");
+  //     localStorage.removeItem("provider_welcome_seen");
+  //     const safeUser = { ...res.user, role: (res.user.role || "user").toLowerCase() };
+  //     persistAuth(res.accessToken, safeUser);
+  //     dispatch(setAuth({ accessToken: res.accessToken, user: safeUser }));
+  //     toast.success(ALERT_MESSAGES.AUTH.GOOGLE_LOGIN_SUCCESS);
+  //     navigate("/welcome", { replace: true });
+  //   } catch {
+  //     toast.error(ALERT_MESSAGES.AUTH.GOOGLE_LOGIN_FAILED);
+  //   } finally {
+  //     googleLoginInProgress = false;
+  //   }
+  // };
+
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!validate()) return;
+
+  try {
+    const res = await authApi.login({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    const safeUser: User = {
+      ...res.user,
+      role: (res.user.role || "user").toLowerCase() as UserRole,
+    };
+
+    persistAuth(
+      res.accessToken,
+      safeUser
+    );
+
+    dispatch(
+      setAuth({
+        accessToken: res.accessToken,
+        user: safeUser,
+      })
+    );
+
+    toast.success(
+      ALERT_MESSAGES.AUTH.LOGIN_SUCCESS
+    );
+
+    if (safeUser.role === "admin") {
+      navigate("/admin/dashboard", {
+        replace: true,
+      });
+    } else if (
+      safeUser.role === "provider"
+    ) {
+      if (!safeUser.hasAcceptedTerms) {
+        navigate("/provider/welcome", {
+          replace: true,
+        });
+      } else {
+        navigate("/provider/dashboard", {
+          replace: true,
+        });
+      }
+    } else {
+      navigate("/welcome", {
+        replace: true,
+      });
     }
-  };
+  } catch (err: unknown) {
+    const mapped =
+      mapApiError(err);
+
+    if (mapped.field) {
+      setErrors((prev) => ({
+        ...prev,
+        [mapped.field as keyof Errors]:
+          mapped.message,
+      }));
+    } else {
+      toast.error(
+        mapped.message ||
+          ALERT_MESSAGES.AUTH.LOGIN_FAILED
+      );
+    }
+  }
+};
+
+
+const handleGoogleSuccess = async (
+  cred: CredentialResponse
+) => {
+  if (
+    !cred?.credential ||
+    googleLoginInProgress
+  ) {
+    return;
+  }
+
+  googleLoginInProgress = true;
+
+  try {
+    const res =
+      await authApi.googleLogin(
+        cred.credential
+      );
+
+    const safeUser: User = {
+      ...res.user,
+      role: (
+        res.user.role || "user"
+      ).toLowerCase() as UserRole,
+    };
+
+    persistAuth(
+      res.accessToken,
+      safeUser
+    );
+
+    dispatch(
+      setAuth({
+        accessToken:
+          res.accessToken,
+        user: safeUser,
+      })
+    );
+
+    toast.success(
+      ALERT_MESSAGES.AUTH
+        .GOOGLE_LOGIN_SUCCESS
+    );
+
+    if (safeUser.role === "admin") {
+      navigate("/admin/dashboard", {
+        replace: true,
+      });
+    } else if (
+      safeUser.role === "provider"
+    ) {
+      if (!safeUser.hasAcceptedTerms) {
+        navigate("/provider/welcome", {
+          replace: true,
+        });
+      } else {
+        navigate("/provider/dashboard", {
+          replace: true,
+        });
+      }
+    } else {
+      navigate("/welcome", {
+        replace: true,
+      });
+    }
+  } catch {
+    toast.error(
+      ALERT_MESSAGES.AUTH
+        .GOOGLE_LOGIN_FAILED
+    );
+  } finally {
+    googleLoginInProgress =
+      false;
+  }
+};
+
 
   return (
     <>
@@ -349,24 +528,24 @@ const LoginForm: React.FC = () => {
                   Password
                 </label>
                 <div className="flex items-center gap-3">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    onFocus={() => setActiveField("password")}
-                    onBlur={() => setActiveField(null)}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                    className="flex-1 bg-transparent text-white text-base font-light placeholder-white/20 focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((p) => !p)}
-                    className="text-white/25 hover:text-white/70 transition-colors shrink-0"
-                  >
-                    <EyeIcon open={showPassword} />
-                  </button>
+                  <PasswordInput
+  value={formData.password}
+  onChange={(value) =>
+    setFormData((prev) => ({
+      ...prev,
+      password: value,
+    }))
+  }
+  onFocus={() =>
+    setActiveField("password")
+  }
+  onBlur={() =>
+    setActiveField(null)
+  }
+  placeholder="Enter your password"
+  autoComplete="current-password"
+  className="flex-1 bg-transparent text-white text-base font-light placeholder-white/20 focus:outline-none"
+/>
                 </div>
               </div>
               <AnimatePresence>

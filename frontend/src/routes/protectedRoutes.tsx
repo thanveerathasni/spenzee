@@ -1,84 +1,98 @@
-// import { Navigate } from "react-router-dom";
-// import { useSelector } from "react-redux";
-// import type { ReactNode } from "react";
-// import type { RootState } from "../store/store";
-// import type { Role } from "../constants/roles";
+import {
+  Navigate,
+} from "react-router-dom";
 
-// interface ProtectedRouteProps {
-//   children: ReactNode;
-//   allowedRoles?: Role[];
-// }
+import {
+  useSelector,
+} from "react-redux";
 
-// const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-//   const { isAuthenticated, user, isAuthChecked } = useSelector(
-//     (state: RootState) => state.auth
-//   );
-// if (!isAuthChecked) {
-//     return <div>Loading...</div>;
-//   }
+import type {
+  ReactNode,
+} from "react";
 
+import type {
+  RootState,
+} from "../store/store";
 
-//   if (!isAuthenticated || !user) {
-//   if (allowedRoles?.includes("provider")) {
-//     return <Navigate to="/provider/login" replace />;
-//   }
-//   return <Navigate to="/login" replace />;
-// }
+import type {
+  Role,
+} from "../constants/roles";
 
+import {
+  ROUTES,
+} from "../constants/routes";
 
-//   if (allowedRoles && !allowedRoles.includes(user.role)) {
-//     return <Navigate to="/unauthorized" replace />;
-//   }
-
-//   return <>{children}</>;
-// };
-// export default ProtectedRoute;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import type { ReactNode } from "react";
-import type { RootState } from "../store/store";
-import type { Role } from "../constants/roles";
+import AuthLoader from "../components/common/AuthLoader";
 
 interface ProtectedRouteProps {
   children: ReactNode;
+
   allowedRoles?: Role[];
 }
 
-const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { isAuthenticated, user, isAuthChecked } = useSelector(
-    (state: RootState) => state.auth
+const ProtectedRoute = ({
+  children,
+  allowedRoles,
+}: ProtectedRouteProps) => {
+  const {
+    isAuthenticated,
+    user,
+    isAuthChecked,
+  } = useSelector(
+    (
+      state: RootState,
+    ) => state.auth,
   );
 
-  if (!isAuthChecked) {
-    return <div>Loading...</div>;
+  /* ====================================================== */
+  /* LOADING */
+  /* ====================================================== */
+
+  if (
+    !isAuthChecked
+  ) {
+    return (
+      <AuthLoader />
+    );
   }
 
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />;
+  /* ====================================================== */
+  /* NOT AUTHENTICATED */
+  /* ====================================================== */
+
+  if (
+    !isAuthenticated ||
+    !user
+  ) {
+    return (
+      <Navigate
+        to={
+          ROUTES.AUTH.LOGIN
+        }
+        replace
+      />
+    );
   }
 
-  const role = user.role?.toLowerCase() as Role;
+  /* ====================================================== */
+  /* ROLE CHECK */
+  /* ====================================================== */
 
-  console.log("ROLE CHECK:", role, allowedRoles);
+  const role =
+    user.role as Role;
 
-  if (allowedRoles && (!role || !allowedRoles.includes(role))) {
-    return <Navigate to="/unauthorized" replace />;
+  if (
+    allowedRoles &&
+    !allowedRoles.includes(
+      role,
+    )
+  ) {
+    return (
+      <Navigate
+        to="/unauthorized"
+        replace
+      />
+    );
   }
 
   return <>{children}</>;

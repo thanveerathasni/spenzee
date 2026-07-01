@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import Swal from "sweetalert2";
 import { ShieldOff, ShieldCheck } from "lucide-react";
+import UserFinancialMonitoring from "../../../components/admin/financial/UserFinancialMonitoring";
 
 interface User { _id: string; name: string; email: string; role: string; isActive: boolean; }
 
@@ -23,6 +24,7 @@ const item: Variants = {
 export default function AdminUserDetails() {
   const { id } = useParams();
   const [user, setUser] = useState<User | null>(null);
+  const [activeTab, setActiveTab] = useState<"profile" | "financial">("profile");
 
   const fetchUser = async () => {
     try {
@@ -95,37 +97,65 @@ export default function AdminUserDetails() {
         </span>
       </motion.div>
 
-      {/* Info sections */}
-      {[
-        {
-          title: "Personal Info",
-          rows: [["Name", user.name], ["Email", user.email], ["Role", user.role], ["Status", user.isActive ? "Active" : "Blocked"]]
-        },
-        {
-          title: "Financial Info",
-          rows: [["Wallet Balance", "₹12,450"], ["Total Spent", "₹58,300"], ["Transactions", "124"]]
-        },
-        {
-          title: "Account Info",
-          rows: [["Subscription", "Premium"], ["Joined", "12 Jan 2024"], ["Last Activity", "2 hours ago"]]
-        },
-      ].map(section => (
-        <motion.div key={section.title} variants={item}
-          className="bg-white border border-black/[0.06] rounded-2xl overflow-hidden"
-        >
-          <div className="px-6 py-4 border-b border-black/[0.05] bg-black/[0.02]">
-            <p className="text-[9px] font-black uppercase tracking-[0.35em] text-black/25">{section.title}</p>
-          </div>
-          <div className="divide-y divide-black/[0.04]">
-            {section.rows.map(([label, value]) => (
-              <div key={label} className="px-6 py-4 flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest text-black/30">{label}</span>
-                <span className="text-[11px] font-black text-black uppercase tracking-wide">{value}</span>
+      <motion.div variants={item} className="flex gap-2 rounded-2xl border border-black/[0.06] bg-white p-1">
+        {[
+          ["profile", "Profile"],
+          ["financial", "Financial Monitoring"],
+        ].map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setActiveTab(value as "profile" | "financial")}
+            className={`rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest transition ${
+              activeTab === value ? "bg-black text-white" : "text-black/40 hover:text-black"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </motion.div>
+
+      {activeTab === "profile" ? (
+        <>
+          {/* Info sections */}
+          {[
+            {
+              title: "Personal Info",
+              rows: [["Name", user.name], ["Email", user.email], ["Role", user.role], ["Status", user.isActive ? "Active" : "Blocked"]]
+            },
+            {
+              title: "Financial Info",
+              rows: [["Wallet Balance", "₹12,450"], ["Total Spent", "₹58,300"], ["Transactions", "124"]]
+            },
+            {
+              title: "Account Info",
+              rows: [["Subscription", "Premium"], ["Joined", "12 Jan 2024"], ["Last Activity", "2 hours ago"]]
+            },
+          ].map(section => (
+            <motion.div key={section.title} variants={item}
+              className="bg-white border border-black/[0.06] rounded-2xl overflow-hidden"
+            >
+              <div className="px-6 py-4 border-b border-black/[0.05] bg-black/[0.02]">
+                <p className="text-[9px] font-black uppercase tracking-[0.35em] text-black/25">{section.title}</p>
               </div>
-            ))}
-          </div>
+              <div className="divide-y divide-black/[0.04]">
+                {section.rows.map(([label, value]) => (
+                  <div key={label} className="px-6 py-4 flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-black/30">{label}</span>
+                    <span className="text-[11px] font-black text-black uppercase tracking-wide">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </>
+      ) : (
+        <motion.div variants={item}
+          className="max-w-6xl"
+        >
+          <UserFinancialMonitoring userId={user._id} />
         </motion.div>
-      ))}
+      )}
     </motion.div>
   );
 }

@@ -3,6 +3,7 @@ import {
   ProviderStatus,
 } from "../../../models/Provider.model";
 
+import { CommerceStatus } from "../../../shared/constants/commerce";
 import { ProviderDashboardDTO } from "../../../shared/dto/provider/providerDashboard";
 
 export interface IProviderRepository {
@@ -47,6 +48,17 @@ export interface IProviderRepository {
 
   findAllPaginated(
     status: ProviderStatus | "",
+    page: number,
+    limit: number,
+    search: string,
+  ): Promise<{
+    providers: IProvider[];
+
+    total: number;
+  }>;
+
+  findCommercePaginated(
+    commerceStatus: CommerceStatus | "",
     page: number,
     limit: number,
     search: string,

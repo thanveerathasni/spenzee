@@ -1,43 +1,43 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Variants } from "framer-motion";
 import toast from "react-hot-toast";
+
 import { adminAuthApi } from "../../../api/admin/adminAuth.api";
+
 import { useDispatch, useSelector } from "react-redux";
-import { setAuth } from "../../../store/auth/auth.slice";
+import PasswordInput from "../../../components/common/PasswordInput";
+import {
+  setAdminAuth,
+} from "../../../store/admin/adminAuth.slice";
+
+import {
+  persistAdminAuth,
+} from "../../../store/admin/adminAuthStorage";
+
 import type { RootState } from "../../../store/store";
+
 import { ROUTES } from "../../../constants/routes";
+
 import { mapApiError } from "../../../util/errorHandler";
 
-const EyeIcon = ({ open }: { open: boolean }) =>
-  open ? (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
-      <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  ) : (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" stroke="currentColor" strokeWidth="2" />
-      <path d="M6.35 6.35C4.31 7.72 2.85 9.68 2 12c1.73 4.39 6 7.5 10 7.5 1.55 0 3.03-.37 4.35-1.02" stroke="currentColor" strokeWidth="2" />
-      <path d="M17.94 17.94A9.96 9.96 0 0022 12c-1.73-4.39-6-7.5-10-7.5-1.3 0-2.55.24-3.7.68" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
+// const EyeIcon = ({ open }: { open: boolean }) =>
+//   open ? (
+//     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+//       <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+//       <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" stroke="currentColor" strokeWidth="2" />
+//     </svg>
+//   ) : (
+//     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+//       <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+//       <path d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" stroke="currentColor" strokeWidth="2" />
+//       <path d="M6.35 6.35C4.31 7.72 2.85 9.68 2 12c1.73 4.39 6 7.5 10 7.5 1.55 0 3.03-.37 4.35-1.02" stroke="currentColor" strokeWidth="2" />
+//       <path d="M17.94 17.94A9.96 9.96 0 0022 12c-1.73-4.39-6-7.5-10-7.5-1.3 0-2.55.24-3.7.68" stroke="currentColor" strokeWidth="2" />
+//     </svg>
+//   );
 
 /* Animated background grid lines */
 const GridBackground = () => (
@@ -50,7 +50,7 @@ const GridBackground = () => (
       </defs>
       <rect width="100%" height="100%" fill="url(#grid)" />
     </svg>
-    {/* Corner accent lines */}
+
     <div className="absolute top-0 left-0 w-32 h-px bg-gradient-to-r from-white/20 to-transparent" />
     <div className="absolute top-0 left-0 w-px h-32 bg-gradient-to-b from-white/20 to-transparent" />
     <div className="absolute bottom-0 right-0 w-32 h-px bg-gradient-to-l from-white/20 to-transparent" />
@@ -63,44 +63,130 @@ const inputCls =
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
+
   const dispatch = useDispatch();
 
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const {
+    isAuthenticated,
+    admin,
+  } = useSelector(
+    (state: RootState) => state.adminAuth
+  );
 
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
+
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading]   = useState(false);
-  const [errors, setErrors]     = useState<{ email?: string; password?: string }>({});
-  const [focused, setFocused]   = useState<string | null>(null);
+
+  // const [showPassword, setShowPassword] =
+  //   useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [errors, setErrors] =
+    useState<{
+      email?: string;
+      password?: string;
+    }>({});
+
+  const [focused, setFocused] =
+    useState<string | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === "admin") {
-      navigate(ROUTES.ADMIN.DASHBOARD, { replace: true });
+    if (
+      isAuthenticated &&
+      admin
+    ) {
+      navigate(
+        ROUTES.ADMIN.DASHBOARD,
+        { replace: true }
+      );
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [
+    isAuthenticated,
+    admin,
+    navigate,
+  ]);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
+
     setErrors({});
 
-    const newErrors: { email?: string; password?: string } = {};
-    if (!email.trim()) newErrors.email = "Email required";
-    if (!password.trim()) newErrors.password = "Password required";
-    if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
+    const newErrors: {
+      email?: string;
+      password?: string;
+    } = {};
+
+    if (!email.trim()) {
+      newErrors.email =
+        "Email required";
+    }
+
+    if (!password.trim()) {
+      newErrors.password =
+        "Password required";
+    }
+
+    if (
+      Object.keys(newErrors)
+        .length
+    ) {
+      setErrors(newErrors);
+
+      return;
+    }
 
     setLoading(true);
+
     try {
-      const data = await adminAuthApi.login({ email, password });
-      dispatch(setAuth({ accessToken: data.accessToken, user: { ...data.admin, role: "admin" } }));
-      toast.success("Admin authenticated");
-      navigate(ROUTES.ADMIN.DASHBOARD, { replace: true });
-    } catch (err: unknown) {
-      const mapped = mapApiError(err);
+      const data =
+        await adminAuthApi.login({
+          email,
+          password,
+        });
+
+      persistAdminAuth(
+        data.accessToken,
+        data.admin
+      );
+
+      dispatch(
+        setAdminAuth({
+          accessToken:
+            data.accessToken,
+
+          admin:
+            data.admin,
+        })
+      );
+
+      toast.success(
+        "Admin authenticated"
+      );
+
+      navigate(
+        ROUTES.ADMIN.DASHBOARD,
+        { replace: true }
+      );
+    } catch (
+      err: unknown
+    ) {
+      const mapped =
+        mapApiError(err);
+
       if (mapped.field) {
-        setErrors({ [mapped.field]: mapped.message });
+        setErrors({
+          [mapped.field]:
+            mapped.message,
+        });
       } else {
-        toast.error(mapped.message || "Invalid admin credentials");
+        toast.error(
+          mapped.message ||
+            "Invalid admin credentials"
+        );
       }
     } finally {
       setLoading(false);
@@ -111,12 +197,32 @@ const AdminLogin: React.FC = () => {
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.3 } },
+
+    visible: {
+      opacity: 1,
+
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3,
+      },
+    },
   };
 
   const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 16 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: easeOutQuart } },
+    hidden: {
+      opacity: 0,
+      y: 16,
+    },
+
+    visible: {
+      opacity: 1,
+      y: 0,
+
+      transition: {
+        duration: 0.7,
+        ease: easeOutQuart,
+      },
+    },
   };
 
   return (
@@ -238,58 +344,80 @@ const AdminLogin: React.FC = () => {
               </AnimatePresence>
             </motion.div>
 
-            {/* Password */}
-            <motion.div variants={itemVariants}>
-              <div
-                className={`relative transition-all duration-300 ${
-                  focused === "password" ? "opacity-100" : "opacity-80"
-                }`}
-              >
-                <label className="block text-[10px] text-white/30 uppercase tracking-[0.2em] mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setErrors((p) => ({ ...p, password: undefined })); }}
-                    onFocus={() => setFocused("password")}
-                    onBlur={() => setFocused(null)}
-                    placeholder="••••••••••••"
-                    className={`${inputCls} pr-12`}
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((p) => !p)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
-                  >
-                    <EyeIcon open={showPassword} />
-                  </button>
-                </div>
-                {focused === "password" && (
-                  <motion.div
-                    layoutId="focus-line"
-                    className="absolute bottom-0 left-0 right-0 h-px bg-white"
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                )}
-              </div>
-              <AnimatePresence>
-                {errors.password && (
-                  <motion.p
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="text-xs text-red-400 mt-2 pl-1"
-                  >
-                    {errors.password}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </motion.div>
+        {/* Password */}
+<motion.div variants={itemVariants}>
+  <div
+    className={`relative transition-all duration-300 ${
+      focused === "password"
+        ? "opacity-100"
+        : "opacity-80"
+    }`}
+  >
+    <label className="block text-[10px] text-white/30 uppercase tracking-[0.2em] mb-2">
+      Password
+    </label>
+
+    <PasswordInput
+      value={password}
+      onChange={(value) => {
+        setPassword(value);
+
+        setErrors((prev) => ({
+          ...prev,
+          password: undefined,
+        }));
+      }}
+      onFocus={() =>
+        setFocused("password")
+      }
+      onBlur={() =>
+        setFocused(null)
+      }
+      placeholder="••••••••••••"
+      autoComplete="current-password"
+      className={inputCls}
+    />
+
+    {focused ===
+      "password" && (
+      <motion.div
+        layoutId="focus-line"
+        className="absolute bottom-0 left-0 right-0 h-px bg-white"
+        initial={{
+          scaleX: 0,
+        }}
+        animate={{
+          scaleX: 1,
+        }}
+        transition={{
+          duration: 0.3,
+        }}
+      />
+    )}
+  </div>
+
+  <AnimatePresence>
+    {errors.password && (
+      <motion.p
+        initial={{
+          opacity: 0,
+          height: 0,
+        }}
+        animate={{
+          opacity: 1,
+          height: "auto",
+        }}
+        exit={{
+          opacity: 0,
+          height: 0,
+        }}
+        className="text-xs text-red-400 mt-2 pl-1"
+      >
+        {errors.password}
+      </motion.p>
+    )}
+  </AnimatePresence>
+</motion.div>
 
             {/* Submit */}
             <motion.div variants={itemVariants} className="pt-2">

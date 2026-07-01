@@ -1,3 +1,7 @@
+import type {
+  User as AuthUser,
+} from "../store/auth/auth.types";
+
 export interface Address {
   id?: string;
   fullName?: string;
@@ -16,12 +20,8 @@ export interface Address {
   isPrimary?: boolean;
 }
 
-export interface User {
+export interface User extends AuthUser {
   id?: string;
-  name?: string;
-  email?: string;
-  phone?: string;
-  profilePicture?: string;
   gender?: string;
   dob?: string;
   occupation?: string;

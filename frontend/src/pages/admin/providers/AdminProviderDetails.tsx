@@ -9,15 +9,20 @@ import {
   ExternalLink,
   Globe,
   Mail,
+  PauseCircle,
+  Percent,
   Phone,
+  PlayCircle,
   ShieldCheck,
   ShieldOff,
+  Store,
+  XCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { adminUserApi } from "../../../api/admin/adminUser.api";
 import { ROUTES } from "../../../constants/routes";
-import { AdminProvider, ProviderStatus } from "../../../types/provider";
+import { AdminProvider, CommerceStatus, ProviderStatus } from "../../../types/provider";
 
 const easeOutQuart = [0.22, 1, 0.36, 1] as const;
 
@@ -37,6 +42,13 @@ const statusStyles: Record<ProviderStatus, string> = {
   blocked: "border-zinc-200 bg-zinc-100 text-zinc-600",
   pending: "border-amber-100 bg-amber-50 text-amber-600",
   rejected: "border-rose-100 bg-rose-50 text-rose-500",
+};
+
+const commerceStatusStyles: Record<CommerceStatus, string> = {
+  PENDING: "border-amber-100 bg-amber-50 text-amber-600",
+  APPROVED: "border-emerald-100 bg-emerald-50 text-emerald-600",
+  REJECTED: "border-rose-100 bg-rose-50 text-rose-500",
+  FROZEN: "border-blue-100 bg-blue-50 text-blue-600",
 };
 
 interface InfoRowProps {
@@ -110,6 +122,133 @@ export default function AdminProviderDetails() {
       toast.success("Provider status updated");
     } catch {
       toast.error("Status update failed");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const approveCommerce = async () => {
+    if (!provider) return;
+
+    const result = await Swal.fire({
+      title: "Approve commerce?",
+      input: "number",
+      inputLabel: "Commission percentage",
+      inputValue: provider.commissionPercentage,
+      inputAttributes: {
+        min: "0",
+        max: "100",
+        step: "0.01",
+      },
+      showCancelButton: true,
+      confirmButtonText: "Approve",
+      confirmButtonColor: "#059669",
+      background: "#fff",
+      color: "#111",
+    });
+
+    if (!result.isConfirmed) return;
+
+    const commissionPercentage =
+      Number(result.value);
+
+    try {
+      setUpdating(true);
+      setProvider(await adminUserApi.approveProviderCommerce(provider.id, commissionPercentage));
+      toast.success("Commerce approved");
+    } catch {
+      toast.error("Commerce approval failed");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const rejectCommerce = async () => {
+    if (!provider) return;
+
+    const result = await Swal.fire({
+      title: "Reject commerce?",
+      input: "textarea",
+      inputLabel: "Reason",
+      inputPlaceholder: "Enter rejection reason",
+      showCancelButton: true,
+      confirmButtonText: "Reject",
+      confirmButtonColor: "#e11d48",
+      background: "#fff",
+      color: "#111",
+    });
+
+    if (!result.isConfirmed || typeof result.value !== "string") return;
+
+    try {
+      setUpdating(true);
+      setProvider(await adminUserApi.rejectProviderCommerce(provider.id, result.value));
+      toast.success("Commerce rejected");
+    } catch {
+      toast.error("Commerce rejection failed");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const updateCommerceState = async (action: "freeze" | "resume") => {
+    if (!provider) return;
+
+    const result = await Swal.fire({
+      title: `${action === "freeze" ? "Freeze" : "Resume"} commerce?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: action === "resume" ? "#059669" : "#111111",
+      confirmButtonText: "Confirm",
+      background: "#fff",
+      color: "#111",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setUpdating(true);
+      setProvider(
+        action === "freeze"
+          ? await adminUserApi.freezeProviderCommerce(provider.id)
+          : await adminUserApi.resumeProviderCommerce(provider.id),
+      );
+      toast.success(`Commerce ${action === "freeze" ? "frozen" : "resumed"}`);
+    } catch {
+      toast.error("Commerce update failed");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const updateCommission = async () => {
+    if (!provider) return;
+
+    const result = await Swal.fire({
+      title: "Update commission",
+      input: "number",
+      inputLabel: "Commission percentage",
+      inputValue: provider.commissionPercentage,
+      inputAttributes: {
+        min: "0",
+        max: "100",
+        step: "0.01",
+      },
+      showCancelButton: true,
+      confirmButtonText: "Update",
+      confirmButtonColor: "#111111",
+      background: "#fff",
+      color: "#111",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setUpdating(true);
+      setProvider(await adminUserApi.updateProviderCommission(provider.id, Number(result.value)));
+      toast.success("Commission updated");
+    } catch {
+      toast.error("Commission update failed");
     } finally {
       setUpdating(false);
     }
@@ -270,6 +409,83 @@ export default function AdminProviderDetails() {
           </div>
         </motion.div>
       </div>
+
+      <motion.div
+        variants={item}
+        className="rounded-2xl border border-black/[0.06] bg-white p-6"
+      >
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="mb-3 text-[9px] font-black uppercase tracking-[0.35em] text-black/25">
+              Commerce Activation
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`rounded-xl border px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.3em] ${commerceStatusStyles[provider.commerceStatus]}`}
+              >
+                {provider.commerceStatus}
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-xl border border-black/[0.06] px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-black/45">
+                <Percent size={13} />
+                {provider.commissionPercentage}% commission
+              </span>
+            </div>
+            {provider.commerceRejectedReason && (
+              <p className="mt-3 text-xs font-semibold text-rose-500">
+                {provider.commerceRejectedReason}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={updating || provider.commerceStatus === "APPROVED"}
+              onClick={() => void approveCommerce()}
+              className="inline-flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Store size={13} />
+              Approve
+            </button>
+            <button
+              type="button"
+              disabled={updating || provider.commerceStatus === "REJECTED"}
+              onClick={() => void rejectCommerce()}
+              className="inline-flex items-center gap-2 rounded-xl border border-rose-100 bg-rose-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-rose-500 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <XCircle size={13} />
+              Reject
+            </button>
+            <button
+              type="button"
+              disabled={updating || provider.commerceStatus !== "APPROVED"}
+              onClick={() => void updateCommerceState("freeze")}
+              className="inline-flex items-center gap-2 rounded-xl border border-black/[0.08] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black/45 transition hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <PauseCircle size={13} />
+              Freeze
+            </button>
+            <button
+              type="button"
+              disabled={updating || provider.commerceStatus !== "FROZEN"}
+              onClick={() => void updateCommerceState("resume")}
+              className="inline-flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <PlayCircle size={13} />
+              Resume
+            </button>
+            <button
+              type="button"
+              disabled={updating}
+              onClick={() => void updateCommission()}
+              className="inline-flex items-center gap-2 rounded-xl border border-black/[0.08] px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black/45 transition hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Percent size={13} />
+              Commission
+            </button>
+          </div>
+        </div>
+      </motion.div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {[

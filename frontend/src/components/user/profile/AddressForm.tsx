@@ -67,8 +67,15 @@ export default function AddressForm({
 
     try {
       setLoading(true);
-      await onSubmit(result.data);
-    } finally {
+await onSubmit({
+  ...result.data,
+
+  alternatePhone:
+    result.data.alternatePhone || undefined,
+
+  landmark:
+    result.data.landmark || undefined,
+});    } finally {
       setLoading(false);
     }
   };

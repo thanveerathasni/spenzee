@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Bell, Settings, HelpCircle, LogOut } from "lucide-react";
+import { Search, Settings, HelpCircle, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { clearAuth } from "../../../store/auth/auth.slice"; 
 import { api } from "../../../api/axios"; 
 import type { AdminSection } from "../nav.config";
+import NotificationBell from "../../notification/NotificationBell";
 
 interface HeaderProps {
   activeSection: AdminSection;
@@ -99,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-3">
         <HeaderIcon icon={<HelpCircle size={16} />} />
         <HeaderIcon icon={<Settings size={16} />} />
-        <HeaderIcon icon={<Bell size={16} />} badge />
+        <NotificationBell audience="admin" />
 
         <div className="h-8 w-px bg-gray-200 mx-2 hidden sm:block" />
 

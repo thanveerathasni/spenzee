@@ -47,6 +47,11 @@ export const LOG_MESSAGES = {
     REQUEST_SUBMITTED: "Provider request submitted",
     REQUEST_REVIEWED: "Review provider request",
     VERIFICATION_REUPLOADED: "Provider verification re-uploaded",
+    COMMERCE_APPROVED: "Provider commerce approved",
+    COMMERCE_REJECTED: "Provider commerce rejected",
+    COMMERCE_FROZEN: "Provider commerce frozen",
+    COMMERCE_RESUMED: "Provider commerce resumed",
+    COMMISSION_UPDATED: "Provider commission updated",
   },
 
   ADMIN: {

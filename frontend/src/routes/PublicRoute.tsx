@@ -1,116 +1,146 @@
-// import { Navigate, useLocation } from "react-router-dom";
-// import { useSelector } from "react-redux";
-// import type { ReactNode } from "react";
-// import type { RootState } from "../store/store";
+import {
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 
-// interface PublicRouteProps {
-//   children: ReactNode;
-// }
+import {
+  useSelector,
+} from "react-redux";
 
-// const PublicRoute = ({ children }: PublicRouteProps) => {
-//   const { isAuthenticated, user, isAuthChecked } = useSelector(
-//     (state: RootState) => state.auth
-//   );
+import type {
+  ReactNode,
+} from "react";
 
-//   const location = useLocation();
+import type {
+  RootState,
+} from "../store/store";
 
-//   if (!isAuthChecked) {
-//     return <div>Loading...</div>;
-//   }
+import {
+  ROUTES,
+} from "../constants/routes";
 
-//   if (isAuthenticated && user) {
-//     const role = user.role?.toLowerCase();
-
-//     //  PROVIDER FLOW
-//     if (role === "provider") {
-//       if (!user.hasAcceptedTerms) {
-//         return <Navigate to="/provider/welcome" replace />;
-//       }
-//       return <Navigate to="/provider/dashboard" replace />;
-//     }
-
-//     //  ADMIN FLOW
-//     if (role === "admin") {
-//       return <Navigate to="/admin/dashboard" replace />;
-//     }
-//     // USER FLOW 
-//           if (
-//       location.pathname === "/login" ||
-//       location.pathname === "/signup"
-//     ) {
-//       return <Navigate to="/welcome" replace />;
-//     }
-
-//     return <>{children}</>;
-//   }
-
-//   return <>{children}</>;
-// };
-
-// export default PublicRoute;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { Navigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
-import type { ReactNode } from "react";
-import type { RootState } from "../store/store";
+import AuthLoader from "../components/common/AuthLoader";
 
 interface PublicRouteProps {
   children: ReactNode;
 }
 
-const PublicRoute = ({ children }: PublicRouteProps) => {
-  const { isAuthenticated, user, isAuthChecked } = useSelector(
-    (state: RootState) => state.auth
+const PublicRoute = ({
+  children,
+}: PublicRouteProps) => {
+  const {
+    isAuthenticated,
+    user,
+    isAuthChecked,
+  } = useSelector(
+    (
+      state: RootState,
+    ) => state.auth,
   );
 
-  const location = useLocation();
+  const location =
+    useLocation();
 
-  if (!isAuthChecked) {
-    return <div>Loading...</div>;
+  /* ====================================================== */
+  /* LOADING */
+  /* ====================================================== */
+
+  if (
+    !isAuthChecked
+  ) {
+    return <AuthLoader />;
   }
 
+  /* ====================================================== */
+  /* AUTH PAGES */
+  /* ====================================================== */
+
   const isAuthPage =
-    location.pathname === "/login" ||
-    location.pathname === "/signup" ||
-    location.pathname === "/provider/login" ||
-    location.pathname === "/provider/request";
+    location.pathname ===
+      ROUTES.AUTH
+        .LOGIN ||
+    location.pathname ===
+      ROUTES.AUTH
+        .SIGNUP ||
+    location.pathname ===
+      ROUTES.PROVIDER
+        .LOGIN ||
+    location.pathname ===
+      ROUTES.PROVIDER
+        .REQUEST;
 
-  if (isAuthenticated && user && isAuthPage) {
-    const role = user.role?.toLowerCase();
+  /* ====================================================== */
+  /* REDIRECT AUTHENTICATED USERS */
+  /* ====================================================== */
 
-    // PROVIDER
-    if (role === "provider") {
-      if (!user.hasAcceptedTerms) {
-        return <Navigate to="/provider/welcome" replace />;
+  if (
+    isAuthenticated &&
+    user &&
+    isAuthPage
+  ) {
+    /* PROVIDER */
+
+    if (
+      user.role ===
+      "provider"
+    ) {
+      if (
+        !user.hasAcceptedTerms
+      ) {
+        return (
+          <Navigate
+            to={
+              ROUTES
+                .PROVIDER
+                .WELCOME
+            }
+            replace
+          />
+        );
       }
-      return <Navigate to="/provider/dashboard" replace />;
+
+      return (
+        <Navigate
+          to={
+            ROUTES
+              .PROVIDER
+              .DASHBOARD
+          }
+          replace
+        />
+      );
     }
 
-    // ADMIN
-    if (role === "admin") {
-      return <Navigate to="/admin/dashboard" replace />;
+    /* ADMIN */
+
+    if (
+      user.role ===
+      "admin"
+    ) {
+      return (
+        <Navigate
+          to={
+            ROUTES
+              .ADMIN
+              .DASHBOARD
+          }
+          replace
+        />
+      );
     }
 
-    // USER
-    if (role === "user") {
-      return <Navigate to="/welcome" replace />;
-    }
+    /* USER */
+
+    return (
+      <Navigate
+        to={
+          ROUTES
+            .USER
+            .WELCOME
+        }
+        replace
+      />
+    );
   }
 
   return <>{children}</>;

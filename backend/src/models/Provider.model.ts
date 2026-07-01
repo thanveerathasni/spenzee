@@ -2,7 +2,14 @@ import {
   Document,
   model,
   Schema,
+  Types,
 } from "mongoose";
+
+import {
+  COMMERCE_STATUS,
+  CommerceStatus,
+  DEFAULT_COMMISSION_PERCENTAGE,
+} from "../shared/constants/commerce";
 
 export enum ProviderStatus {
   PENDING = "pending",
@@ -45,6 +52,20 @@ export interface IProvider
   readonly role: "provider";
 
   status: ProviderStatus;
+
+  commerceStatus: CommerceStatus;
+
+  commerceEnabled: boolean;
+
+  commerceEnabledAt?: Date;
+
+  commerceApprovedBy?: Types.ObjectId;
+
+  commerceRejectedReason?: string;
+
+  commissionPercentage: number;
+
+  isCommerceFrozen: boolean;
 
   password?: string;
 
@@ -133,6 +154,48 @@ const providerSchema =
           ProviderStatus.PENDING,
       },
 
+      commerceStatus: {
+        type: String,
+        enum:
+          Object.values(
+            COMMERCE_STATUS,
+          ),
+        default:
+          COMMERCE_STATUS.PENDING,
+      },
+
+      commerceEnabled: {
+        type: Boolean,
+        default: false,
+      },
+
+      commerceEnabledAt: {
+        type: Date,
+      },
+
+      commerceApprovedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "Admin",
+      },
+
+      commerceRejectedReason: {
+        type: String,
+        trim: true,
+      },
+
+      commissionPercentage: {
+        type: Number,
+        default:
+          DEFAULT_COMMISSION_PERCENTAGE,
+        min: 0,
+        max: 100,
+      },
+
+      isCommerceFrozen: {
+        type: Boolean,
+        default: false,
+      },
+
       password: {
         type: String,
         select: false,
@@ -158,6 +221,10 @@ providerSchema.index({
 
 providerSchema.index({
   status: 1,
+});
+
+providerSchema.index({
+  commerceStatus: 1,
 });
 
 providerSchema.index({

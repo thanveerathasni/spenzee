@@ -1,77 +1,144 @@
-import { createSlice } from "@reduxjs/toolkit";
-import type { AuthState } from "./auth.types";
+import {
+  createSlice,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 
-const initialState: AuthState = {
-  accessToken: null,
-  user: null,
-  isAuthenticated: false,
-  isAuthChecked: false,
-  isLoading: true
-};
-const authSlice = createSlice({
-  name: "auth",
-  initialState,
-  reducers: {
-  setAuth: (state, action) => {
-  state.accessToken = action.payload.accessToken;
-  state.user = action.payload.user;
-  state.isAuthenticated = true;
-  state.isAuthChecked = true;
-  state.isLoading = false;
+import type {
+  AuthState,
+  User,
+} from "./auth.types";
 
-  //  persist
-  localStorage.setItem(
-    "auth",
-    JSON.stringify({
-      accessToken: action.payload.accessToken,
-      user: action.payload.user,
-    })
-  );
-},
-setUser: (state, action) => {
-  state.user = action.payload;
+const initialState: AuthState =
+  {
+    accessToken: null,
 
-  localStorage.setItem(
-    "auth",
-    JSON.stringify({
-      accessToken: state.accessToken,
-      user: action.payload,
-    })
-  );
-},
-clearAuth: (state) => {
-  state.accessToken = null;
-  state.user = null;
-  state.isAuthenticated = false;
-  state.isAuthChecked = true;
-  state.isLoading = false;
-  // clear persist
-  localStorage.removeItem("auth");
-},
-hydrateAuth: (state) => {
-  const stored = localStorage.getItem("auth");
+    user: null,
 
-  if (stored) {
-    const parsed = JSON.parse(stored);
-    state.accessToken = parsed.accessToken;
-    state.user = parsed.user;
-    state.isAuthenticated = true;
-  }
+    isAuthenticated: false,
 
-  state.isAuthChecked = true;
-  state.isLoading = false;
-},
+    isAuthChecked: false,
 
+    isLoading: true,
+  };
 
-    markAuthChecked: (state) => {
-      state.isAuthChecked = true;
-      state.isLoading = false;
-    }
-  },
-  
-});
+interface SetAuthPayload {
+  accessToken: string;
 
+  user: User;
+}
 
+const authSlice =
+  createSlice({
+    name: "auth",
 
-export const { setAuth, clearAuth, markAuthChecked, hydrateAuth, setUser } = authSlice.actions;
-export const authReducer = authSlice.reducer;
+    initialState,
+
+    reducers: {
+      /* ====================================================== */
+      /* SET AUTH */
+      /* ====================================================== */
+
+      setAuth: (
+        state,
+        action: PayloadAction<SetAuthPayload>,
+      ) => {
+        state.accessToken =
+          action.payload.accessToken;
+
+        state.user =
+          action.payload.user;
+
+        state.isAuthenticated = true;
+
+        state.isAuthChecked = true;
+
+        state.isLoading = false;
+      },
+
+      /* ====================================================== */
+      /* SET USER */
+      /* ====================================================== */
+
+      setUser: (
+        state,
+        action: PayloadAction<User>,
+      ) => {
+        state.user =
+          action.payload;
+      },
+
+      /* ====================================================== */
+      /* CLEAR AUTH */
+      /* ====================================================== */
+
+      clearAuth: (
+        state,
+      ) => {
+        state.accessToken =
+          null;
+
+        state.user =
+          null;
+
+        state.isAuthenticated = false;
+
+        state.isAuthChecked = true;
+
+        state.isLoading = false;
+      },
+
+      /* ====================================================== */
+      /* HYDRATE */
+      /* ====================================================== */
+
+      hydrateAuth: (
+        state,
+        action: PayloadAction<{
+          accessToken: string | null;
+
+          user: User | null;
+        }>,
+      ) => {
+        state.accessToken =
+          action.payload.accessToken;
+
+        state.user =
+          action.payload.user;
+
+        state.isAuthenticated =
+          Boolean(
+            action.payload.accessToken &&
+              action.payload.user,
+          );
+
+        state.isAuthChecked = true;
+
+        state.isLoading = false;
+      },
+
+      /* ====================================================== */
+      /* AUTH CHECKED */
+      /* ====================================================== */
+
+      markAuthChecked: (
+        state,
+      ) => {
+        state.isAuthChecked =
+          true;
+
+        state.isLoading =
+          false;
+      },
+    },
+  });
+
+export const {
+  setAuth,
+  setUser,
+  clearAuth,
+  hydrateAuth,
+  markAuthChecked,
+} = authSlice.actions;
+
+export const authReducer =
+  authSlice.reducer;

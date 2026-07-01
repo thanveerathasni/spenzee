@@ -22,8 +22,12 @@ export const personalInfoSchema = z.object({
 export const addressSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   phone: z.string().regex(/^[0-9]{7,15}$/, "Enter a valid phone number"),
-  alternatePhone: z.string().regex(/^[0-9]{7,15}$/, "Enter a valid alternate phone").optional().or(z.literal("")),
-  houseName: z.string().min(1, "House name is required"),
+alternatePhone: z
+  .string()
+  .trim()
+  .optional()
+  .or(z.literal("")),
+    houseName: z.string().min(1, "House name is required"),
   street: z.string().min(3, "Street is too short"),
   city: z.string().min(2, "City is required"),
   district: z.string().min(2, "District is required"),

@@ -2,7 +2,7 @@
 
 import Swal from "sweetalert2";
 import { NavigateFunction } from "react-router-dom";
-import { adminAuthStore } from "../../store/admin/adminAuth";
+import { clearPersistedAdminAuth } from "../../store/admin/adminAuthStorage";
 
 export async function adminLogout(
   navigate: NavigateFunction
@@ -20,6 +20,6 @@ export async function adminLogout(
 
   if (!result.isConfirmed) return;
 
-  adminAuthStore.clearToken();
+  clearPersistedAdminAuth();
   navigate("/admin/login", { replace: true });
 }

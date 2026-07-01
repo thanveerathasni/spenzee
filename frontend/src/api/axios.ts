@@ -1,269 +1,306 @@
-import axios from "axios";
-import type { AxiosInstance, AxiosRequestConfig } from "axios";
+import axios, {
+  AxiosError,
+  InternalAxiosRequestConfig,
+} from "axios";
+
 import { store } from "../store/store";
-import { clearAuth, setAuth } from "../store/auth";
-import { API_ROUTES } from "../constants/apiRoutes";
 
-interface RetryAxiosRequestConfig extends AxiosRequestConfig {
-  _retry?: boolean;
-}
+import {
+  clearAuth,
+  setAuth,
+} from "../store/auth/auth.slice";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import {
+  authApi,
+} from "./auth.api";
 
-export const api: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-});
+import {
+  API_ROUTES,
+} from "../constants/apiRoutes";
 
-api.interceptors.request.use((config) => {
-  const accessToken = store.getState().auth.accessToken;
+const API_URL =
+  import.meta.env
+    .VITE_API_URL;
 
-  if (accessToken) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
+/* ====================================================== */
+/* API INSTANCE */
+/* ====================================================== */
 
-  return config;
-});
+export const api =
+  axios.create({
+    baseURL: API_URL,
 
-let isRefreshing = false;
-
-type FailedRequest = {
-  resolve: (token: string) => void;
-  reject: (error: unknown) => void;
-};
-
-let failedQueue: FailedRequest[] = [];
-
-const processQueue = (error: unknown, token: string | null) => {
-  failedQueue.forEach((promise) => {
-    if (error) promise.reject(error);
-    else if (token) promise.resolve(token);
+    withCredentials: true,
   });
+
+/* ====================================================== */
+/* REQUEST INTERCEPTOR */
+/* ====================================================== */
+
+api.interceptors.request.use(
+  (
+    config: InternalAxiosRequestConfig,
+  ) => {
+    const accessToken =
+      store.getState()
+        .auth.accessToken;
+
+    /* ============================================== */
+    /* ATTACH TOKEN ONLY IF EXISTS */
+    /* ============================================== */
+
+    if (
+      accessToken &&
+      config.headers
+    ) {
+      config.headers.Authorization =
+        `Bearer ${accessToken}`;
+    }
+
+    return config;
+  },
+);
+
+/* ====================================================== */
+/* REFRESH CONTROL */
+/* ====================================================== */
+
+let isRefreshing =
+  false;
+
+let failedQueue: Array<{
+  resolve: (
+    token: string,
+  ) => void;
+
+  reject: (
+    error: unknown,
+  ) => void;
+}> = [];
+
+/* ====================================================== */
+/* PROCESS QUEUE */
+/* ====================================================== */
+
+const processQueue = (
+  error: unknown,
+  token: string | null =
+    null,
+) => {
+  failedQueue.forEach(
+    (promise) => {
+      if (error) {
+        promise.reject(
+          error,
+        );
+      } else if (
+        token
+      ) {
+        promise.resolve(
+          token,
+        );
+      }
+    },
+  );
 
   failedQueue = [];
 };
+
+/* ====================================================== */
+/* RESPONSE INTERCEPTOR */
+/* ====================================================== */
+
 api.interceptors.response.use(
-  (res) => res,
-  async (error) => {
-    const original = error.config as RetryAxiosRequestConfig;
+  (
+    response,
+  ) => response,
 
-    if (original.url?.includes("/user/profile/image")) {
-      return Promise.reject(error);
+  async (
+    error: AxiosError,
+  ) => {
+    const original =
+      error.config as InternalAxiosRequestConfig & {
+        _retry?: boolean;
+      };
+
+    /* ============================================== */
+    /* SAFETY */
+    /* ============================================== */
+
+    if (!original) {
+      return Promise.reject(
+        error,
+      );
     }
 
- const isPublicAuthRoute =
+    console.log(
+      "401 URL:",
+      original.url,
+    );
 
-  /* USER AUTH */
-  original.url?.includes("/auth/login") ||
-  original.url?.includes("/auth/signup") ||
-  original.url?.includes("/auth/refresh") ||
-  original.url?.includes("/auth/verify-otp") ||
-  original.url?.includes("/auth/resend-otp") ||
-  original.url?.includes("/auth/forgot-password") ||
-  original.url?.includes("/auth/reset-password") ||
+    /* ============================================== */
+    /* PUBLIC ROUTES */
+    /* ============================================== */
 
-  /* PROVIDER AUTH */
-  original.url?.includes("/provider/auth/login") ||
-  original.url?.includes("/provider/auth/setup-password") ||
-  original.url?.includes("/provider/auth/forgot-password") ||
-  original.url?.includes("/provider/auth/reset-password");
-    if (isPublicAuthRoute) {
-      return Promise.reject(error);
+    const isPublicRoute =
+      original.url?.includes(
+        API_ROUTES.AUTH.LOGIN,
+      ) ||
+      original.url?.includes(
+        API_ROUTES.AUTH.SIGNUP,
+      ) ||
+      original.url?.includes(
+        API_ROUTES.AUTH.REFRESH,
+      ) ||
+      original.url?.includes(
+        API_ROUTES.AUTH.VERIFY_OTP,
+      ) ||
+      original.url?.includes(
+        API_ROUTES.AUTH.RESEND_OTP,
+      ) ||
+      original.url?.includes(
+        API_ROUTES.AUTH.FORGOT_PASSWORD,
+      ) ||
+      original.url?.includes(
+        API_ROUTES.AUTH.RESET_PASSWORD,
+      );
+
+    if (
+      isPublicRoute
+    ) {
+      return Promise.reject(
+        error,
+      );
     }
 
-    if (error.response?.status !== 401) {
-      return Promise.reject(error);
+    /* ============================================== */
+    /* HANDLE NON 401 */
+    /* ============================================== */
+
+    if (
+      error.response
+        ?.status !== 401
+    ) {
+      return Promise.reject(
+        error,
+      );
     }
 
-    if (original._retry) {
-      store.dispatch(clearAuth());
-      return Promise.reject(error);
+    /* ============================================== */
+    /* ALREADY RETRIED */
+    /* ============================================== */
+
+    if (
+      original._retry
+    ) {
+      store.dispatch(
+        clearAuth(),
+      );
+
+      return Promise.reject(
+        error,
+      );
     }
 
-    original._retry = true;
+    original._retry =
+      true;
 
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        failedQueue.push({
-          resolve: (token: string) => {
-            original.headers = original.headers ?? {};
-            original.headers.Authorization = `Bearer ${token}`;
-            resolve(api(original));
-          },
+    /* ============================================== */
+    /* REFRESH IN PROGRESS */
+    /* ============================================== */
+
+    if (
+      isRefreshing
+    ) {
+      return new Promise(
+        (
+          resolve,
           reject,
-        });
-      });
+        ) => {
+          failedQueue.push({
+            resolve: (
+              token: string,
+            ) => {
+              if (
+                original.headers
+              ) {
+                original.headers.Authorization =
+                  `Bearer ${token}`;
+              }
+
+              resolve(
+                api(
+                  original,
+                ),
+              );
+            },
+
+            reject,
+          });
+        },
+      );
     }
 
-    isRefreshing = true;
+    isRefreshing =
+      true;
+
+    /* ============================================== */
+    /* REFRESH TOKEN */
+    /* ============================================== */
 
     try {
-      const res = await api.post(API_ROUTES.AUTH.REFRESH);
-      const data = res.data.data;
+      const refreshed =
+        await authApi.refresh();
+
+      /* ================= STORE ================= */
 
       store.dispatch(
         setAuth({
-          accessToken: data.accessToken,
-          user: data.user,
-        })
+          accessToken:
+            refreshed.accessToken,
+
+          user:
+            refreshed.user,
+        }),
       );
 
-      processQueue(null, data.accessToken);
+      /* ================= QUEUE ================= */
 
-      original.headers = original.headers ?? {};
-      original.headers.Authorization = `Bearer ${data.accessToken}`;
+      processQueue(
+        null,
+        refreshed.accessToken,
+      );
 
-      return api(original);
-    } catch (err) {
-      processQueue(err, null);
-      store.dispatch(clearAuth());
-      return Promise.reject(err);
+      /* ================= RETRY ================= */
+
+      if (
+        original.headers
+      ) {
+        original.headers.Authorization =
+          `Bearer ${refreshed.accessToken}`;
+      }
+
+      return api(
+        original,
+      );
+    } catch (
+      refreshError
+    ) {
+      processQueue(
+        refreshError,
+        null,
+      );
+
+      store.dispatch(
+        clearAuth(),
+      );
+
+      return Promise.reject(
+        refreshError,
+      );
     } finally {
-      isRefreshing = false;
+      isRefreshing =
+        false;
     }
-  }
+  },
 );
-
-
-
-
-
-
-
-
-
-
-
-
-// import axios from "axios";
-// import type { AxiosInstance, AxiosRequestConfig } from "axios";
-// import { store } from "../store/store";
-// import { clearAuth, setAuth } from "../store/auth";
-// import { API_ROUTES } from "../constants/apiRoutes";
-
-// interface RetryAxiosRequestConfig extends AxiosRequestConfig {
-//   _retry?: boolean;
-// }
-
-// const API_BASE_URL = import.meta.env.VITE_API_URL;
-
-// export const api: AxiosInstance = axios.create({
-//   baseURL: API_BASE_URL,
-//   withCredentials: true,
-// });
-
-// api.interceptors.request.use((config) => {
-//   const accessToken = store.getState().auth.accessToken;
-
-//   if (accessToken) {
-//     config.headers = config.headers ?? {};
-//     config.headers.Authorization = `Bearer ${accessToken}`;
-//   }
-
-//   return config;
-// });
-
-// let isRefreshing = false;
-
-// type FailedRequest = {
-//   resolve: (token: string) => void;
-//   reject: (error: unknown) => void;
-// };
-
-// let failedQueue: FailedRequest[] = [];
-
-// const processQueue = (error: unknown, token: string | null) => {
-//   failedQueue.forEach((promise) => {
-//     if (error) promise.reject(error);
-//     else if (token) promise.resolve(token);
-//   });
-
-//   failedQueue = [];
-// };
-
-// api.interceptors.response.use(
-//   (res) => res,
-//   async (error) => {
-//     const original = error.config as RetryAxiosRequestConfig;
-
-//     const isPublicAuthRoute =
-//       original.url?.includes("/auth/login") ||
-//       original.url?.includes("/auth/signup") ||
-//       original.url?.includes("/auth/refresh") ||
-//       original.url?.includes("/auth/verify-otp") ||
-//       original.url?.includes("/auth/resend-otp") ||
-//       original.url?.includes("/auth/forgot-password") ||
-//       original.url?.includes("/auth/reset-password");
-
-//     if (isPublicAuthRoute) {
-//       return Promise.reject(error);
-//     }
-
-//     if (error.response?.status !== 401) {
-//       return Promise.reject(error);
-//     }
-
-//           if (original._retry) {
-//       store.dispatch(clearAuth());
-//       return Promise.reject(error);
-//     }
-
-//     original._retry = true;
-
-//     if (isRefreshing) {
-//       return new Promise((resolve, reject) => {
-//         failedQueue.push({
-//           resolve: (token: string) => {
-//             original.headers = original.headers ?? {};
-//             original.headers.Authorization = `Bearer ${token}`;
-//             resolve(api(original));
-//           },
-//           reject,
-//         });
-//       });
-//     }
-
-//     isRefreshing = true;
-
-//     try {
-//       const res = await api.post(API_ROUTES.AUTH.REFRESH);
-//       const data = res.data.data;
-
-//       store.dispatch(
-//         setAuth({
-//           accessToken: data.accessToken,
-//           user: data.user,
-//         })
-//       );
-
-//       processQueue(null, data.accessToken);
-
-//       original.headers = original.headers ?? {};
-//       original.headers.Authorization = `Bearer ${data.accessToken}`;
-
-//       return api(original);
-//     } catch (err) {
-//       processQueue(err, null);
-//       store.dispatch(clearAuth());
-//       return Promise.reject(err);
-//     } finally {
-//       isRefreshing = false;
-//     }
-//   }
-// );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

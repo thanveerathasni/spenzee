@@ -1,13 +1,74 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { DollarSign, Star, Users, CalendarDays, TrendingUp } from "lucide-react";
+import { AlertCircle, Clock, DollarSign, Package, CalendarDays, TrendingUp } from "lucide-react";
+import toast from "react-hot-toast";
+import { providerProfileApi, type ProviderDashboardStats } from "../../api/provider/providerProfile.api";
+import type { AdminProvider } from "../../types/provider";
 
 export default function ProviderDashboard() {
-  const stats = [
-    { title: "Total Revenue", value: "$12,450", icon: DollarSign, change: "+14.5%", positive: true },
-    { title: "Bookings", value: "156", icon: CalendarDays, change: "+5.2%", positive: true },
-    { title: "Active Clients", value: "84", icon: Users, change: "-2.1%", positive: false },
-    { title: "Rating", value: "4.8", icon: Star, change: "0.0%", positive: true },
+  const [stats, setStats] =
+    useState<ProviderDashboardStats | null>(null);
+  const [commerce, setCommerce] =
+    useState<AdminProvider | null>(null);
+  const [loading, setLoading] =
+    useState(true);
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const commerceStatus =
+          await providerProfileApi.getCommerceStatus();
+
+        setCommerce(commerceStatus);
+
+        if (
+          commerceStatus.commerceStatus === "APPROVED" &&
+          commerceStatus.commerceEnabled &&
+          !commerceStatus.isCommerceFrozen
+        ) {
+          setStats(await providerProfileApi.getDashboard());
+        }
+      } catch {
+        toast.error("Failed to load provider dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadDashboard();
+  }, []);
+
+  const commerceBlocked =
+    commerce &&
+    (
+      commerce.commerceStatus !== "APPROVED" ||
+      !commerce.commerceEnabled ||
+      commerce.isCommerceFrozen
+    );
+
+  const dashboardStats = [
+    {
+      title: "Total Revenue",
+      value: `₹${(stats?.revenue ?? 0).toLocaleString("en-IN")}`,
+      icon: DollarSign,
+      change: "Live",
+      positive: true,
+    },
+    {
+      title: "Total Sales",
+      value: String(stats?.totalSales ?? 0),
+      icon: CalendarDays,
+      change: "API",
+      positive: true,
+    },
+    {
+      title: "Products",
+      value: String(stats?.totalProducts ?? 0),
+      icon: Package,
+      change: "Synced",
+      positive: true,
+    },
   ];
 
   return (
@@ -25,8 +86,56 @@ export default function ProviderDashboard() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => {
+      {commerceBlocked && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm"
+        >
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-gray-700">
+                {commerce.commerceStatus === "REJECTED" || commerce.commerceStatus === "FROZEN" ? (
+                  <AlertCircle size={22} />
+                ) : (
+                  <Clock size={22} />
+                )}
+              </div>
+              <div>
+                <span className="inline-flex rounded-full bg-amber-50 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-700">
+                  {commerce.commerceStatus}
+                </span>
+                <h2 className="mt-3 text-xl font-bold text-gray-900">
+                  {commerce.commerceStatus === "REJECTED"
+                    ? "Commerce approval was rejected"
+                    : commerce.commerceStatus === "FROZEN"
+                      ? "Commerce access is frozen"
+                      : "Waiting for Commerce Approval"}
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
+                  {commerce.commerceStatus === "REJECTED"
+                    ? commerce.commerceRejectedReason || "Please contact support for the next review steps."
+                    : commerce.commerceStatus === "FROZEN"
+                      ? "Your products remain saved, but selling access is temporarily disabled."
+                      : "Your documents can be verified while commerce approval is still pending. Admin approval is required before selling products."}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/provider/support"
+              className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+            >
+              Contact Support
+            </Link>
+          </div>
+        </motion.div>
+      )}
+
+      {commerceBlocked ? null : (
+      <>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {dashboardStats.map((stat, i) => {
           const Icon = stat.icon;
           return (
             <motion.div 
@@ -48,7 +157,9 @@ export default function ProviderDashboard() {
                 </div>
               </div>
               <h3 className="text-gray-500 text-sm font-medium">{stat.title}</h3>
-              <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {loading ? "..." : stat.value}
+              </p>
             </motion.div>
           );
         })}
@@ -59,7 +170,7 @@ export default function ProviderDashboard() {
           <h2 className="text-lg font-bold text-gray-900 mb-4">Recent Bookings</h2>
           <div className="flex flex-col items-center justify-center h-[300px] text-gray-400">
             <CalendarDays size={48} className="mb-4 opacity-20" />
-            <p>No recent bookings to display.</p>
+            <p>No recent backend activity to display.</p>
           </div>
         </div>
         
@@ -80,6 +191,8 @@ export default function ProviderDashboard() {
           </button>
         </div>
       </div>
+      </>
+      )}
     </motion.div>
   );
 }

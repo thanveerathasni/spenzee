@@ -74,6 +74,26 @@ export class ProviderService {
     );
   }
 
+  async getCommerceStatus(
+    providerId: string,
+  ): Promise<ProviderDTO> {
+    const provider =
+      await this._repo.findById(
+        providerId,
+      );
+
+    if (!provider) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH
+          .PROVIDER_NOT_FOUND,
+      );
+    }
+
+    return ProviderMapper.toDTO(
+      provider,
+    );
+  }
+
   async updateProfile(
     providerId: string,
     data: Partial<IProvider>,
@@ -290,6 +310,5 @@ export class ProviderService {
     );
   }
 }
-
 
 

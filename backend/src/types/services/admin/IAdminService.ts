@@ -1,6 +1,7 @@
 import { IProvider, ProviderStatus } from "../../../models/Provider.model";
-import { IUser } from "../../../models/User.model";
 import { IProviderRequest } from "../../../models/ProviderRequest.model";
+import { IUser } from "../../../models/User.model";
+import { CommerceStatus } from "../../../shared/constants/commerce";
 import { ProviderRequestStatus } from "../../../shared/constants/providerRequestStatus";
 import { AdminDashboardDTO } from "../../../shared/dto/admin/adminDashboard.dto";
 import { ProviderDTO } from "../../../shared/dto/provider/provider.dto";
@@ -32,9 +33,42 @@ getProviders(
   providers: IProvider[];
   total: number;
 }>;
+
+  getCommerceProviders(
+    commerceStatus: CommerceStatus | "",
+    page: number,
+    limit: number,
+    search: string
+  ): Promise<{
+    providers: IProvider[];
+    total: number;
+  }>;
+
   getProviderById(providerId: string): Promise<ProviderDTO>;
 
   updateProviderStatus(providerId: string, status: ProviderStatus): Promise<void>;
+
+  approveProviderCommerce(
+    providerId: string,
+    adminId: string,
+    commissionPercentage: number
+  ): Promise<ProviderDTO>;
+
+  rejectProviderCommerce(
+    providerId: string,
+    adminId: string,
+    reason: string
+  ): Promise<ProviderDTO>;
+
+  freezeProviderCommerce(providerId: string, adminId: string): Promise<ProviderDTO>;
+
+  resumeProviderCommerce(providerId: string, adminId: string): Promise<ProviderDTO>;
+
+  updateProviderCommission(
+    providerId: string,
+    adminId: string,
+    commissionPercentage: number
+  ): Promise<ProviderDTO>;
 
   getProviderRequests(
     page: number,

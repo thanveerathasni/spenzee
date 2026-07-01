@@ -14,6 +14,7 @@ import type { RootState } from "../../../store/store";
 import { mapApiError } from "../../../util/errorHandler";
 import { ROUTES } from "../../../constants/routes";
 import { motion, AnimatePresence } from "framer-motion";
+import PasswordInput from "../../../components/common/PasswordInput";
 
 interface Errors {
   name?: string;
@@ -23,20 +24,20 @@ interface Errors {
   otp?: string;
 }
 
-const EyeIcon = ({ open }: { open: boolean }) =>
-  open ? (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
-      <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  ) : (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" stroke="currentColor" strokeWidth="2" />
-      <path d="M6.35 6.35C4.31 7.72 2.85 9.68 2 12c1.73 4.39 6 7.5 10 7.5 1.55 0 3.03-.37 4.35-1.02" stroke="currentColor" strokeWidth="2" />
-      <path d="M17.94 17.94A9.96 9.96 0 0022 12c-1.73-4.39-6-7.5-10-7.5-1.3 0-2.55.24-3.7.68" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
+// const EyeIcon = ({ open }: { open: boolean }) =>
+//   open ? (
+//     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+//       <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+//       <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z" stroke="currentColor" strokeWidth="2" />
+//     </svg>
+//   ) : (
+//     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+//       <path d="M3 3l18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+//       <path d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" stroke="currentColor" strokeWidth="2" />
+//       <path d="M6.35 6.35C4.31 7.72 2.85 9.68 2 12c1.73 4.39 6 7.5 10 7.5 1.55 0 3.03-.37 4.35-1.02" stroke="currentColor" strokeWidth="2" />
+//       <path d="M17.94 17.94A9.96 9.96 0 0022 12c-1.73-4.39-6-7.5-10-7.5-1.3 0-2.55.24-3.7.68" stroke="currentColor" strokeWidth="2" />
+//     </svg>
+//   );
 
 const SignupForm: React.FC = () => {
   const navigate = useNavigate();
@@ -45,8 +46,7 @@ const SignupForm: React.FC = () => {
   const [otpTimer, setOtpTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
 
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -344,31 +344,117 @@ const SignupForm: React.FC = () => {
                     name="email" value={formData.email} placeholder="you@example.com"
                     autoComplete="email" error={errors.email}
                   />
-                  <FieldRow id="password" label="Password" shortLabel="Pass" type={showPassword ? "text" : "password"}
-                    name="password" value={formData.password} placeholder="Create a password"
-                    autoComplete="new-password" error={errors.password}
-                    rightSlot={
-                      <button type="button" onClick={() => setShowPassword((p) => !p)}
-                        className="text-white/25 hover:text-white/70 transition-colors shrink-0"
-                      >
-                        <EyeIcon open={showPassword} />
-                      </button>
-                    }
-                  />
-                  <FieldRow id="confirm" label="Confirm Password" shortLabel="Confirm"
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword" value={formData.confirmPassword}
-                    placeholder="Repeat your password" autoComplete="new-password"
-                    error={errors.confirmPassword}
-                    rightSlot={
-                      <button type="button" onClick={() => setShowConfirmPassword((p) => !p)}
-                        className="text-white/25 hover:text-white/70 transition-colors shrink-0"
-                      >
-                        <EyeIcon open={showConfirmPassword} />
-                      </button>
-                    }
-                  />
+                  <div
+                    className={`border-t transition-colors duration-300 ${activeField === "password"
+                        ? "border-white/60"
+                        : "border-white/10"
+                      }`}
+                  >
+                    <div className="pt-5 pb-4">
+                      <label className="block text-[9px] font-black uppercase tracking-[0.35em] text-white/35 mb-3">
+                        Password
+                      </label>
 
+                      <PasswordInput
+                        value={formData.password}
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            password: value,
+                          }))
+                        }
+                        onFocus={() =>
+                          setActiveField("password")
+                        }
+                        onBlur={() =>
+                          setActiveField(null)
+                        }
+                        placeholder="Create a password"
+                        autoComplete="new-password"
+                        className="flex-1 bg-transparent text-white text-base font-light placeholder-white/20 focus:outline-none"
+                      />
+                    </div>
+
+                    <AnimatePresence>
+                      {errors.password && (
+                        <motion.p
+                          initial={{
+                            opacity: 0,
+                            height: 0,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            height: "auto",
+                          }}
+                          exit={{
+                            opacity: 0,
+                            height: 0,
+                          }}
+                          className="text-[11px] text-red-400 pb-3"
+                        >
+                          {errors.password}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <div
+                    className={`border-t transition-colors duration-300 ${activeField === "confirm"
+                        ? "border-white/60"
+                        : "border-white/10"
+                      }`}
+                  >
+                    <div className="pt-5 pb-4">
+                      <label className="block text-[9px] font-black uppercase tracking-[0.35em] text-white/35 mb-3">
+                        Confirm Password
+                      </label>
+
+                      <PasswordInput
+                        value={
+                          formData.confirmPassword
+                        }
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            confirmPassword:
+                              value,
+                          }))
+                        }
+                        onFocus={() =>
+                          setActiveField("confirm")
+                        }
+                        onBlur={() =>
+                          setActiveField(null)
+                        }
+                        placeholder="Repeat your password"
+                        autoComplete="new-password"
+                        className="flex-1 bg-transparent text-white text-base font-light placeholder-white/20 focus:outline-none"
+                      />
+                    </div>
+
+                    <AnimatePresence>
+                      {errors.confirmPassword && (
+                        <motion.p
+                          initial={{
+                            opacity: 0,
+                            height: 0,
+                          }}
+                          animate={{
+                            opacity: 1,
+                            height: "auto",
+                          }}
+                          exit={{
+                            opacity: 0,
+                            height: 0,
+                          }}
+                          className="text-[11px] text-red-400 pb-3"
+                        >
+                          {
+                            errors.confirmPassword
+                          }
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </div>
                   {/* Submit */}
                   <div className="border-t border-white/10 pt-10">
                     <motion.button type="submit" disabled={loading}
@@ -424,9 +510,8 @@ const SignupForm: React.FC = () => {
                       <motion.div key={i}
                         initial={{ scale: 0 }} animate={{ scale: 1 }}
                         transition={{ delay: i * 0.06, duration: 0.35, ease: "backOut" }}
-                        className={`h-1 flex-1 transition-colors duration-300 ${
-                          i < formData.otp.length ? "bg-white" : "bg-white/15"
-                        }`}
+                        className={`h-1 flex-1 transition-colors duration-300 ${i < formData.otp.length ? "bg-white" : "bg-white/15"
+                          }`}
                       />
                     ))}
                   </div>

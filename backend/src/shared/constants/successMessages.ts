@@ -41,6 +41,13 @@ USER: {
     EMAIL_OTP_SENT: "OTP sent to provider email",
     EMAIL_UPDATED: "Provider email updated successfully",
     TERMS_ACCEPTED: "Provider terms accepted",
+    COMMERCE_STATUS_FETCHED: "Provider commerce status fetched successfully",
+    COMMERCE_APPROVED: "Provider commerce approved successfully",
+    COMMERCE_REJECTED: "Provider commerce rejected successfully",
+    COMMERCE_FROZEN: "Provider commerce frozen successfully",
+    COMMERCE_RESUMED: "Provider commerce resumed successfully",
+    COMMISSION_UPDATED: "Provider commission updated successfully",
+    COMMERCE_PROVIDERS_FETCHED: "Commerce providers fetched successfully",
   },
 
   VERIFICATION: {

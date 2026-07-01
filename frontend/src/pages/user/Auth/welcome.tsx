@@ -7,10 +7,10 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight, BarChart3 } from "lucide-react";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../../store/store";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 // import { clearTokens } from "../../../util/tokenStorage";
 import { authApi } from "../../../api/auth.api";
 import Swal from "sweetalert2";
@@ -23,7 +23,8 @@ import { ALERT_MESSAGES } from "../../../constants/messages";
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const navigate = useNavigate();
-  const navItems = ["Dashboard", "Profile", "Logout"];
+  const location = useLocation();
+  const navItems = ["Dashboard", "Financial Insights", "Profile", "Logout"];
 const dispatch = useDispatch();
 
   const handleLogout = async () => {
@@ -59,9 +60,27 @@ const dispatch = useDispatch();
       handleLogout();
     } else if (item === "Dashboard") {
       navigate(ROUTES.USER.DASHBOARD);
+    } else if (item === "Financial Insights") {
+      navigate(ROUTES.USER.FINANCIAL_INSIGHTS);
     } else if (item === "Profile") {
      navigate(ROUTES.USER.PROFILE);
     }
+  };
+
+  const isActive = (item: string) => {
+    if (item === "Dashboard") {
+      return location.pathname === ROUTES.USER.DASHBOARD;
+    }
+
+    if (item === "Financial Insights") {
+      return location.pathname.startsWith(ROUTES.USER.FINANCIAL_INSIGHTS);
+    }
+
+    if (item === "Profile") {
+      return location.pathname === ROUTES.USER.PROFILE;
+    }
+
+    return false;
   };
 
   return (
@@ -81,7 +100,11 @@ const dispatch = useDispatch();
           <button
             key={item}
             onClick={() => handleNavClick(item)}
-            className="text-[11px] uppercase tracking-[0.25em] font-sans text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white transition-colors duration-700"
+            className={`text-[11px] uppercase tracking-[0.25em] font-sans transition-colors duration-700 ${
+              isActive(item)
+                ? "text-black dark:text-white"
+                : "text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white"
+            }`}
           >
             {item}
           </button>
@@ -110,7 +133,11 @@ const dispatch = useDispatch();
             <button
               key={item}
               onClick={() => handleNavClick(item)}
-              className="text-sm uppercase tracking-[0.15em] font-medium text-black/70 dark:text-white/70 border-b border-black/5 dark:border-white/5 pb-2 text-left transition-colors duration-700"
+              className={`border-b border-black/5 pb-2 text-left text-sm font-medium uppercase tracking-[0.15em] transition-colors duration-700 dark:border-white/5 ${
+                isActive(item)
+                  ? "text-black dark:text-white"
+                  : "text-black/70 dark:text-white/70"
+              }`}
             >
               {item}
             </button>
@@ -145,10 +172,10 @@ const WelcomePage: React.FC = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen flex flex-col bg-white dark:bg-black overflow-hidden transition-colors duration-700">
+    <div className="relative min-h-screen w-screen flex flex-col bg-white dark:bg-black overflow-x-hidden transition-colors duration-700">
       <Navbar />
 
-      <main className="flex-1 flex items-center justify-center px-6 md:px-24">
+      <main className="flex-1 flex items-center justify-center px-6 pt-28 md:px-24">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -176,12 +203,12 @@ const WelcomePage: React.FC = () => {
             Your personalized experience is ready.
           </motion.p>
 
-          <motion.div variants={itemVariants} className="flex justify-center">
+          <motion.div variants={itemVariants} className="flex flex-col items-center justify-center gap-4 md:flex-row">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="group flex items-center justify-center gap-4 px-14 py-5 bg-black text-white dark:bg-white dark:text-black hover:bg-black/80 dark:hover:bg-white/80 text-xs uppercase tracking-[0.25em] font-medium transition-all duration-700"
-              onClick={() => navigate("/user/dashboard")}
+              onClick={() => navigate(ROUTES.USER.DASHBOARD)}
             >
               <span>Go to Dashboard</span>
               <ArrowRight
@@ -190,6 +217,7 @@ const WelcomePage: React.FC = () => {
               />
 
             </motion.button>
+         
           </motion.div>
 
           

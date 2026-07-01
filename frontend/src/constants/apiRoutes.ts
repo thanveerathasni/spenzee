@@ -1,99 +1,9 @@
-// export const API_ROUTES = {
-
-//   AUTH: {
-//     LOGIN: "/auth/login",
-
-//     SIGNUP: "/auth/signup",
-
-//     LOGOUT: "/auth/logout",
-
-//     REFRESH: "/auth/refresh",
-
-//     VERIFY_OTP: "/auth/verify-otp",
-
-//     RESEND_OTP: "/auth/resend-otp",
-
-//     FORGOT_PASSWORD: "/auth/forgot-password",
-
-//     RESET_PASSWORD: "/auth/reset-password",
-
-//     GOOGLE: "/auth/google",
-//   },
-
-//   USER: {
-
-//     PROFILE: "/user/profile",
-
-//     UPDATE_PROFILE: "/user/profile",
-
-//     PROFILE_IMAGE: "/user/profile/image",
-
-//     CHANGE_PASSWORD_SEND_OTP:
-//       "/user/password/send-otp",
-
-//     CHANGE_PASSWORD_VERIFY_OTP:
-//       "/user/password/verify-otp",
-
-//     CHANGE_PASSWORD_UPDATE:
-//       "/user/password/update",
-//   },
-
-//   PROVIDER: {
-
-//     REQUEST: "/provider/request",
-
-//     LOGIN: "/provider/auth/login",
-
-//     FORGOT_PASSWORD:
-//       "/provider/auth/forgot-password",
-
-//     RESET_PASSWORD:
-//       "/provider/auth/reset-password",
-
-//     PROFILE: "/provider/profile",
-
-//     UPDATE_PROFILE: "/provider/profile",
-//   },
-
-//   ADMIN: {
-
-//     LOGIN: "/admin/auth/login",
-
-//     LOGOUT: "/admin/auth/logout",
-
-//     DASHBOARD: "/admin/dashboard",
-
-//     USERS: "/admin/users",
-
-//     USER_DETAILS: "/admin/users/:id",
-
-//     PROVIDERS: "/admin/providers",
-
-//     PROVIDER_DETAILS: "/admin/providers/:id",
-
-//     SUSPEND_PROVIDER:
-//       "/admin/providers/suspend",
-
-//     ACTIVATE_PROVIDER:
-//       "/admin/providers/activate",
-//   },
-// } as const;
-
-
-
-
-
-
-
-
-
-
-
-
 export const API_ROUTES = {
+  /* ====================================================== */
+  /* AUTH */
+  /* ====================================================== */
 
   AUTH: {
-
     LOGIN: "/auth/login",
 
     SIGNUP: "/auth/signup",
@@ -102,58 +12,94 @@ export const API_ROUTES = {
 
     REFRESH: "/auth/refresh",
 
-    VERIFY_OTP: "/auth/verify-otp",
+    VERIFY_OTP:
+      "/auth/verify-otp",
 
-    RESEND_OTP: "/auth/resend-otp",
+    RESEND_OTP:
+      "/auth/resend-otp",
 
-    FORGOT_PASSWORD: "/auth/forgot-password",
+    FORGOT_PASSWORD:
+      "/auth/forgot-password",
 
-    RESET_PASSWORD: "/auth/reset-password",
+    RESET_PASSWORD:
+      "/auth/reset-password",
 
-    GOOGLE: "/auth/google",
+    GOOGLE:
+      "/auth/google",
   },
 
+  /* ====================================================== */
+  /* USER */
+  /* ====================================================== */
+
   USER: {
+    PROFILE:
+      "/user/profile",
 
-    PROFILE: "/user/profile",
+    PROFILE_IMAGE:
+      "/user/profile/image",
 
-    UPDATE_PROFILE: "/user/profile",
+    EMAIL_REQUEST:
+      "/user/email/request",
 
-    PROFILE_IMAGE: "/user/profile/image",
+    EMAIL_CONFIRM:
+      "/user/email/confirm",
 
-    EMAIL_REQUEST: "/user/email/request",
+    ADDRESSES:
+      "/user/addresses",
 
-    EMAIL_CONFIRM: "/user/email/confirm",
+    PRIMARY_ADDRESS:
+      "/user/addresses/primary/current",
 
-    ADDRESSES: "/user/addresses",
+    ADDRESS_DETAIL:
+      (id: string) =>
+        `/user/addresses/${id}`,
 
-    PRIMARY_ADDRESS: "/user/addresses/primary/current",
+    ADDRESS_PRIMARY:
+      (id: string) =>
+        `/user/addresses/${id}/primary`,
 
-    ADDRESS_DETAIL: (id: string) => `/user/addresses/${id}`,
+    VERIFICATION:
+      "/user/verification",
 
-    ADDRESS_PRIMARY: (id: string) => `/user/addresses/${id}/primary`,
+    VERIFICATION_STATUS:
+      "/user/verification/status",
 
-    VERIFICATION: "/user/verification",
+    BANK_UPLOAD_ACCESS:
+      "/user/bank-statements/access",
 
-    VERIFICATION_STATUS: "/user/verification/status",
+    BANK_STATEMENTS_UPLOAD:
+      "/user/bank-statements/upload",
 
-    BANK_UPLOAD_ACCESS: "/user/bank-statements/access",
+    BANK_STATEMENTS:
+      "/user/bank-statements",
 
-    CHANGE_PASSWORD_SEND_OTP:
-      "/user/password/send-otp",
+    BANK_STATEMENTS_ANALYTICS:
+      "/user/bank-statements/analytics",
 
-    CHANGE_PASSWORD_VERIFY_OTP:
-      "/user/password/verify-otp",
+    BANK_STATEMENTS_TRANSACTIONS:
+      "/user/bank-statements/transactions",
 
-    CHANGE_PASSWORD_UPDATE:
+    PASSWORD_SEND_OTP:
+      "/auth/user/password/send-otp",
+
+    PASSWORD_VERIFY_OTP:
+      "/auth/user/password/verify-otp",
+
+    PASSWORD_UPDATE:
       "/auth/user/password/update",
   },
 
+  /* ====================================================== */
+  /* PROVIDER */
+  /* ====================================================== */
+
   PROVIDER: {
+    REQUESTS:
+      "/provider/requests",
 
-    REQUEST: "/provider/request",
-
-    LOGIN: "/provider/auth/login",
+    LOGIN:
+      "/provider/auth/login",
 
     FORGOT_PASSWORD:
       "/provider/auth/forgot-password",
@@ -161,12 +107,17 @@ export const API_ROUTES = {
     RESET_PASSWORD:
       "/provider/auth/reset-password",
 
-    PROFILE: "/provider/profile",
-
-    UPDATE_PROFILE: "/provider/profile",
-
     CHANGE_PASSWORD:
       "/provider/auth/change-password",
+
+    DASHBOARD:
+      "/provider/dashboard",
+
+    COMMERCE_STATUS:
+      "/provider/commerce-status",
+
+    PROFILE:
+      "/provider/profile",
 
     EMAIL_CHANGE_REQUEST:
       "/provider/email/change-request",
@@ -177,54 +128,104 @@ export const API_ROUTES = {
     ACCEPT_TERMS:
       "/provider/accept-terms",
 
-    VERIFICATION: "/provider/verification",
+    VERIFICATION:
+      "/provider/verification",
 
-    VERIFICATION_STATUS: "/provider/verification/status",
+    VERIFICATION_STATUS:
+      "/provider/verification/status",
   },
 
+  /* ====================================================== */
+  /* ADMIN */
+  /* ====================================================== */
+
   ADMIN: {
+    LOGIN:
+      "/admin/auth/login",
 
-    LOGIN: "/admin/auth/login",
+    DASHBOARD:
+      "/admin/dashboard",
 
-    LOGOUT: "/admin/auth/logout",
+    USERS:
+      "/admin/users",
 
-    DASHBOARD: "/admin/dashboard",
+    USER_DETAILS:
+      (id: string) =>
+        `/admin/users/${id}`,
 
-    USERS: "/admin/users",
+    USER_STATEMENTS:
+      (id: string) =>
+        `/admin/users/${id}/statements`,
 
-    USER_DETAILS: "/admin/users/:id",
+    USER_ANALYTICS:
+      (id: string) =>
+        `/admin/users/${id}/analytics`,
 
-    PROVIDERS: "/admin/providers",
+    USER_STATEMENT_STATUS:
+      (
+        id: string,
+        statementId: string,
+      ) =>
+        `/admin/users/${id}/statements/${statementId}/status`,
 
-    PROVIDER_DETAILS: (id: string) =>
-      `/admin/providers/${id}`,
+    PROVIDERS:
+      "/admin/providers",
 
-    USER_VERIFICATIONS: "/admin/verifications/users",
+    PROVIDER_DETAILS:
+      (id: string) =>
+        `/admin/providers/${id}`,
 
-    USER_VERIFICATION_DETAIL: (id: string) =>
-      `/admin/verifications/users/${id}`,
+    PROVIDER_COMMERCE:
+      "/admin/providers/commerce",
 
-    USER_VERIFICATION_APPROVE: (id: string) =>
-      `/admin/verifications/users/${id}/approve`,
+    PROVIDER_COMMERCE_APPROVE:
+      (id: string) =>
+        `/admin/providers/${id}/commerce/approve`,
 
-    USER_VERIFICATION_REJECT: (id: string) =>
-      `/admin/verifications/users/${id}/reject`,
+    PROVIDER_COMMERCE_REJECT:
+      (id: string) =>
+        `/admin/providers/${id}/commerce/reject`,
 
-    PROVIDER_VERIFICATIONS: "/admin/verifications/providers",
+    PROVIDER_COMMERCE_FREEZE:
+      (id: string) =>
+        `/admin/providers/${id}/commerce/freeze`,
 
-    PROVIDER_VERIFICATION_DETAIL: (id: string) =>
-      `/admin/verifications/providers/${id}`,
+    PROVIDER_COMMERCE_RESUME:
+      (id: string) =>
+        `/admin/providers/${id}/commerce/resume`,
 
-    PROVIDER_VERIFICATION_APPROVE: (id: string) =>
-      `/admin/verifications/providers/${id}/approve`,
+    PROVIDER_COMMISSION:
+      (id: string) =>
+        `/admin/providers/${id}/commission`,
 
-    PROVIDER_VERIFICATION_REJECT: (id: string) =>
-      `/admin/verifications/providers/${id}/reject`,
+    USER_VERIFICATIONS:
+      "/admin/verifications/users",
 
-    SUSPEND_PROVIDER:
-      "/admin/providers/suspend",
+    USER_VERIFICATION_DETAIL:
+      (id: string) =>
+        `/admin/verifications/users/${id}`,
 
-    ACTIVATE_PROVIDER:
-      "/admin/providers/activate",
+    USER_VERIFICATION_APPROVE:
+      (id: string) =>
+        `/admin/verifications/users/${id}/approve`,
+
+    USER_VERIFICATION_REJECT:
+      (id: string) =>
+        `/admin/verifications/users/${id}/reject`,
+
+    PROVIDER_VERIFICATIONS:
+      "/admin/verifications/providers",
+
+    PROVIDER_VERIFICATION_DETAIL:
+      (id: string) =>
+        `/admin/verifications/providers/${id}`,
+
+    PROVIDER_VERIFICATION_APPROVE:
+      (id: string) =>
+        `/admin/verifications/providers/${id}/approve`,
+
+    PROVIDER_VERIFICATION_REJECT:
+      (id: string) =>
+        `/admin/verifications/providers/${id}/reject`,
   },
 } as const;

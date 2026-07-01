@@ -10,6 +10,8 @@ import {
 
 import { BaseRepository } from "../../../shared/base/BaseRepository";
 
+import { CommerceStatus } from "../../../shared/constants/commerce";
+
 import { ProviderDashboardDTO } from "../../../shared/dto/provider/providerDashboard";
 
 import { IProviderRepository } from "../../../types/repositories/provider/IProviderRepository";
@@ -28,6 +30,8 @@ type ProviderSearchCondition = {
 
 type ProviderListQuery = {
   status?: ProviderStatus;
+
+  commerceStatus?: CommerceStatus;
 
   $or?: ProviderSearchCondition[];
 };
@@ -184,6 +188,62 @@ export class ProviderRepository
           limit,
           sort: {
             createdAt: -1,
+          },
+        },
+      );
+
+    return {
+      providers:
+        result.data,
+
+      total:
+        result.total,
+    };
+  }
+
+  async findCommercePaginated(
+    commerceStatus: CommerceStatus | "",
+    page: number,
+    limit: number,
+    search: string,
+  ): Promise<{
+    providers: IProvider[];
+
+    total: number;
+  }> {
+    const query: ProviderListQuery =
+      {};
+
+    if (commerceStatus) {
+      query.commerceStatus =
+        commerceStatus;
+    }
+
+    if (search) {
+      query.$or = [
+        {
+          brandName: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          email: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    const result =
+      await this.paginate(
+        query,
+        {
+          page,
+          limit,
+          sort: {
+            updatedAt: -1,
           },
         },
       );

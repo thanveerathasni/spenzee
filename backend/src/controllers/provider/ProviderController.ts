@@ -100,6 +100,29 @@ export class ProviderController {
     });
   }
 
+  async getCommerceStatus(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const providerId =
+      this.getProviderId(req);
+
+    const data =
+      await this._providerService.getCommerceStatus(
+        providerId,
+      );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.PROVIDER
+          .COMMERCE_STATUS_FETCHED,
+
+      data,
+    });
+  }
+
   /* ====================================================== */
   /* PROFILE */
   /* ====================================================== */

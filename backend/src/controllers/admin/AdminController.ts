@@ -15,12 +15,25 @@ import {
 } from "../../models/Provider.model";
 
 import {
+  COMMERCE_STATUS,
+  CommerceStatus,
+} from "../../shared/constants/commerce";
+
+import {
+  ERROR_MESSAGES,
+} from "../../shared/constants/errorMessages";
+
+import {
   LOG_MESSAGES,
 } from "../../shared/constants/logMessages";
 
 import {
   SUCCESS_MESSAGES,
 } from "../../shared/constants/successMessages";
+
+import {
+  UnauthorizedError,
+} from "../../shared/errors/errors";
 
 import { logger } from "../../shared/logger/logger";
 
@@ -209,6 +222,60 @@ export class AdminController {
     });
   }
 
+  async getCommerceProviders(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const status =
+      String(
+        req.query.status ||
+          "",
+      );
+
+    const commerceStatus =
+      Object.values(
+        COMMERCE_STATUS,
+      ).includes(
+        status as CommerceStatus,
+      )
+        ? (status as CommerceStatus)
+        : "";
+
+    const page =
+      Number(
+        req.query.page,
+      ) || 1;
+
+    const limit =
+      Number(
+        req.query.limit,
+      ) || 10;
+
+    const search =
+      String(
+        req.query.search ||
+          "",
+      );
+
+    const data =
+      await this._adminService.getCommerceProviders(
+        commerceStatus,
+        page,
+        limit,
+        search,
+      );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.PROVIDER
+          .COMMERCE_PROVIDERS_FETCHED,
+
+      data,
+    });
+  }
+
   async getProviderById(
     req: Request,
     res: Response,
@@ -243,6 +310,114 @@ export class AdminController {
 
       message:
         "Provider status updated successfully",
+    });
+  }
+
+  async approveProviderCommerce(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const data =
+      await this._adminService.approveProviderCommerce(
+        req.params.id,
+        this.getAdminId(req),
+        req.body.commissionPercentage,
+      );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.PROVIDER
+          .COMMERCE_APPROVED,
+
+      data,
+    });
+  }
+
+  async rejectProviderCommerce(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const data =
+      await this._adminService.rejectProviderCommerce(
+        req.params.id,
+        this.getAdminId(req),
+        req.body.reason,
+      );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.PROVIDER
+          .COMMERCE_REJECTED,
+
+      data,
+    });
+  }
+
+  async freezeProviderCommerce(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const data =
+      await this._adminService.freezeProviderCommerce(
+        req.params.id,
+        this.getAdminId(req),
+      );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.PROVIDER
+          .COMMERCE_FROZEN,
+
+      data,
+    });
+  }
+
+  async resumeProviderCommerce(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const data =
+      await this._adminService.resumeProviderCommerce(
+        req.params.id,
+        this.getAdminId(req),
+      );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.PROVIDER
+          .COMMERCE_RESUMED,
+
+      data,
+    });
+  }
+
+  async updateProviderCommission(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    const data =
+      await this._adminService.updateProviderCommission(
+        req.params.id,
+        this.getAdminId(req),
+        req.body.commissionPercentage,
+      );
+
+    return sendResponse({
+      res,
+
+      message:
+        SUCCESS_MESSAGES.PROVIDER
+          .COMMISSION_UPDATED,
+
+      data,
     });
   }
 
@@ -309,5 +484,21 @@ export class AdminController {
 
       data,
     });
+  }
+
+  private getAdminId(
+    req: Request,
+  ): string {
+    const adminId =
+      req.user?.id;
+
+    if (!adminId) {
+      throw new UnauthorizedError(
+        ERROR_MESSAGES.AUTH
+          .ACCESS_DENIED,
+      );
+    }
+
+    return adminId;
   }
 }

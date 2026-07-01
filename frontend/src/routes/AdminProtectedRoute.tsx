@@ -1,17 +1,65 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
-import type { RootState } from "../store/store";
+import {
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 
-const AdminProtectedRoute = () => {
-  const { isAuthenticated, user } = useSelector(
-    (state: RootState) => state.auth
-  );
+import {
+  useSelector,
+} from "react-redux";
 
-  if (!isAuthenticated || !user || user.role !== "admin") {
-    return <Navigate to="/admin/login" replace />;
-  }
+import type {
+  RootState,
+} from "../store/store";
 
-  return <Outlet />;
-};
+import {
+  ROUTES,
+} from "../constants/routes";
+
+import AuthLoader from "../components/common/AuthLoader";
+
+const AdminProtectedRoute =
+  () => {
+    const {
+      isAuthenticated,
+      admin,
+      isAuthChecked,
+    } = useSelector(
+      (
+        state: RootState,
+      ) => state.adminAuth,
+    );
+
+    /* ====================================================== */
+    /* LOADING */
+    /* ====================================================== */
+
+    if (
+      !isAuthChecked
+    ) {
+      return <AuthLoader />;
+    }
+
+    /* ====================================================== */
+    /* NOT AUTHORIZED */
+    /* ====================================================== */
+
+    if (
+      !isAuthenticated ||
+      !admin
+    ) {
+      return (
+        <Navigate
+          to={
+            ROUTES
+              .ADMIN
+              .LOGIN
+          }
+          replace
+        />
+      );
+    }
+
+    return <Outlet />;
+  };
 
 export default AdminProtectedRoute;

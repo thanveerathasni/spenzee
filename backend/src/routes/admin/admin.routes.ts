@@ -13,6 +13,12 @@ import { asyncHandler } from "../../shared/middleware/asyncHandler";
 import { validate } from "../../middleware/validate";
 import { verificationListSchema, verificationRejectSchema } from "../../validators/verification.validator";
 import { adminStatementListSchema, adminStatementStatusSchema } from "../../validators/bankStatement.validator";
+import {
+  providerCommerceApproveSchema,
+  providerCommerceIdParamSchema,
+  providerCommerceRejectSchema,
+  providerCommissionUpdateSchema,
+} from "../../validators/providerCommerce.validator";
 
 const router = Router();
 
@@ -100,6 +106,13 @@ router.get(
 );
 
 router.get(
+  ROUTES.ADMIN_USER.PROVIDER_COMMERCE,
+  authGuard,
+  roleGuard([ROLES.ADMIN]),
+  asyncHandler(controller.getCommerceProviders.bind(controller))
+);
+
+router.get(
   ROUTES.ADMIN_USER.PROVIDER_BY_ID,
   authGuard,
   roleGuard([ROLES.ADMIN]),
@@ -111,6 +124,46 @@ router.patch(
   authGuard,
   roleGuard([ROLES.ADMIN]),
   controller.updateProviderStatus.bind(controller)
+);
+
+router.patch(
+  ROUTES.ADMIN_USER.PROVIDER_COMMERCE_APPROVE,
+  authGuard,
+  roleGuard([ROLES.ADMIN]),
+  validate(providerCommerceApproveSchema),
+  asyncHandler(controller.approveProviderCommerce.bind(controller))
+);
+
+router.patch(
+  ROUTES.ADMIN_USER.PROVIDER_COMMERCE_REJECT,
+  authGuard,
+  roleGuard([ROLES.ADMIN]),
+  validate(providerCommerceRejectSchema),
+  asyncHandler(controller.rejectProviderCommerce.bind(controller))
+);
+
+router.patch(
+  ROUTES.ADMIN_USER.PROVIDER_COMMERCE_FREEZE,
+  authGuard,
+  roleGuard([ROLES.ADMIN]),
+  validate(providerCommerceIdParamSchema),
+  asyncHandler(controller.freezeProviderCommerce.bind(controller))
+);
+
+router.patch(
+  ROUTES.ADMIN_USER.PROVIDER_COMMERCE_RESUME,
+  authGuard,
+  roleGuard([ROLES.ADMIN]),
+  validate(providerCommerceIdParamSchema),
+  asyncHandler(controller.resumeProviderCommerce.bind(controller))
+);
+
+router.patch(
+  ROUTES.ADMIN_USER.PROVIDER_COMMISSION,
+  authGuard,
+  roleGuard([ROLES.ADMIN]),
+  validate(providerCommissionUpdateSchema),
+  asyncHandler(controller.updateProviderCommission.bind(controller))
 );
 
 router.get(

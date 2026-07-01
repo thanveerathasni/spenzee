@@ -4,10 +4,11 @@
 import ProfileNavbar from "../profile/ProfileNavbar";
 import ProfileSidebar from "../profile/ProfileSidebar";
 import { useState } from "react";
+import type { User } from "../../../types/user";
 
 interface Props {
   children: React.ReactNode;
-  user?: { name?: string; email?: string };
+  user?: User;
   active: string;
   setActive: (val: string) => void;
 }

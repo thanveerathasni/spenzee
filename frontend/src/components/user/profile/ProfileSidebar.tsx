@@ -9,11 +9,13 @@ import {
   Shield,
   CreditCard,
   LogOut,
+  BarChart3,
+  LineChart,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User } from "../../../types/user";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { authApi } from "../../../api/auth.api";
 import { clearAuth } from "../../../store/auth";
 import Swal from "sweetalert2";
@@ -24,6 +26,7 @@ interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
+  href?: string;
 }
 
 interface Props {
@@ -37,9 +40,12 @@ const NAV: NavItem[] = [
   { id: "overview",     label: "Overview",          icon: <UserIcon size={15} /> },
   { id: "edit-profile", label: "Edit Profile",       icon: <UserIcon size={15} /> },
   { id: "address",      label: "Address",            icon: <MapPin size={15} /> },
+  { id: "verification", label: "Verification",       icon: <Shield size={15} />, href: ROUTES.USER.VERIFICATION },
+  { id: "financial-overview", label: "Financial Insights", icon: <BarChart3 size={15} />, href: ROUTES.USER.FINANCIAL_INSIGHTS },
+  { id: "financial-upload", label: "Upload Statements", icon: <Upload size={15} />, href: ROUTES.USER.FINANCIAL_INSIGHTS_UPLOAD },
+  { id: "financial-statements", label: "Statement History", icon: <FileText size={15} />, href: ROUTES.USER.FINANCIAL_INSIGHTS_STATEMENTS },
+  { id: "financial-analytics", label: "Analytics", icon: <LineChart size={15} />, href: ROUTES.USER.FINANCIAL_INSIGHTS_ANALYTICS },
   { id: "settings",     label: "Settings",           icon: <Settings size={15} /> },
-  { id: "statements",   label: "My Statements",      icon: <FileText size={15} /> },
-  { id: "upload",       label: "Upload Statement",   icon: <Upload size={15} /> },
   { id: "security",     label: "Security",           icon: <Shield size={15} /> },
   { id: "billing",      label: "Billing",            icon: <CreditCard size={15} /> },
 ];
@@ -47,6 +53,7 @@ const NAV: NavItem[] = [
 export default function ProfileSidebar({ active, setActive, user, open }: Props) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     const result = await Swal.fire({
@@ -130,7 +137,9 @@ export default function ProfileSidebar({ active, setActive, user, open }: Props)
         {/* Nav items */}
         <div className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV.map((item, i) => {
-            const isActive = active === item.id;
+            const isActive = item.href
+              ? location.pathname.startsWith(item.href)
+              : active === item.id;
             return (
               <motion.button
                 key={item.id}
@@ -138,7 +147,14 @@ export default function ProfileSidebar({ active, setActive, user, open }: Props)
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.05 * i, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ x: 4 }}
-                onClick={() => setActive(item.id)}
+                onClick={() => {
+                  if (item.href) {
+                    navigate(item.href);
+                    return;
+                  }
+
+                  setActive(item.id);
+                }}
                 className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200
                   ${isActive
                     ? "bg-white text-black font-medium shadow-lg"

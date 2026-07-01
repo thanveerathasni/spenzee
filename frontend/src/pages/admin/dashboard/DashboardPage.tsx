@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { Filter, Download, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
@@ -6,6 +6,8 @@ import RevenueChart from "../../../components/admin/charts/RevenueChart";
 import StatusDonut from "../../../components/admin/charts/StatusDonut";
 import Badge from "../../../components/admin/common/Badge";
 import { SEVERITY } from "../../../types/admin/dashboard.types";
+import { adminApi } from "../../../api/admin/adminAxios";
+import { API_ROUTES } from "../../../constants/apiRoutes";
 
 const revenueData = [
   { name: "Jan", value: 42000 },
@@ -46,7 +48,66 @@ const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ chi
   </motion.div>
 );
 
-const DashboardPage: React.FC = () => (
+interface AdminDashboardStats {
+  totalUsers: number;
+  totalProviders: number;
+  totalTransactions: number;
+  revenue: number;
+}
+
+const DashboardPage: React.FC = () => {
+  const [stats, setStats] =
+    useState<AdminDashboardStats | null>(null);
+  const [loading, setLoading] =
+    useState(true);
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const res =
+          await adminApi.get(API_ROUTES.ADMIN.DASHBOARD);
+
+        setStats(res.data.data);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadDashboard();
+  }, []);
+
+  const kpis = [
+    {
+      label: "Total Revenue",
+      value: `₹${(stats?.revenue ?? 0).toLocaleString("en-IN")}`,
+      trend: 0,
+      up: true,
+      sub: "Backend dashboard",
+    },
+    {
+      label: "Active Users",
+      value: String(stats?.totalUsers ?? 0),
+      trend: 0,
+      up: true,
+      sub: "Users endpoint",
+    },
+    {
+      label: "Providers",
+      value: String(stats?.totalProviders ?? 0),
+      trend: 0,
+      up: true,
+      sub: "Providers endpoint",
+    },
+    {
+      label: "Transactions",
+      value: String(stats?.totalTransactions ?? 0),
+      trend: 0,
+      up: true,
+      sub: "Transaction total",
+    },
+  ];
+
+  return (
   <motion.div variants={container} initial="hidden" animate="visible" className="space-y-8 max-w-[1400px]">
 
     {/* Header */}
@@ -77,12 +138,7 @@ const DashboardPage: React.FC = () => (
 
     {/* KPI Cards */}
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {[
-        { label: "Total Revenue",   value: "$1,284,500", trend: 12.5, up: true,  sub: "vs $1,141,700 last month" },
-        { label: "Active Users",    value: "48,294",     trend: 8.2,  up: true,  sub: "3,410 new today" },
-        { label: "Providers",       value: "1,402",      trend: 2.4,  up: false, sub: "Churn +0.5%" },
-        { label: "Pending Audits",  value: "24",         trend: 5.0,  up: false, sub: "Requires attention" },
-      ].map((k) => (
+      {kpis.map((k) => (
         <motion.div
           key={k.label}
           variants={item}
@@ -91,7 +147,9 @@ const DashboardPage: React.FC = () => (
           className="bg-white border border-black/[0.06] rounded-2xl p-6"
         >
           <p className="text-[9px] font-black uppercase tracking-[0.35em] text-black/25 mb-4">{k.label}</p>
-          <p className="text-3xl font-black tracking-tight text-black leading-none mb-3">{k.value}</p>
+          <p className="text-3xl font-black tracking-tight text-black leading-none mb-3">
+            {loading ? "..." : k.value}
+          </p>
           <div className="flex items-center gap-2">
             <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${k.up ? "bg-black/[0.04] text-black" : "bg-black/[0.04] text-black/40"}`}>
               {k.up ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
@@ -214,6 +272,7 @@ const DashboardPage: React.FC = () => (
       </Card>
     </div>
   </motion.div>
-);
+  );
+};
 
 export default DashboardPage;

@@ -19,6 +19,8 @@ import {
 
 import { providerTermsGuard } from "../../middleware/providerTermsGuard";
 
+import { requireCommerceEnabled } from "../../middleware/requireCommerceEnabled";
+
 import { roleGuard } from "../../middleware/roleGuard";
 
 import { validate } from "../../middleware/validate";
@@ -136,8 +138,22 @@ router.get(
     ROLES.PROVIDER,
   ]),
   providerTermsGuard,
+  requireCommerceEnabled,
   asyncHandler(
     providerController.getDashboard.bind(
+      providerController,
+    ),
+  ),
+);
+
+router.get(
+  ROUTES.PROVIDER.COMMERCE_STATUS,
+  authGuard,
+  roleGuard([
+    ROLES.PROVIDER,
+  ]),
+  asyncHandler(
+    providerController.getCommerceStatus.bind(
       providerController,
     ),
   ),
