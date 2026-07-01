@@ -33,6 +33,7 @@ import cors from "cors"
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/errorHandler";
 import authRoutes from "./routes/auth.routes";
+import providerProductRoutes from "./routes/providerProduct.routes";
 import testRoutes from "./routes/test.routes";
 
 const app = express(); 
@@ -66,11 +67,12 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "12mb" }));
 app.use(cookieParser());
 
 // routes
 app.use("/auth", authRoutes);
+app.use("/provider/products", providerProductRoutes);
 // app.use("/api/auth", authRoutes);
 app.use("/test", testRoutes);
 

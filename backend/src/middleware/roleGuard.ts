@@ -1,6 +1,6 @@
 import { Response, NextFunction } from "express";
 import { Role } from "../constants/roles";
-import { AuthRequest } from "./authGuard";
+import { AuthRequest } from "../types/AuthRequest";
 import { UnauthorizedError } from "../utils/errors";
 import { ERROR_MESSAGES } from "../constants/errorMessages";
 

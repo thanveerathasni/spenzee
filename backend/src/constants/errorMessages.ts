@@ -18,6 +18,25 @@ export const ERROR_MESSAGES = {
  ACCESS_DENIED: "Access denied",
   },
 
+  PROVIDER_COMMERCE: {
+    PENDING: "Provider commerce approval is pending",
+    DISABLED: "Provider commerce is disabled",
+    REJECTED: "Provider commerce is rejected",
+    FROZEN: "Provider commerce is frozen",
+  },
+
+  PRODUCT: {
+    NOT_FOUND: "Product not found",
+    FORBIDDEN: "You can manage only your own products",
+    DUPLICATE_PIC: "Product identification code already exists for this provider",
+    INVALID_PRICE: "Product price cannot be negative",
+    INVALID_STOCK: "Product stock cannot be negative",
+    NAME_REQUIRED: "Product name is required",
+    THUMBNAIL_REQUIRED: "Product thumbnail is required",
+    INVALID_IMAGE: "Invalid product image",
+    TOO_MANY_IMAGES: "A product can have up to 10 gallery images",
+  },
+
   GENERAL: {
     INTERNAL_SERVER_ERROR: "Something went wrong",
     INVALID_REQUEST: "Invalid request data"

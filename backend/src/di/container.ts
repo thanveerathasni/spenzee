@@ -16,6 +16,12 @@ import { IRefreshTokenRepository } from "../types/repositories/IRefreshTokenRepo
 import { RefreshTokenRepository } from "../repositories/RefreshTokenRepository";
 import { IResetPasswordRepository } from "../types/repositories/IResetPasswordRepository";
 import { ResetPasswordRepository } from "../repositories/ResetPasswordRepository";
+import { ProductController } from "../controllers/ProductController";
+import { ProductRepository } from "../repositories/ProductRepository";
+import { ProductImageService } from "../services/ProductImageService";
+import { ProductService } from "../services/ProductService";
+import { IProductRepository } from "../types/repositories/IProductRepository";
+import { IProductService } from "../types/services/IProductService";
 
 // Repositories
 
@@ -24,6 +30,7 @@ const container = new Container();
 
 // Controllers
 container.bind<AuthController>(TYPES.AuthController).to(AuthController);
+container.bind<ProductController>(TYPES.ProductController).to(ProductController);
 
 // Services
 container
@@ -31,10 +38,19 @@ container
   .to(AuthService)
   .inSingletonScope();
 
+container
+  .bind<IProductService>(TYPES.ProductService)
+  .to(ProductService);
+
+container
+  .bind<ProductImageService>(TYPES.ProductImageService)
+  .to(ProductImageService);
+
 // container.bind<IAuthService>(TYPES.AuthService).to(AuthService);
 
 // Repositories
 container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepository);
+container.bind<IProductRepository>(TYPES.ProductRepository).to(ProductRepository);
 
 container.bind<IOtpRepository>(TYPES.OtpRepository)
   .to(OtpRepository);

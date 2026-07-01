@@ -123,23 +123,24 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import LoginForm from "./pages/user/Auth/UserLogin";
 import SignupForm from "./pages/user/Auth/UserSignup";
 import Landing from "./pages/public/Landing";
 import UserHome from "./pages/user/Auth/UserHome";
 import ProviderLoginForm from "./pages/provider/auth/ProviderLogin";
 import ProviderRequestForm from "./pages/provider/auth/ProviderRequest";
+import ProviderLayout from "./layouts/ProviderLayout";
+import ProviderDashboard from "./pages/provider/Dashboard";
+import Products from "./pages/provider/Products";
+import ProductForm from "./pages/provider/ProductForm";
+import ProductDetails from "./pages/provider/ProductDetails";
 import TestAuth from "./pages/public/TestAuth";
 import ProtectedRoute from "./routes/protectedRoutes";
 import WelcomePage from "./pages/user/Auth/welcome";
 import ForgotPassword from "./pages/user/Auth/forgotPassword";
 import ResetPassword from "./pages/user/Auth/ResetPassword";
-import { markAuthChecked } from "./store/auth/auth.slice";
 import { authApi } from "./api/auth.api";
 import { setAuth, clearAuth ,hydrateAuth} from "./store/auth/auth.slice";
-import { useSelector } from "react-redux";
-import type { RootState } from "./store/store";
 // 404 Page
 const NotFound = () => (
   <div className="min-h-screen bg-deep-space flex flex-center flex-col px-4 text-center">
@@ -154,8 +155,6 @@ const NotFound = () => (
 );
 const AppContent = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-const auth = useSelector((state: RootState) => state.auth);
 // useEffect(() => {
 //   if (auth.accessToken) {
 //     dispatch(markAuthChecked());
@@ -219,6 +218,21 @@ useEffect(() => {
 
       <Route path="/provider/login" element={<ProviderLoginForm />} />
       <Route path="/provider/request" element={<ProviderRequestForm />} />
+
+      <Route
+        path="/provider"
+        element={
+          <ProtectedRoute allowedRoles={["provider"]}>
+            <ProviderLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="dashboard" element={<ProviderDashboard />} />
+        <Route path="products" element={<Products />} />
+        <Route path="products/new" element={<ProductForm />} />
+        <Route path="products/:id" element={<ProductDetails />} />
+        <Route path="products/:id/edit" element={<ProductForm />} />
+      </Route>
 
       <Route
         path="/dashboard"
