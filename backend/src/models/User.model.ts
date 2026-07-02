@@ -10,7 +10,7 @@ import {
 export interface IUser extends Document {
   name?: string;
   email: string;
-  password: string;
+  password: string | null;
   role: Role;
   isVerified: boolean;
   isActive: boolean;
@@ -21,7 +21,6 @@ export interface IUser extends Document {
   commerceApprovedBy?: Types.ObjectId;
   commerceRejectedReason?: string;
   commerceFrozen: boolean;
-  isCommerceFrozen: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -87,10 +86,6 @@ const userSchema = new Schema<IUser>(
       maxlength: COMMERCE_VALIDATION.REJECTION_REASON_MAX_LENGTH
     },
     commerceFrozen: {
-      type: Boolean,
-      default: false
-    },
-    isCommerceFrozen: {
       type: Boolean,
       default: false
     }

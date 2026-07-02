@@ -4,6 +4,7 @@ export interface IUserRepository {
   findByEmail(email: string): Promise<IUser | null>;
 
   create(data: {
+    name?: string;
     email: string;
     password: string | null;
     role: "user" | "provider" | "admin";
