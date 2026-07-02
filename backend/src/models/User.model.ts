@@ -1,6 +1,11 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 import { ROLES, Role } from "../constants/roles";
-import { COMMERCE_STATUS, CommerceStatus } from "../constants/commerce";
+import {
+  COMMERCE_STATUS,
+  COMMERCE_VALIDATION,
+  COMMISSION_LIMITS,
+  CommerceStatus,
+} from "../constants/commerce";
 
 export interface IUser extends Document {
   name?: string;
@@ -11,6 +16,11 @@ export interface IUser extends Document {
   isActive: boolean;
   commerceStatus: CommerceStatus;
   commerceEnabled: boolean;
+  commissionPercentage: number;
+  commerceApprovedAt?: Date;
+  commerceApprovedBy?: Types.ObjectId;
+  commerceRejectedReason?: string;
+  commerceFrozen: boolean;
   isCommerceFrozen: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -55,6 +65,28 @@ const userSchema = new Schema<IUser>(
       default: COMMERCE_STATUS.PENDING
     },
     commerceEnabled: {
+      type: Boolean,
+      default: false
+    },
+    commissionPercentage: {
+      type: Number,
+      min: COMMISSION_LIMITS.MIN_COMMISSION,
+      max: COMMISSION_LIMITS.MAX_COMMISSION,
+      default: COMMISSION_LIMITS.DEFAULT_COMMISSION
+    },
+    commerceApprovedAt: {
+      type: Date
+    },
+    commerceApprovedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User"
+    },
+    commerceRejectedReason: {
+      type: String,
+      trim: true,
+      maxlength: COMMERCE_VALIDATION.REJECTION_REASON_MAX_LENGTH
+    },
+    commerceFrozen: {
       type: Boolean,
       default: false
     },

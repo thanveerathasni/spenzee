@@ -7,3 +7,14 @@ export const COMMERCE_STATUS = {
 
 export type CommerceStatus =
   (typeof COMMERCE_STATUS)[keyof typeof COMMERCE_STATUS];
+
+export const COMMISSION_LIMITS = {
+  MIN_COMMISSION: 0,
+  MAX_COMMISSION: 100,
+  DEFAULT_COMMISSION: 10,
+} as const;
+
+export const COMMERCE_VALIDATION = {
+  REJECTION_REASON_MAX_LENGTH: 500,
+  COMMISSION_DECIMAL_PLACES: 2,
+} as const;

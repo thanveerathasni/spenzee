@@ -11,6 +11,12 @@ export const SUCCESS_MESSAGES = {
 
   },
 
+  PROVIDER_COMMERCE: {
+    PROVIDER_COMMERCE_APPROVED: "Provider commerce approved successfully",
+    PROVIDER_COMMERCE_REJECTED: "Provider commerce rejected successfully",
+    COMMISSION_UPDATED: "Commission updated successfully",
+  },
+
   PRODUCT: {
     CREATED: "Product created successfully",
     UPDATED: "Product updated successfully",

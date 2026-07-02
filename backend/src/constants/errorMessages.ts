@@ -23,6 +23,11 @@ export const ERROR_MESSAGES = {
     DISABLED: "Provider commerce is disabled",
     REJECTED: "Provider commerce is rejected",
     FROZEN: "Provider commerce is frozen",
+    PROVIDER_COMMERCE_PENDING: "Provider commerce approval is pending",
+    PROVIDER_COMMERCE_DISABLED: "Provider commerce is disabled",
+    PROVIDER_COMMERCE_REJECTED: "Provider commerce is rejected",
+    INVALID_COMMISSION: "Commission must be between 0 and 100",
+    PROVIDER_NOT_VERIFIED: "Provider verification incomplete",
   },
 
   PRODUCT: {
